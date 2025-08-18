@@ -1,0 +1,103 @@
+[submodule "3rd/zlib"]
+	path = 3rd/zlib 
+	url = https://github.com/madler/zlib.git
+	branch = v1.3.1
+
+ 
+[submodule "3rd/zstd"]
+	path = 3rd/zstd
+	url = https://github.com/facebook/zstd.git
+	branch = v1.5.7
+ 
+[submodule "3rd/openssl"]
+	path = 3rd/openssl
+	url = https://github.com/openssl/openssl.git
+	branch = openssl-3.5.2
+# 
+# [submodule "3rd/icu"]
+# 	path = 3rd/icu 
+# 	url = https://github.com/unicode-org/icu.git
+# 	branch = release-77-1 
+ 
+# [submodule "3rd/libidn2"]
+# 	path = 3rd/libidn2
+# 	url = https://github.com/libidn/libidn2.git
+# 	branch = v2.3.8
+
+ 
+[submodule "3rd/libpsl"]
+	path = 3rd/libpsl
+	url = https://github.com/rockdaboot/libpsl.git
+	branch =libpsl-0.21.0
+ 
+[submodule "3rd/curl"]
+	path = 3rd/curl
+	url = https://github.com/curl/curl.git
+	branch = curl-8_15_0
+
+# ----------------------------------------------------------
+[submodule "3rd/libjpeg-turbo"]
+	path = 3rd/libjpeg-turbo
+	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
+	branch = jpeg-9f
+ 
+[submodule "3rd/libpng"]
+	path = 3rd/libpng
+	url = https://github.com/glennrp/libpng.git
+	branch = libpng-1.6.31-signed
+
+[submodule "3rd/xz"]
+	path = 3rd/xz
+	url = https://github.com/tukaani-project/xz.git
+	branch =  v5.8.1
+ 
+[submodule "3rd/libtiff"]
+	path = 3rd/libtiff
+	url = https://github.com/vadz/libtiff.git
+	branch = Release-v4-0-9
+ 
+[submodule "3rd/freetype"]
+	path = 3rd/freetype
+	url = https://github.com/freetype/freetype.git
+	branch = VER-2-13-3
+# ---------------------------------------------------------- 
+[submodule "3rd/geos"]
+	path = 3rd/geos
+	url = https://github.com/libgeos/geos.git
+	branch = 3.13.1
+ 
+[submodule "3rd/sqlite"]
+	path = 3rd/sqlite
+	url = https://github.com/sqlite/sqlite.git 
+	branch = version-3.50.4
+ 
+[submodule "3rd/proj"]
+	path = 3rd/proj
+	url = https://github.com/OSGeo/PROJ.git
+	branch = 9.6.2
+ 
+[submodule "3rd/libexpat"]
+	path = 3rd/libexpat
+	url = https://github.com/libexpat/libexpat.git
+	branch = R_2_7_1
+ 
+[submodule "3rd/protobuf"]
+	path = 3rd/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
+	branch = v32.0
+ 
+# [submodule "3rd/json-c"]
+# 	path = 3rd/json-c
+# 	url = https://github.com/json-c/json-c.git
+# 	branch = json-c-0.18-20240915
+
+[submodule "3rd/gdal"]
+	path = 3rd/gdal
+	url = https://github.com/OSGeo/gdal.git
+	branch = v32.0
+# ----------------------------------------------------------
+[submodule "3rd/osgdraco"]
+	path = 3rd/osgdraco
+	url = https://github.com/google/draco.git
+	branch = 1.5.7
+
