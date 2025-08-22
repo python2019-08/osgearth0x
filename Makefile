@@ -9,8 +9,10 @@ src:=.
 LOCAL_CMAKE_SOURCE_DIR=$(PWD)
 LOCAL_CMAKE_BINARY_DIR=$(PWD)/build/ubuntu
 
-clean: ubuntu/build/clean
+.PHONY: ubuntu clean
+
 ubuntu:ubuntu/build   ubuntu/install
+clean: ubuntu/build/clean
 
 ubuntu/build:ubuntu/build/configure ubuntu/build/do-build
 ubuntu/build/configure:

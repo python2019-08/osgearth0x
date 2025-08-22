@@ -35,7 +35,7 @@ if(USE_CMAKE_TO_BUILD_3RD)
     add_subdirectory(3rd) 
 endif(USE_CMAKE_TO_BUILD_3RD)
 
-# add_subdirectory(src)     
+add_subdirectory(src)     
 
 # IDE configuration ......................................................
 
