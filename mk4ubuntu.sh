@@ -17,7 +17,7 @@ mkdir -p ${INSTALL_PREFIX_3rd}
 # -------------------------------------------------
 # zlib
 # -------------------------------------------------
-isFinished_build_zlib=false 
+isFinished_build_zlib=true 
 if [ "${isFinished_build_zlib}" != "true" ]; then 
     echo "========== building zlib 4 ubuntu========== " &&  sleep 5
 
@@ -63,7 +63,7 @@ fi
 # -------------------------------------------------
 # zstd
 # -------------------------------------------------
-isFinished_build_zstd=false
+isFinished_build_zstd=true
 if [ "${isFinished_build_zstd}" != "true" ]; then 
     echo "========== building zstd 4 ubuntu========== " &&  sleep 5
 
@@ -88,7 +88,7 @@ fi
 # -------------------------------------------------
 # openssl
 # -------------------------------------------------
-isFinished_build_openssl=false
+isFinished_build_openssl=true
 if [ "${isFinished_build_openssl}" != "true" ]; then 
     echo "========== Building openssl 4 ubuntu ========== " &&  sleep 5
 
@@ -127,7 +127,7 @@ fi
 #   libcrypto（OpenSSL 组件，可选）：用于 ICU 的加密相关功能（如校验数据完整性）。
 # 其他：
 #   iconv（可选）：部分平台可能需要 iconv 库用于字符编码转换，但 ICU 通常自带编码转换逻辑，可独立于 iconv。
-isFinished_build_icu=false
+isFinished_build_icu=true
 if [ "${isFinished_build_icu}" != "true" ] ; then 
     echo "========== building icu 4 ubuntu==========do nothing " &&  sleep 3
 
@@ -160,7 +160,7 @@ fi
 # -------------------------------------------------
 # libidn2
 # -------------------------------------------------
-# isFinished_build_libidn2=false
+# isFinished_build_libidn2=true
 # if [ "${isFinished_build_libidn2}" != "true" ] ; then 
 #     echo "============= Building libidn2 =============" &&  sleep 5
 # 
@@ -198,7 +198,7 @@ fi
 # -------------------------------------------------
 # libpsl
 # -------------------------------------------------
-isFinished_build_libpsl=false
+isFinished_build_libpsl=true
 if [ "${isFinished_build_libpsl}" != "true" ] ; then 
     echo "======== Building libpsl =========" &&  sleep 5
 
@@ -239,7 +239,7 @@ fi
 # -------------------------------------------------
 # curl
 # -------------------------------------------------
-isFinished_build_curl=false
+isFinished_build_curl=true
 # ----build lib for ubuntu
 if [ "${isFinished_build_curl}" != "true" ] ; then 
     echo "======== Building curl =========" &&  sleep 3
@@ -309,7 +309,7 @@ fi
 # # libjpeg-turbo 的位深度支持​​ ：默认仅支持 8-bit​​（即使开启 WITH_JPEG7=ON）。
 # # ​​12-bit JPEG 支持需要原版 jpeg-9f​，并通过 --enable-12bit编译选项启用。
 # # -------------------------------------------------
-# isFinished_buildJpeg9f=false
+# isFinished_buildJpeg9f=true
 #
 # # ----build jpeg-9f for ubuntu
 # if [ "${isFinished_buildJpeg9f}" != "true" ] ; then 
@@ -343,7 +343,7 @@ fi
 # -------------------------------------------------
 # libjpeg-turbo
 # -------------------------------------------------
-isFinished_build_libjpegTurbo=false
+isFinished_build_libjpegTurbo=true
 
 # ----build libjpeg-turbo for ubuntu
 if [ "${isFinished_build_libjpegTurbo}" != "true" ]  ; then 
@@ -376,7 +376,7 @@ fi
 # -------------------------------------------------
 # libpng
 # -------------------------------------------------
-isFinished_build_libpng=false
+isFinished_build_libpng=true
 
 # ----build libpng for ubuntu
 if [ "${isFinished_build_libpng}" != "true" ] ; then 
@@ -407,7 +407,7 @@ fi
 # xz : xz generates liblzma.a which is needed by libtiff
 # -------------------------------------------------
 
-isFinished_build_xz=false
+isFinished_build_xz=true
 
 # ----build xz for ubuntu
 if [ "${isFinished_build_xz}" != "true" ]  ; then 
@@ -449,7 +449,7 @@ fi
 # 
 # liblzma.so:  LZMA 的压缩率通常高于传统的 ZIP（Deflate）或 JPEG 压缩，适合需要高压缩比的场景（如存档、卫星图像）。
 
-isFinished_build_libtiff=false
+isFinished_build_libtiff=true
 
 # ----build libtiff for ubuntu
 if [ "${isFinished_build_libtiff}" != "true" ] ; then 
@@ -506,7 +506,7 @@ fi
 # | **ZLIB**     | 已找到（`libz.so`）    | 支持 `.ttf.gz` 和常规压缩。                                           |
 # | **PNG**      | 已找到（`libpng.so`）  | 支持位图字体（如 `.png` 格式的彩色字体）。                            |
 
-isFinished_build_freetype=false
+isFinished_build_freetype=true
 
 # ----build freetype for ubuntu
 if [ "${isFinished_build_freetype}" != "true" ] ; then 
@@ -542,7 +542,7 @@ fi
 # -------------------------------------------------
 # geos
 # ------------------------------------------------- 
-isFinished_build_geos=false
+isFinished_build_geos=true
 if [ "${isFinished_build_geos}" != "true" ] ; then 
     echo "========== building geos 4 ubuntu========== " &&  sleep 5
 
@@ -580,7 +580,7 @@ fi
 # -------------------------------------------------
 # sqlite
 # ------------------------------------------------- 
-isFinished_build_sqlite=false
+isFinished_build_sqlite=true
 if [ "${isFinished_build_sqlite}" != "true" ] ; then 
     echo "========== building sqlite 4 ubuntu========== " &&  sleep 5
 
@@ -618,7 +618,7 @@ fi
 # -------------------------------------------------
 # proj
 # ------------------------------------------------- 
-isFinished_build_proj=false
+isFinished_build_proj=true
 if [ "${isFinished_build_proj}" != "true" ] ; then 
     echo "========== building proj 4 ubuntu========== " &&  sleep 5
 
@@ -711,7 +711,7 @@ fi
 # -------------------------------------------------
 # libexpat
 # ------------------------------------------------- 
-isFinished_build_libexpat=false
+isFinished_build_libexpat=true
 if [ "${isFinished_build_libexpat}" != "true" ] ; then 
     echo "========== building libexpat 4 ubuntu========== " &&  sleep 5
 
@@ -757,7 +757,7 @@ fi
 # -------------------------------------------------
 # protobuf  
 # -------------------------------------------------
-isFinished_build_protobuf=false
+isFinished_build_protobuf=true
 if [ "${isFinished_build_protobuf}" != "true" ] ; then 
     echo "========== building protobuf 4 ubuntu========== " &&  sleep 5
 
@@ -807,7 +807,7 @@ fi
 # -------------------------------------------------
 # gdal , see 3rd/gdal/fuzzers/build.sh
 # -------------------------------------------------
-isFinished_build_gdal=false
+isFinished_build_gdal=true
 if [ "${isFinished_build_gdal}" != "true" ] ; then 
     echo "========== building gdal 4 ubuntu========== " &&  sleep 5
 
@@ -891,7 +891,7 @@ fi
 #  src/
 # ########################################################################## 
 INSTALL_PREFIX_src=${BuildDir_ubuntu}/install/src
-SRC_srcDir=${Repo_ROOT}/src
+SrcDir_src=${Repo_ROOT}/src
 
   
 mkdir -p ${INSTALL_PREFIX_src} 
@@ -903,7 +903,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     echo "========== building osg 4 ubuntu========== " &&  sleep 5
 
     # 手动执行配置命令验证
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/gdal/build 
+    BuildDIR_lib=${BuildDir_ubuntu}/src/osg 
     rm -fr ${BuildDIR_lib}
     mkdir -p ${BuildDIR_lib}    
 
@@ -912,13 +912,13 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     # CMAKE_C_COMPILER=/usr/bin/musl-gcc   # /usr/bin/clang  # /usr/bin/gcc
     # CMAKE_CXX_COMPILER=/usr/bin/musl-gcc # /usr/bin/clang++  # /usr/bin/g++    
 
-    lib_dir=${INSTALL_PREFIX_3rd}/lib
-    lib64_dir=${INSTALL_PREFIX_3rd}/lib64 
+    lib_dir=${INSTALL_PREFIX_src}/lib
+    lib64_dir=${INSTALL_PREFIX_src}/lib64 
     _LINKER_FLAGS="-L${lib_dir} -lcurl -ltiff -ljpeg -lsqlite3 -lprotobuf -lpng -llzma -lz -L${lib64_dir} -lssl -lcrypto" \
     # -DCMAKE_STATIC_LINKER_FLAGS=${_LINKER_FLAGS}  -DCMAKE_EXE_LINKER_FLAGS=${_LINKER_FLAGS}  
-    cmake -S ${SrcDir_3rd}/gdal -B ${BuildDIR_lib} \
-            -DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_3rd} \
-            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
+    cmake -S ${SrcDir_src}/osg -B ${BuildDIR_lib} \
+            -DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_src} \
+            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd}:${INSTALL_PREFIX_src} \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
@@ -926,8 +926,8 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_src}  \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-            -DCMAKE_CXX_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0 ${_LINKER_FLAGS}" \
-            -DCMAKE_C_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0 ${_LINKER_FLAGS}"   \
+            -DCMAKE_C_FLAGS="-fPIC  -DOSG_GLES3_AVAILABLE=1   ${_LINKER_FLAGS}"   \
+            -DCMAKE_CXX_FLAGS="-fPIC -std=c++14  -DOSG_GLES3_AVAILABLE=1 ${_LINKER_FLAGS}" \
             -DBUILD_SHARED_LIBS=OFF   \
         -DDYNAMIC_OPENTHREADS=OFF \
         -DDYNAMIC_OPENSCENEGRAPH=OFF \
@@ -946,28 +946,24 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DOPENGL_PROFILE="GLES3" \
         -DANDROID=OFF \
         -DOSG_FIND_3RD_PARTY_DEPS=ON \
-        -DCMAKE_C_FLAGS="-march=armv7-a -mfpu=neon -DOSG_GLES3_AVAILABLE=1" \
-        -DCMAKE_CXX_FLAGS="-std=c++14 -march=armv7-a -mfpu=neon -DOSG_GLES3_AVAILABLE=1" \
-        -DZLIB_DIR=/home/x12/work/3rd/zlib \
-        -DZLIB_INCLUDE_DIR=/home/x12/work/3rd/zlib/include \
-        -DZLIB_LIBRARY=/home/x12/work/3rd/zlib/lib/libz.a \
-        -DPNG_INCLUDE_DIR=/home/x12/work/3rd/png/include/libpng16 \
-        -DPNG_LIBRARY=/home/x12/work/3rd/png/lib/libpng.a \
-        -DJPEG_INCLUDE_DIR=/home/x12/work/3rd/jpeg/include \
-        -DJPEG_LIBRARY=/home/x12/work/3rd/jpeg/lib/libjpeg.a \
-        -DTIFF_INCLUDE_DIR=/home/x12/work/3rd/tiff/include \
-        -DTIFF_LIBRARY=/home/x12/work/3rd/tiff/lib/libtiff.a \
-        -DFREETYPE_DIR=/home/x12/work/3rd/freetype \
-        -DFREETYPE_INCLUDE_DIRS=/home/x12/work/3rd/freetype/include/freetype2 \
-        -DFREETYPE_LIBRARY=/home/x12/work/3rd/freetype/lib/libfreetype.a \
-        -DCURL_DIR=/home/x12/work/3rd/curl \
-        -DCURL_INCLUDE_DIR=/home/x12/work/3rd/curl/include \
-        -DCURL_LIBRARY=/home/x12/work/3rd/curl/lib/libcurl.a \
-        -DGDAL_DIR=/home/x12/work/3rd/gdal \
-        -DGDAL_INCLUDE_DIR=/home/x12/work/3rd/gdal/include \
-        -DGDAL_LIBRARY=/home/x12/work/3rd/gdal/lib/libgdal.a \
-        -DCMAKE_EXE_LINKER_FLAGS="-llog -landroid" \
-        -DGDAL_DIR:PATH="/home/x12/work/3rd/gdal/include"            
+        -DZLIB_DIR=${INSTALL_PREFIX_3rd} \
+        -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_3rd}/include \
+        -DZLIB_LIBRARY=${INSTALL_PREFIX_3rd}/lib/libz.a \
+        -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_3rd}/include/libpng16 \
+        -DPNG_LIBRARY=${INSTALL_PREFIX_3rd}/lib/libpng.a \
+        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_3rd}/include/libjpeg \
+        -DJPEG_LIBRARY=${INSTALL_PREFIX_3rd}/lib/libjpeg.a \
+        -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_3rd}/include \
+        -DTIFF_LIBRARY=${INSTALL_PREFIX_3rd}/lib/libtiff.a \
+        -DFREETYPE_DIR=${INSTALL_PREFIX_3rd} \
+        -DFREETYPE_INCLUDE_DIRS=${INSTALL_PREFIX_3rd}/include/freetype2 \
+        -DFREETYPE_LIBRARY=${INSTALL_PREFIX_3rd}/lib/libfreetype.a \
+        -DCURL_DIR=${INSTALL_PREFIX_3rd} \
+        -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_3rd}/include/curl \
+        -DCURL_LIBRARY=${INSTALL_PREFIX_3rd}/lib/libcurl.a \
+        -DGDAL_DIR=${INSTALL_PREFIX_3rd}l \
+        -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_3rd}/include \
+        -DGDAL_LIBRARY=${INSTALL_PREFIX_3rd}/lib/libgdal.a          
             
 
 
