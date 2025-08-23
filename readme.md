@@ -7,3 +7,4 @@ $ cd osgearth0x
 
 # $ git submodule update --init --recursive --progress -v
 $ chmod 777 ./git_clone_modules.sh  && ./git_clone_modules.sh 
+```
