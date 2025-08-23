@@ -53,6 +53,8 @@ git clone  https://github.com/OSGeo/PROJ.git    3rd/proj
 
 git clone  https://github.com/protocolbuffers/protobuf.git   3rd/protobuf
 
+# git clone  https://github.com/json-c/json-c.git  3rd/json-c
+
 git clone  https://github.com/OSGeo/gdal.git   3rd/gdal
 
 # git clone  https://github.com/google/draco.git  3rd/osgdraco
