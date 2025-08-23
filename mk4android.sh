@@ -1,19 +1,19 @@
 #!/bin/bash
 
-OSG3RD_ROOT=/mnt/disk2/abner/zdev/nv/osg3rd/
-OSG3RD_srcDir=${OSG3RD_ROOT}/3rd
-OSG3RD_buildDir=${OSG3RD_ROOT}/build_by_sh 
-# rm -fr ./build_by_sh 
-# rm -fr  ${OSG3RD_buildDir}
- 
+Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 
-OSG3RD_buildDir_android=${OSG3RD_buildDir}/android
-OSG3RD_INSTALL_PREFIX_android=${OSG3RD_buildDir_android}/install/3rd
+
+OSG3RD_srcDir=${Repo_ROOT}/3rd
+
+# rm -fr ./build_by_sh  
+BuildDir_androi=${Repo_ROOT}/build_by_sh/android
+INSTALL_PREFIX_3rd=${BuildDir_androi}/install/3rd
+
 # 定义需要编译的 Android ABI 列表
 ABIS=("arm64-v8a" "armeabi-v7a" "x86" "x86_64")
 ANDROID_NDK=/home/abner/Android/Sdk/ndk/27.1.12297006
 
-mkdir -p ${OSG3RD_INSTALL_PREFIX_android}
+mkdir -p ${INSTALL_PREFIX_3rd}
 
 isBuildAndroid=true 
  
@@ -331,11 +331,11 @@ fi
 #         echo "++++++++++++ Building jpeg-9f for ${ABI} ++++++++++++" && sleep 5
 #
 #         # 设置当前架构的构建目录和安装目录
-#         BuildDIR_Jpeg9f=${OSG3RD_buildDir_android}/3rd/jpeg-9f/build/${ABI}
+#         BuildDIR_Jpeg9f=${BuildDir_androi}/3rd/jpeg-9f/build/${ABI}
 #         rm -rf ${BuildDIR_Jpeg9f}
 #         mkdir -p ${BuildDIR_Jpeg9f}
 #
-#         jpeg9f_installDir=${OSG3RD_INSTALL_PREFIX_android}/jpeg-9f/${ABI}
+#         jpeg9f_installDir=${INSTALL_PREFIX_3rd}/jpeg-9f/${ABI}
 #         rm -rf ${jpeg9f_installDir}
 #         mkdir -p ${jpeg9f_installDir}
 #
@@ -416,7 +416,7 @@ if [ "${isFinished_build_libjpegTurbo}" != "true" ] ; then
         echo "++++++++++++ Building libjpeg-turbo for ${ABI} ++++++++++++"
         mkdir -p ${LIB3RD_INSTALL_DIR}/android/$ABI
 
-        BuildDIR_andro=${OSG3RD_buildDir_android}/3rd/libjpeg-turbo/build/$ABI
+        BuildDIR_andro=${BuildDir_androi}/3rd/libjpeg-turbo/build/$ABI
         
         cmake  -S${OSG3RD_srcDir}/libjpeg-turbo -B ${BuildDIR_andro} -G"Unix Makefiles" \
             -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
@@ -425,7 +425,7 @@ if [ "${isFinished_build_libjpegTurbo}" != "true" ] ; then
             -DANDROID_STL=c++_shared \
             -DCMAKE_BUILD_TYPE=Debug \
             -DENABLE_SHARED=ON \
-            -DCMAKE_INSTALL_PREFIX=${OSG3RD_INSTALL_PREFIX_android}/$ABI \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}/$ABI \
             ..
         
         #   make -j$(nproc)
