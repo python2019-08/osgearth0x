@@ -1,11 +1,16 @@
 #!/bin/bash
 Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 
-OSG3RD_srcDir=${Repo_ROOT}/3rd
-
 # rm -fr ./build_by_sh   
 BuildDir_ubuntu=${Repo_ROOT}/build_by_sh/ubuntu
+
+# ##########################################################################
+# ##########################################################################
+#  3rd/
+# ########################################################################## 
 INSTALL_PREFIX_3rd=${BuildDir_ubuntu}/install/3rd
+SrcDir_3rd=${Repo_ROOT}/3rd
+
   
 mkdir -p ${INSTALL_PREFIX_3rd} 
 
@@ -27,7 +32,7 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
     # CMAKE_C_COMPILER=/usr/bin/clang  # /usr/bin/gcc
     # CMAKE_CXX_COMPILER=/usr/bin/clang++  # /usr/bin/g++    
     # # remark: 当前的 CMakeLists.txt中 未通过 target_compile_definitions 显式指定 ZLIB_DEBUG 宏。
-    # cmake -S ${OSG3RD_srcDir}/zlib -B ${BuildDIR_lib} \
+    # cmake -S ${SrcDir_3rd}/zlib -B ${BuildDIR_lib} \
     #         -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}  \
     #         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
     #         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}    \
@@ -45,7 +50,7 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
     cd ${BuildDIR_lib}
     #  --enable-debug  会自动添加 -DZLIB_DEBUG 宏）
     CFLAGS="-fPIC" \
-    ${OSG3RD_srcDir}/zlib/configure \
+    ${SrcDir_3rd}/zlib/configure \
                 --prefix=${INSTALL_PREFIX_3rd} \
                 --enable-debug  --static
 
@@ -66,7 +71,7 @@ if [ "${isFinished_build_zstd}" != "true" ]; then
     rm -rf   ${BuildDIR_lib}
     mkdir -p ${BuildDIR_lib}    
 
-    cmake -S${OSG3RD_srcDir}/zstd/build/cmake -B ${BuildDIR_lib} \
+    cmake -S${SrcDir_3rd}/zstd/build/cmake -B ${BuildDIR_lib} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}  \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_C_FLAGS="-fPIC" \
@@ -95,7 +100,7 @@ if [ "${isFinished_build_openssl}" != "true" ]; then
     cd ${BuildDIR_openssl}
 
     CFLAGS="-fPIC" \
-    ${OSG3RD_srcDir}/openssl/Configure linux-x86_64 \
+    ${SrcDir_3rd}/openssl/Configure linux-x86_64 \
                 --prefix=${INSTALL_PREFIX_3rd} \
                 --openssldir=${INSTALL_PREFIX_3rd}/ssl \
                 no-shared \
@@ -131,7 +136,7 @@ if [ "${isFinished_build_icu}" != "true" ] ; then
     # rm -rf   ${BuildDIR_lib}
     # mkdir -p ${BuildDIR_lib}
 
-    # SrcDIR_lib=${OSG3RD_srcDir}/icu/icu4c/source/
+    # SrcDIR_lib=${SrcDir_3rd}/icu/icu4c/source/
     # cd ${SrcDIR_lib}
     # chmod +x runConfigureICU configure install-sh  # 确保脚本可执行
 
@@ -139,7 +144,7 @@ if [ "${isFinished_build_icu}" != "true" ] ; then
     # cd ${BuildDIR_lib}
 
     # CFLAGS="-fPIC" \
-    # ${OSG3RD_srcDir}/icu/icu4c/source/configure   \
+    # ${SrcDir_3rd}/icu/icu4c/source/configure   \
     #     --prefix=${INSTALL_PREFIX_3rd} \
     #     --enable-static=yes \
     #     --enable-shared=no \
@@ -166,11 +171,11 @@ fi
 # 
 # 
 #     # 生成配置脚本（必须在源码目录运行）
-#     if [ ! -d "${OSG3RD_srcDir}/libidn2" ]; then
-#         echo "Folder ${OSG3RD_srcDir}/libidn2 NOT exist!"
+#     if [ ! -d "${SrcDir_3rd}/libidn2" ]; then
+#         echo "Folder ${SrcDir_3rd}/libidn2 NOT exist!"
 #         exit 1001
 #     fi    
-#     cd ${OSG3RD_srcDir}/libidn2  && ./bootstrap
+#     cd ${SrcDir_3rd}/libidn2  && ./bootstrap
 #     if [ "$?" != "0" ]; then
 #         echo "libidn2/bootstrap failed. exit!!" &&  exit 1002
 #     fi
@@ -179,7 +184,7 @@ fi
 #     cd ${BuildDIR_lib}
 #  
 #     CFLAGS="-fPIC" \
-#     ${OSG3RD_srcDir}/libidn2/configure \
+#     ${SrcDir_3rd}/libidn2/configure \
 #                 --prefix=${INSTALL_PREFIX_3rd} \
 #                 --disable-shared \
 #                 --enable-static  
@@ -204,11 +209,11 @@ if [ "${isFinished_build_libpsl}" != "true" ] ; then
 
 
     # 生成配置脚本（必须在源码目录运行）
-    if [ ! -d "${OSG3RD_srcDir}/libpsl" ]; then
-        echo "Folder ${OSG3RD_srcDir}/libpsl NOT exist!"
+    if [ ! -d "${SrcDir_3rd}/libpsl" ]; then
+        echo "Folder ${SrcDir_3rd}/libpsl NOT exist!"
         exit 1001
     fi    
-    cd ${OSG3RD_srcDir}/libpsl  && ./autogen.sh
+    cd ${SrcDir_3rd}/libpsl  && ./autogen.sh
 
     # 在构建目录中运行configure
     cd ${BuildDIR_libpsl} 
@@ -217,7 +222,7 @@ if [ "${isFinished_build_libpsl}" != "true" ] ; then
     # LDFLAGS="-L${INSTALL_PREFIX_3rd}/lib" \
 
     CFLAGS="-fPIC" \
-    ${OSG3RD_srcDir}/libpsl/configure \
+    ${SrcDir_3rd}/libpsl/configure \
                 --prefix=${INSTALL_PREFIX_3rd} \
                 --disable-shared \
                 --enable-static  \
@@ -246,7 +251,7 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
     CMAKE_C_COMPILER=/usr/bin/clang  # /usr/bin/gcc
     CMAKE_CXX_COMPILER=/usr/bin/clang++  # /usr/bin/g++
 
-    cmake -S ${OSG3RD_srcDir}/curl -B ${BuildDIR_lib} \
+    cmake -S ${SrcDir_3rd}/curl -B ${BuildDIR_lib} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}  \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}    \
@@ -323,7 +328,7 @@ fi
 #     cd ${BuildDIR_Jpeg9f} 
 #
 #     CFLAGS="-fPIC" \ 
-#     ${OSG3RD_srcDir}/jpeg-9f/configure --prefix=${jpeg9f_installDir}\
+#     ${SrcDir_3rd}/jpeg-9f/configure --prefix=${jpeg9f_installDir}\
 #              --host=arm-linux --enable-shared --enable-static
 #
 #     # 
@@ -350,7 +355,7 @@ if [ "${isFinished_build_libjpegTurbo}" != "true" ]  ; then
     rm -fr ${BuildDIR_libjpeg}
     mkdir -p ${BuildDIR_libjpeg}    
 
-    cmake -S${OSG3RD_srcDir}/libjpeg-turbo -B ${BuildDIR_libjpeg} \
+    cmake -S${SrcDir_3rd}/libjpeg-turbo -B ${BuildDIR_libjpeg} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}  \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
@@ -380,7 +385,7 @@ if [ "${isFinished_build_libpng}" != "true" ] ; then
     rm -fr ${BuildDIR_lib}
     mkdir -p ${BuildDIR_lib}       
 
-    cmake -S${OSG3RD_srcDir}/libpng -B ${BuildDIR_lib} \
+    cmake -S${SrcDir_3rd}/libpng -B ${BuildDIR_lib} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd} \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
@@ -411,7 +416,7 @@ if [ "${isFinished_build_xz}" != "true" ]  ; then
     rm -fr ${BuildDIR_lib}
     mkdir -p ${BuildDIR_lib}           
 
-    cmake -S${OSG3RD_srcDir}/xz -B ${BuildDIR_lib} \
+    cmake -S${SrcDir_3rd}/xz -B ${BuildDIR_lib} \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd} \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
@@ -453,7 +458,7 @@ if [ "${isFinished_build_libtiff}" != "true" ] ; then
     rm -fr ${BuildDIR_lib}
     mkdir -p ${BuildDIR_lib}           
 
-    cmake -S${OSG3RD_srcDir}/libtiff -B ${BuildDIR_lib} \
+    cmake -S${SrcDir_3rd}/libtiff -B ${BuildDIR_lib} \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_C_FLAGS="-fPIC" \
@@ -510,7 +515,7 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
     rm -fr ${BuildDIR_lib}
     mkdir -p ${BuildDIR_lib}        
 
-    cmake -S${OSG3RD_srcDir}/freetype -B ${BuildDIR_lib} \
+    cmake -S${SrcDir_3rd}/freetype -B ${BuildDIR_lib} \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd} \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
@@ -551,7 +556,7 @@ if [ "${isFinished_build_geos}" != "true" ] ; then
     CMAKE_BUILD_TYPE=Debug
     CMAKE_C_COMPILER=/usr/bin/clang  # /usr/bin/gcc
     CMAKE_CXX_COMPILER=/usr/bin/clang++  # /usr/bin/g++     
-    cmake -S ${OSG3RD_srcDir}/geos -B ${BuildDIR_lib} \
+    cmake -S ${SrcDir_3rd}/geos -B ${BuildDIR_lib} \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_C_FLAGS="-fPIC" \
             -DCMAKE_CXX_FLAGS="-fPIC" \
@@ -585,8 +590,8 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
 
     ####################################################################
     # 生成配置脚本（必须在源码目录运行）
-    if [ ! -d "${OSG3RD_srcDir}/sqlite" ]; then
-        echo "Folder ${OSG3RD_srcDir}/sqlite NOT exist!"
+    if [ ! -d "${SrcDir_3rd}/sqlite" ]; then
+        echo "Folder ${SrcDir_3rd}/sqlite NOT exist!"
         exit 1001
     fi 
     
@@ -596,7 +601,7 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
     # CPPFLAGS="-I${INSTALL_PREFIX_3rd}/include/icu" \
     # LDFLAGS="-L${INSTALL_PREFIX_3rd}/lib" \ 
     CC=/usr/bin/gcc \
-    ${OSG3RD_srcDir}/sqlite/configure  --prefix=${INSTALL_PREFIX_3rd} \
+    ${SrcDir_3rd}/sqlite/configure  --prefix=${INSTALL_PREFIX_3rd} \
         --disable-shared   \
         --enable-static    \
         --enable-debug  \
@@ -623,7 +628,7 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
     mkdir -p ${BuildDIR_lib}    
               
     #################################################################### 
-    #  CC=musl-gcc cmake -S ${OSG3RD_srcDir}/proj -B ${BuildDIR_lib}  
+    #  CC=musl-gcc cmake -S ${SrcDir_3rd}/proj -B ${BuildDIR_lib}  
     CMAKE_BUILD_TYPE=Debug
     # CMAKE_C_COMPILER=/usr/bin/musl-gcc   # /usr/bin/clang  # /usr/bin/gcc
     # CMAKE_CXX_COMPILER=/usr/bin/musl-gcc # /usr/bin/clang++  # /usr/bin/g++    
@@ -635,14 +640,15 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
     libssl_path=${INSTALL_PREFIX_3rd}/lib64/libssl.a 
     libcrypto_path=${INSTALL_PREFIX_3rd}/lib64/libcrypto.a
 
-    cmake -S ${OSG3RD_srcDir}/proj -B ${BuildDIR_lib} \
+
+    cmake -S ${SrcDir_3rd}/proj -B ${BuildDIR_lib} \
             -DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_3rd} \
+            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}  \
-            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DBUILD_SHARED_LIBS=OFF     \
             -DBUILD_TESTING=OFF \
@@ -655,6 +661,7 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
             -DSQLite3_DISABLE_DYNAMIC_EXTENSIONS=ON \
             -DCURL_DISABLE_ARES=ON  
 
+         
             # -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_3rd} \
             # -DOPENSSL_LIBRARIES="${libssl_path};${libcrypto_path}" \
             # -DCMAKE_SHARED_LINKER_FLAGS="-L${lib_dir} -ltiff -ljpeg -llzma -lz -L${lib64_dir} -lssl -lcrypto" \
@@ -719,14 +726,14 @@ if [ "${isFinished_build_libexpat}" != "true" ] ; then
 
     lib_dir=${INSTALL_PREFIX_3rd}/lib 
     
-    cmake -S ${OSG3RD_srcDir}/libexpat/expat -B ${BuildDIR_lib} \
+    cmake -S ${SrcDir_3rd}/libexpat/expat -B ${BuildDIR_lib} \
             -DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_3rd} \
+            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}  \
-            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_CXX_FLAGS="-fPIC" \
@@ -736,6 +743,7 @@ if [ "${isFinished_build_libexpat}" != "true" ] ; then
             -DEXPAT_BUILD_EXAMPLES=OFF \
             -DEXPAT_BUILD_DOCS=OFF \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
+ 
 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
     
@@ -764,14 +772,14 @@ if [ "${isFinished_build_protobuf}" != "true" ] ; then
 
     lib_dir=${INSTALL_PREFIX_3rd}/lib  
     
-    cmake -S ${OSG3RD_srcDir}/protobuf -B ${BuildDIR_lib} \
+    cmake -S ${SrcDir_3rd}/protobuf -B ${BuildDIR_lib} \
             -DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_3rd} \
+            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}  \
-            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_CXX_FLAGS="-fPIC" \
@@ -817,14 +825,14 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
     lib64_dir=${INSTALL_PREFIX_3rd}/lib64 
     _LINKER_FLAGS="-L${lib_dir} -lcurl -ltiff -ljpeg -lsqlite3 -lprotobuf -lpng -llzma -lz -L${lib64_dir} -lssl -lcrypto" \
     # -DCMAKE_STATIC_LINKER_FLAGS=${_LINKER_FLAGS}  -DCMAKE_EXE_LINKER_FLAGS=${_LINKER_FLAGS}  
-    cmake -S ${OSG3RD_srcDir}/gdal -B ${BuildDIR_lib} \
+    cmake -S ${SrcDir_3rd}/gdal -B ${BuildDIR_lib} \
             -DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_3rd} \
+            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_3rd}  \
-            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_CXX_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0 ${_LINKER_FLAGS}" \
@@ -870,7 +878,7 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
             -DGDAL_USE_JPEG_INTERNAL=OFF \
             -DHAVE_JPEGTURBO_DUAL_MODE_8_12=OFF
 
-
+            ##-DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_3rd} # 非交叉编译，不需要
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
     
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
@@ -878,4 +886,95 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
     echo "========== finished building gdal 4 ubuntu ========== " &&  sleep 2
 fi    
 
+# ##########################################################################
+# ##########################################################################
+#  src/
+# ########################################################################## 
+INSTALL_PREFIX_src=${BuildDir_ubuntu}/install/src
+SRC_srcDir=${Repo_ROOT}/src
+
+  
+mkdir -p ${INSTALL_PREFIX_src} 
+# -------------------------------------------------
+# osg 
+# -------------------------------------------------
+isFinished_build_osg=false
+if [ "${isFinished_build_osg}" != "true" ] ; then 
+    echo "========== building osg 4 ubuntu========== " &&  sleep 5
+
+    # 手动执行配置命令验证
+    BuildDIR_lib=${BuildDir_ubuntu}/3rd/gdal/build 
+    rm -fr ${BuildDIR_lib}
+    mkdir -p ${BuildDIR_lib}    
+
+    ####################################################################
+    CMAKE_BUILD_TYPE=Debug  #RelWithDebInfo
+    # CMAKE_C_COMPILER=/usr/bin/musl-gcc   # /usr/bin/clang  # /usr/bin/gcc
+    # CMAKE_CXX_COMPILER=/usr/bin/musl-gcc # /usr/bin/clang++  # /usr/bin/g++    
+
+    lib_dir=${INSTALL_PREFIX_3rd}/lib
+    lib64_dir=${INSTALL_PREFIX_3rd}/lib64 
+    _LINKER_FLAGS="-L${lib_dir} -lcurl -ltiff -ljpeg -lsqlite3 -lprotobuf -lpng -llzma -lz -L${lib64_dir} -lssl -lcrypto" \
+    # -DCMAKE_STATIC_LINKER_FLAGS=${_LINKER_FLAGS}  -DCMAKE_EXE_LINKER_FLAGS=${_LINKER_FLAGS}  
+    cmake -S ${SrcDir_3rd}/gdal -B ${BuildDIR_lib} \
+            -DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_3rd} \
+            -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX_3rd} \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_src}  \
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_CXX_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0 ${_LINKER_FLAGS}" \
+            -DCMAKE_C_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0 ${_LINKER_FLAGS}"   \
+            -DBUILD_SHARED_LIBS=OFF   \
+        -DDYNAMIC_OPENTHREADS=OFF \
+        -DDYNAMIC_OPENSCENEGRAPH=OFF \
+        -DOSG_GL1_AVAILABLE=OFF \
+        -DOSG_GL2_AVAILABLE=OFF \
+        -DOSG_GL3_AVAILABLE=OFF \
+        -DOSG_GLES1_AVAILABLE=OFF \
+        -DOSG_GLES2_AVAILABLE=OFF \
+        -DOSG_GLES3_AVAILABLE=ON \
+        -DOSG_GL_LIBRARY_STATIC=OFF \
+        -DOSG_GL_DISPLAYLISTS_AVAILABLE=OFF \
+        -DOSG_GL_MATRICES_AVAILABLE=OFF \
+        -DOSG_GL_VERTEX_FUNCS_AVAILABLE=OFF \
+        -DOSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE=OFF \
+        -DOSG_GL_FIXED_FUNCTION_AVAILABLE=OFF \
+        -DOPENGL_PROFILE="GLES3" \
+        -DANDROID=OFF \
+        -DOSG_FIND_3RD_PARTY_DEPS=ON \
+        -DCMAKE_C_FLAGS="-march=armv7-a -mfpu=neon -DOSG_GLES3_AVAILABLE=1" \
+        -DCMAKE_CXX_FLAGS="-std=c++14 -march=armv7-a -mfpu=neon -DOSG_GLES3_AVAILABLE=1" \
+        -DZLIB_DIR=/home/x12/work/3rd/zlib \
+        -DZLIB_INCLUDE_DIR=/home/x12/work/3rd/zlib/include \
+        -DZLIB_LIBRARY=/home/x12/work/3rd/zlib/lib/libz.a \
+        -DPNG_INCLUDE_DIR=/home/x12/work/3rd/png/include/libpng16 \
+        -DPNG_LIBRARY=/home/x12/work/3rd/png/lib/libpng.a \
+        -DJPEG_INCLUDE_DIR=/home/x12/work/3rd/jpeg/include \
+        -DJPEG_LIBRARY=/home/x12/work/3rd/jpeg/lib/libjpeg.a \
+        -DTIFF_INCLUDE_DIR=/home/x12/work/3rd/tiff/include \
+        -DTIFF_LIBRARY=/home/x12/work/3rd/tiff/lib/libtiff.a \
+        -DFREETYPE_DIR=/home/x12/work/3rd/freetype \
+        -DFREETYPE_INCLUDE_DIRS=/home/x12/work/3rd/freetype/include/freetype2 \
+        -DFREETYPE_LIBRARY=/home/x12/work/3rd/freetype/lib/libfreetype.a \
+        -DCURL_DIR=/home/x12/work/3rd/curl \
+        -DCURL_INCLUDE_DIR=/home/x12/work/3rd/curl/include \
+        -DCURL_LIBRARY=/home/x12/work/3rd/curl/lib/libcurl.a \
+        -DGDAL_DIR=/home/x12/work/3rd/gdal \
+        -DGDAL_INCLUDE_DIR=/home/x12/work/3rd/gdal/include \
+        -DGDAL_LIBRARY=/home/x12/work/3rd/gdal/lib/libgdal.a \
+        -DCMAKE_EXE_LINKER_FLAGS="-llog -landroid" \
+        -DGDAL_DIR:PATH="/home/x12/work/3rd/gdal/include"            
+            
+
+
+    cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
+    
+    cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
+    #################################################################### 
+    echo "========== finished building osg 4 ubuntu ========== " &&  sleep 2
+fi    
 
