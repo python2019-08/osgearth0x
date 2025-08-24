@@ -94,7 +94,7 @@
 [submodule "3rd/gdal"]
 	path = 3rd/gdal
 	url = https://github.com/OSGeo/gdal.git
-	branch = v32.0
+	branch = v3.8.5
 # ----------------------------------------------------------
 [submodule "3rd/osgdraco"]
 	path = 3rd/osgdraco
