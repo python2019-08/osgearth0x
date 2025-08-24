@@ -281,7 +281,7 @@ fi
 # -------------------------------------------------
 # curl
 # -------------------------------------------------
-isFinished_build_curl=false # false
+isFinished_build_curl=true # false
 INSTALL_PREFIX_curl=${INSTALL_PREFIX_ubt}/curl
  
 if [ "${isFinished_build_curl}" != "true" ] ; then 
@@ -345,10 +345,11 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
             -DCMAKE_INSTALL_DOCDIR=OFF \
             -DCURL_USE_PKGCONFIG=OFF \
             -DUSE_LIBIDN2=OFF \
-            -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}   \
             -DOPENSSL_USE_STATIC_LIBS=ON     \
             -DZLIB_USE_STATIC_LIBS=ON  
 
+
+            # -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}   \
             # -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include  \
             # -DOPENSSL_LIBRARIES=${INSTALL_PREFIX_openssl}/lib64/libssl.a; ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
             # -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
