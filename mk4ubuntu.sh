@@ -19,7 +19,7 @@ SrcDir_3rd=${Repo_ROOT}/3rd
 # -------------------------------------------------
 # zlib
 # -------------------------------------------------
-isFinished_build_zlib=true # false
+isFinished_build_zlib=false # false
 INSTALL_PREFIX_zlib=${INSTALL_PREFIX_ubt}/zlib
 
 if [ "${isFinished_build_zlib}" != "true" ]; then 
@@ -36,40 +36,44 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
     fi    
 
     #################################################################### 
-    # remark: 当前的 CMakeLists.txt中 未通过 target_compile_definitions 显式指定 ZLIB_DEBUG 宏。
-    # 
-    # 
-    # CMAKE_BUILD_TYPE=Debug
-    # CMAKE_C_COMPILER=/usr/bin/clang  # /usr/bin/gcc
+    # remark: zlib的 CMakeLists.txt中 未通过 target_compile_definitions 显式指定 ZLIB_DEBUG 宏,
+    #    可以用cmake_c_flags="-DZLIB_DEBUG=1"指定 :
+    # 编译时查看详细命令
+    # cmake ... -DCMAKE_C_FLAGS="-fPIC -DZLIB_DEBUG=1"
+    # make -C ${BuildDIR_lib} VERBOSE=1 
+    # 若输出的编译命令中包含 -DZLIB_DEBUG=1，则说明宏已成功定义。
+    #----------------------------------------------------   
+    CMAKE_BUILD_TYPE=Debug
+    CMAKE_C_COMPILER=/usr/bin/clang  # /usr/bin/gcc
     # CMAKE_CXX_COMPILER=/usr/bin/clang++  # /usr/bin/g++        
-    # cmake -S ${SrcDir_3rd}/zlib -B ${BuildDIR_lib} \
-    #         -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_zlib}  \
-    #         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
-    #         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}    \
-    #         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
-    #         -DBUILD_SHARED_LIBS=ON     \
-    #         -DZLIB_BUILD_SHARED=ON \
-    #         -DZLIB_BUILD_STATIC=ON  \
-    #         -DCMAKE_EXE_LINKER_FLAGS="-static" 
-    #
-    # cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
-    #
-    # cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
-    ####################################################################
- 
-    cd ${BuildDIR_lib}
-    #  --enable-debug  会自动添加 -DZLIB_DEBUG 宏）
-    CFLAGS="-fPIC" \
-    ${SrcDir_3rd}/zlib/configure \
-                --prefix=${INSTALL_PREFIX_zlib} \
-                --enable-debug  --static
+    cmake -S ${SrcDir_3rd}/zlib -B ${BuildDIR_lib} \
+            -DCMAKE_C_FLAGS="-fPIC -DZLIB_DEBUG=1"  \
+            -DCMAKE_EXE_LINKER_FLAGS="-static"   \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_zlib}  \
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
+            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}    \
+            -DBUILD_SHARED_LIBS=OFF     \
+            -DZLIB_BUILD_SHARED=OFF \
+            -DZLIB_BUILD_STATIC=ON 
+             
+    # cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
+    cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) --verbose
 
-    make  -j$(nproc)  
-    make install
+    cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
+    #################################################################### 
+    # cd ${BuildDIR_lib}
+    # ####  --enable-debug  会自动添加 -DZLIB_DEBUG 宏）
+    # CFLAGS="-fPIC" \
+    # ${SrcDir_3rd}/zlib/configure \
+    #             --prefix=${INSTALL_PREFIX_zlib} \
+    #             --enable-debug  --static
+    # 
+    # make  -j$(nproc)  
+    # make install
     echo "========== finished building zlib 4 ubuntu ========== " &&  sleep 2
 fi
 
-
+exit 
 
 # -------------------------------------------------
 # zstd
@@ -1117,8 +1121,8 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_src}  \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-            -DCMAKE_C_FLAGS="-fPIC  -DOSG_GLES3_AVAILABLE=1   ${_LINKER_FLAGS}"   \
-            -DCMAKE_CXX_FLAGS="-fPIC -std=c++14  -DOSG_GLES3_AVAILABLE=1 ${_LINKER_FLAGS}" \
+            -DCMAKE_C_FLAGS="-fPIC  -DOSG_GLES3_AVAILABLE=1"   \
+            -DCMAKE_CXX_FLAGS="-fPIC -std=c++14  -DOSG_GLES3_AVAILABLE=1" \
             -DBUILD_SHARED_LIBS=OFF   \
         -DDYNAMIC_OPENTHREADS=OFF \
         -DDYNAMIC_OPENSCENEGRAPH=OFF \
