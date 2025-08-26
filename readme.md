@@ -8,5 +8,12 @@ $ cd osgearth0x
 # $ git submodule update --init --recursive --progress -v
 $ chmod 777 ./git_clone_modules.sh  && ./git_clone_modules.sh 
 
-$ ./mk4ubuntu.sh  >b.txt 2>&1
+$   ./mk4ubuntu.sh  >b.txt 2>&1
 ```
+
+# 2. osg data url
+
+osg data download url:
+https://openscenegraph.github.io/OpenSceneGraphDotComBackup/OpenSceneGraph/www.openscenegraph.com/index.php/download-section/data.html
+
+[OpenSceneGraph-Data ](https://github.com/openscenegraph/OpenSceneGraph-Data.git)

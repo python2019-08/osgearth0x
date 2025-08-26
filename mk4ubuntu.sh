@@ -311,7 +311,7 @@ fi
 
 
 # -------------------------------------------------
-# libpsl
+# libpsl : is depended on by curl.
 # -------------------------------------------------
 INSTALL_PREFIX_psl=${INSTALL_PREFIX_ubt}/libpsl
 
@@ -343,7 +343,7 @@ if [ "${isFinished_build_libpsl}" != "true" ] ; then
     echo "========== Finished Building libpsl =========" &&  sleep 2
 fi
 
- 
+   
 
 # -------------------------------------------------
 # curl
@@ -360,9 +360,8 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
     cmk_prefixPath=$(check_concat_paths  "${INSTALL_PREFIX_openssl}" \
                 "${INSTALL_PREFIX_psl}" \
                 "${INSTALL_PREFIX_zlib}"  "${INSTALL_PREFIX_zstd}" )
-    # 
  
-    cmake -S ${SrcDir_3rd}/curl -B ${BuildDIR_lib} \
+    cmake -S ${SrcDir_3rd}/curl -B ${BuildDIR_lib} --debug-find \
             -DCMAKE_FIND_ROOT_PATH="${INSTALL_PREFIX_ubt}" \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
@@ -378,22 +377,30 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_C_FLAGS="-fPIC" \
             -DCMAKE_CXX_FLAGS="-fPIC" \
-            -DBUILD_SHARED_LIBS=OFF     \
+            -DBUILD_SHARED_LIBS=OFF \
             -DCURL_DISABLE_LDAP=ON     \
             -DCURL_DISABLE_FTP=ON       \
-            -DCURL_DISABLE_ZLIB=ON       \
             -DCURL_DISABLE_TELNET=ON      \
             -DCURL_DISABLE_DICT=ON       \
             -DCURL_DISABLE_FILE=ON      \
             -DCURL_DISABLE_TFTP=ON      \
-            -DENABLE_ARES=OFF  \
+            -DCURL_BROTLI=OFF  -DCURL_USE_LIBSSH2=OFF \
+            -DUSE_LIBIDN2=OFF  -DUSE_NGHTTP2=OFF \
+            -DCURL_ZLIB=ON  -DZLIB_USE_STATIC_LIBS=ON   -DCURL_ZSTD=ON \
             -DBUILD_DOCS=OFF \
             -DCMAKE_INSTALL_DOCDIR=OFF \
             -DCURL_USE_PKGCONFIG=OFF \
-            -DUSE_LIBIDN2=OFF \
-            -DOPENSSL_USE_STATIC_LIBS=ON     \
-            -DZLIB_USE_STATIC_LIBS=ON  
+            -DOPENSSL_USE_STATIC_LIBS=ON  \
+            -DZstd_LIBRARY="${INSTALL_PREFIX_zstd}/lib/libzstd.a"
 
+            # -DCMAKE_FIND_ROOT_PATH="${INSTALL_PREFIX_ubt}" \
+            # -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
+            # -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            # -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            # -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            # -DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=OFF \
+            # -DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=ON \
+            # -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
 
             # -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}   \
             # -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include  \
@@ -408,16 +415,16 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
             # -DZSTD_ROOT=${INSTALL_PREFIX_zstd} \
             # -DZSTD_LIBRARY=${INSTALL_PREFIX_zstd}/lib/libzstd.a 
 
-# -- hi..OpenSSL_FOUND=TRUE,,OPENSSL_LIBRARIES=/home/osg0/install/openssl/lib64/libssl.a;/home/osg0/install/openssl/lib64/libcrypto.a;dl
-# -- hi..OpenSSL::SSL library path: /home/osg0/install/openssl/lib64/libssl.a
-# -- hi..OpenSSL::Crypto library path: /home/osg0/install/openssl/lib64/libcrypto.a
+        # -- hi..OPENSSL_LIBRARIES=/home/osg0/install/openssl/lib64/libssl.a;/home/osg0/install/openssl/lib64/libcrypto.a;dl
+        # -- hi..OpenSSL::SSL library path: /home/osg0/install/openssl/lib64/libssl.a
+        # -- hi..OpenSSL::Crypto library path: /home/osg0/install/openssl/lib64/libcrypto.a
 
  
             # -DCMAKE_EXE_LINKER_FLAGS="-licuuc -licudata -licuio"  # 链接ICU相关静态库
-
+            
             # -DUSE_NGHTTP2=ON 
             # -DCURL_ZLIB=OFF  
-            # -DUSE_LIBIDN2=ON 
+            # -DCURL_ZSTD=OFF \ 
             # -DENABLE_IPV6=OFF
 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
@@ -967,12 +974,12 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
 
     #################################################################### 
     cmk_prefixPath=$(check_concat_paths_1  "${INSTALL_PREFIX_zlib}" \
-                "${INSTALL_PREFIX_xz}" "${INSTALL_PREFIX_png}" \
-                "${INSTALL_PREFIX_absl}" "${INSTALL_PREFIX_protobuf}" \
+                "${INSTALL_PREFIX_xz}"     "${INSTALL_PREFIX_png}" \
+                "${INSTALL_PREFIX_absl}"   "${INSTALL_PREFIX_protobuf}" \
                 "${INSTALL_PREFIX_jpegTurbo}"  "${INSTALL_PREFIX_openssl}" \ 
-                "${INSTALL_PREFIX_tiff}"  "${INSTALL_PREFIX_expat}" \
-                "${INSTALL_PREFIX_geos}" "${INSTALL_PREFIX_proj}"  \
-                "${INSTALL_PREFIX_curl}" "${INSTALL_PREFIX_sqlite}")
+                "${INSTALL_PREFIX_tiff}"   "${INSTALL_PREFIX_expat}" \
+                "${INSTALL_PREFIX_geos}"   "${INSTALL_PREFIX_proj}"  \
+                "${INSTALL_PREFIX_curl}"   "${INSTALL_PREFIX_sqlite}")
 
     echo "==========cmk_prefixPath=${cmk_prefixPath}"
     #  
@@ -1078,15 +1085,31 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
             "${INSTALL_PREFIX_tiff}" "${INSTALL_PREFIX_geos}"  "${INSTALL_PREFIX_psl}"\
             "${INSTALL_PREFIX_proj}"  "${INSTALL_PREFIX_expat}" "${INSTALL_PREFIX_freetype}" \
             "${INSTALL_PREFIX_curl}" "${INSTALL_PREFIX_sqlite}" "${INSTALL_PREFIX_gdal}")
-    echo "==========cmk_prefixPath=${cmk_prefixPath}"    
- 
-    # --debug-find
-    cmake -S ${SrcDir_src}/osg -B ${BuildDIR_lib}  \
-            -DCMAKE_FIND_ROOT_PATH="${INSTALL_PREFIX_ubt}" \
+    echo "==========cmk_prefixPath=${cmk_prefixPath}"   
+    # <<osg的间接依赖库>>
+    # 依赖关系：osg -->gdal-->curl-->libpsl， 所以OSG 的 CMake 配置需要确保在链接时
+    # （target_link_libraries）包含所有 cURL 所依赖的库(osg的间接依赖库)。
+    # 需要告诉 CMake，链接 libcurl-d.a时还需要哪些其他库。这通常在 CMakeLists.txt中通过 
+    # find_package(CURL)或直接修改链接标志来完成。​    ​最直接的方法是在您的 CMake 命令中，
+    # 通过CMAKE_EXE_LINKER_FLAGS 或 CMAKE_SHARED_LINKER_FLAGS 添加缺失的库。​ 
+    _exeLinkerFlags="-L${INSTALL_PREFIX_curl}/lib -lcurl-d"
+    _exeLinkerFlags="${_exeLinkerFlags} -L${INSTALL_PREFIX_psl}/lib -lpsl"
+    _exeLinkerFlags="${_exeLinkerFlags} -L${INSTALL_PREFIX_openssl}/lib64 -lssl -lcrypto"
+    _exeLinkerFlags="${_exeLinkerFlags} -L${INSTALL_PREFIX_zstd}/lib -lzstd"
+    _exeLinkerFlags="${_exeLinkerFlags} -ldl -lpthread"  # OpenSSL 的额外系统依赖 
+    echo "gg==========_exeLinkerFlags=${_exeLinkerFlags}" 
+    _curlLibs="${INSTALL_PREFIX_curl}/lib/libcurl-d.a;"
+    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib64/libssl.a;"
+    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a;"
+    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_psl}/lib/libpsl.a;"
+    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zstd}/lib/libzstd.a"
+    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zlib}/lib/libz.a"
+
+    echo "gg==========_curlLibs=${_curlLibs}" 
+    # --debug-find    --debug-output 
+    cmake -S ${SrcDir_src}/osg -B ${BuildDIR_lib}  --debug-find   \
+            -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
-            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH \
-            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osg}  \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
@@ -1110,40 +1133,60 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DOSG_GL_FIXED_FUNCTION_AVAILABLE=OFF \
         -DOPENGL_PROFILE="GL3" \
         -DANDROID=OFF \
-        -DOSG_FIND_3RD_PARTY_DEPS=ON \
-        -DCURL_DIR=${INSTALL_PREFIX_curl} \
-        -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include/curl \
-        -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a   
- 
-        
-        # -DZLIB_DIR=${INSTALL_PREFIX_zlib} \
-        # -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
-        # -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
-        # -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
-        # -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
-        # -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg \
-        # -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \
-        # -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include \
-        # -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
-        # -DFREETYPE_DIR=${INSTALL_PREFIX_freetype} \
-        # -DFREETYPE_INCLUDE_DIRS=${INSTALL_PREFIX_freetype}/include/freetype2 \
-        # -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetype.a \
-        # -DCURL_DIR=${INSTALL_PREFIX_curl} \
-        # -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include/curl \
-        # -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl.a \
-        # -DGDAL_DIR=${INSTALL_PREFIX_gdal}l \
-        # -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include \
-        # -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a          
-            
+        -DOSG_FIND_3RD_PARTY_DEPS=ON  \
+        -DZLIB_DIR=${INSTALL_PREFIX_zlib} \
+        -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+        -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
+        -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
+        -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
+        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg \
+        -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \
+        -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
+        -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL"  \
+        -DOpenSSL_ROOT="${INSTALL_PREFIX_openssl}" \
+        -DOpenSSL_USE_STATIC_LIBS=ON \
+        -DOpenSSL_SSL_LIBRARY="${INSTALL_PREFIX_openssl}/lib64/libssl.a" \
+        -DOpenSSL_CRYPTO_LIBRARY="${INSTALL_PREFIX_openssl}/lib64/libcrypto.a" \
+        -DOpenSSL_INCLUDE_DIR="${INSTALL_PREFIX_openssl}/include" \
+        -DOpenSSL_LIBRARIES="${INSTALL_PREFIX_openssl}/lib64/libssl.a;${INSTALL_PREFIX_openssl}/lib64/libcrypto.a;dl;pthread" \
+        -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include \
+        -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
+        -DFREETYPE_DIR=${INSTALL_PREFIX_freetype} \
+        -DFREETYPE_INCLUDE_DIRS=${INSTALL_PREFIX_freetype}/include/freetype2 \
+        -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
+        -DCURL_DIR="${INSTALL_PREFIX_curl}/lib/cmake/CURL" \
+        -DCURL_LIBRARY="${INSTALL_PREFIX_curl}/lib/libcurl-d.a" \
+        -DCURL_INCLUDE_DIR="${INSTALL_PREFIX_curl}/include" \
+        -DGDAL_DIR=${INSTALL_PREFIX_gdal}l \
+        -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include \
+        -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a    \
+        -DCMAKE_EXE_LINKER_FLAGS="${_exeLinkerFlags}" 
 
+        # -DOpenSSL_LIBRARY="${INSTALL_PREFIX_openssl}/lib64" \
+        # -DOpenSSL_INCLUDE_DIR="${INSTALL_PREFIX_openssl}/include"  \
+        # -DOpenSSL_SSL_LIBRARY="${INSTALL_PREFIX_openssl}/lib64/libssl.a" \
+        # -DOpenSSL_CRYPTO_LIBRARY="${INSTALL_PREFIX_openssl}/lib64/libcrypto.a" \
+        # -DOpenSSL_ROOT_DIR="${INSTALL_PREFIX_openssl}" \
+        # -DOpenSSL_LIBRARIES="${INSTALL_PREFIX_openssl}/lib64/libssl.a; ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a" \
+        # -DCURL_LIBRARIES="${_curlLibs}" \
+
+        # -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+        # -DCMAKE_FIND_ROOT_PATH="${INSTALL_PREFIX_ubt}" \
+        # -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
+        # -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH \
+        # -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH \
+        # -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+
+        #  
         # -DCMAKE_STATIC_LINKER_FLAGS=${_LINKER_FLAGS}  
-        # -DCMAKE_EXE_LINKER_FLAGS=${_LINKER_FLAGS}  
-
+ 
+ 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
     
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
     #################################################################### 
-    echo "========== finished building osg 4 ubuntu ========== " &&  sleep 2
+    echo "========== finished building osg 4 ubuntu ========== " &&  sleep 2 
+
 fi    
 
 exit 11
