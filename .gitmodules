@@ -81,6 +81,11 @@
 	url = https://github.com/libexpat/libexpat.git
 	branch = R_2_7_1
  
+[submodule "3rd/abseil-cpp"]
+	path = 3rd/abseil-cpp
+	url = https://github.com/abseil/abseil-cpp.git
+	branch = 20250512.1
+
 [submodule "3rd/protobuf"]
 	path = 3rd/protobuf
 	url = https://github.com/protocolbuffers/protobuf.git
