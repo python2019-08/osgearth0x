@@ -1,7 +1,7 @@
 build/
 build_by_sh/ 
 tmp.md
-a.txt
+b*.txt
 data/osgdata340/
 
 3rd/zlib 
