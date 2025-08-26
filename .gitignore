@@ -20,6 +20,7 @@ data/osgdata340/
 3rd/sqlite 
 3rd/proj
 3rd/libexpat 
+3rd/abseil-cpp
 3rd/protobuf 
 3rd/json-c 
 3rd/gdal 
