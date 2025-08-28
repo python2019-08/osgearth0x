@@ -1166,7 +1166,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
         -DFREETYPE_LIBRARIES=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
         -DCURL_DIR="${INSTALL_PREFIX_curl}/lib/cmake/CURL" \
-        -DCURL_LIBRARY="${INSTALL_PREFIX_curl}/lib/libcurl-d.a" \
+        -DCURL_LIBRARY=CURL::libcurl \
         -DCURL_LIBRARIES="_curlLibs" \
         -DCURL_INCLUDE_DIR="${INSTALL_PREFIX_curl}/include" \
         -DGDAL_DIR=${INSTALL_PREFIX_gdal}l \
@@ -1174,7 +1174,12 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a    \
         -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  
         
- 
+        # （1）关于-DCURL_LIBRARY="CURL::libcurl" ：
+        #  -DCURL_LIBRARY="${INSTALL_PREFIX_curl}/lib/libcurl-d.a" \
+        #  -DCURL_LIBRARIES="CURL::libcurl" ## 根据一般的规则，ok
+        #  -DCURL_LIBRARY="CURL::libcurl" ##  特定于osg项目，是ok的，因为osg/src/osgPlugins/curl/CMakeLists.txt中
+        #     SET(TARGET_LIBRARIES_VARS   CURL_LIBRARY     ZLIB_LIBRARIES)用的是CURL_LIBRARY而不是CURL_LIBRARIES
+
         # remark: ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/ZLIBConfig.cmake只提供了 ZLIB::ZLIBstatic
         #        /usr/share/cmake-3.28/Modules/FindZLIB.cmake 提供了 ZLIB::ZLIB
         #       所以作为workaround，这里使用/usr/share/cmake-3.28/Modules/FindZLIB.cmake
@@ -1203,7 +1208,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
  
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
     
-    # cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
+    cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
     #################################################################### 
     echo "========== finished building osg 4 ubuntu ========== " &&  sleep 1 
 
