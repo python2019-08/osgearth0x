@@ -1112,6 +1112,9 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zlib}/lib/libz.a"
     echo "gg==========_curlLibs=${_curlLibs}" 
 
+ 
+ 
+    
     # --debug-find    --debug-output 
     cmake -S ${SrcDir_src}/osg -B ${BuildDIR_lib}  --debug-find   \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
@@ -1172,19 +1175,31 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DGDAL_DIR=${INSTALL_PREFIX_gdal}l \
         -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include \
         -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a    \
-        -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  
+        -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  \
+        -DCMAKE_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/13" \
+        -DNO_DEFAULT_PATH=ON \
+        -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+        -DCMAKE_EXE_LINKER_FLAGS="\
+            -Wl,--whole-archive \
+            /usr/lib/gcc/x86_64-linux-gnu/13/libstdc++.a \
+            -Wl,--no-whole-archive \
+            -Wl,-Bdynamic -lm -lc -lGL -lGLU -lX11 -ldl"
         
-        # （1）关于-DCURL_LIBRARY="CURL::libcurl" ：
-        #  -DCURL_LIBRARY="${INSTALL_PREFIX_curl}/lib/libcurl-d.a" \
+        
+        # (1)关于-DCURL_LIBRARY="CURL::libcurl" ：
+        #  -DCURL_LIBRARY="${INSTALL_PREFIX_curl}/lib/libcurl-d.a"  ## 根据一般的规则，ok
         #  -DCURL_LIBRARIES="CURL::libcurl" ## 根据一般的规则，ok
         #  -DCURL_LIBRARY="CURL::libcurl" ##  特定于osg项目，是ok的，因为osg/src/osgPlugins/curl/CMakeLists.txt中
-        #     SET(TARGET_LIBRARIES_VARS   CURL_LIBRARY     ZLIB_LIBRARIES)用的是CURL_LIBRARY而不是CURL_LIBRARIES
+        #     ## SET(TARGET_LIBRARIES_VARS   CURL_LIBRARY     ZLIB_LIBRARIES)用的是CURL_LIBRARY而不是CURL_LIBRARIES
 
-        # remark: ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/ZLIBConfig.cmake只提供了 ZLIB::ZLIBstatic
+        # (2)remark: ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/ZLIBConfig.cmake只提供了 ZLIB::ZLIBstatic
         #        /usr/share/cmake-3.28/Modules/FindZLIB.cmake 提供了 ZLIB::ZLIB
         #       所以作为workaround，这里使用/usr/share/cmake-3.28/Modules/FindZLIB.cmake
         # -DCMAKE_EXE_LINKER_FLAGS="${_exeLinkerFlags}" 
         
+        # (3)Glibc 的某些函数（如网络相关）在静态链接时需要动态库支持,使用libc.a和libm.a会导致 collect2: error: ld returned 1 exit status
+        #     
+        # (4)
         # -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
 
         # -DOpenSSL_LIBRARY="${INSTALL_PREFIX_openssl}/lib64" \
