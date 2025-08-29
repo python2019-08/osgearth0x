@@ -600,3 +600,124 @@ https://github.com/openscenegraph/OpenSceneGraph.git的cmakelists.txt中 OpenSce
 简单说：`OpenSceneGraph_SOURCE_DIR` 是 CMake 自动生成的“源目录标识变量”，其值默认来源于 `-S` 参数，无需手动在 `CMakeLists.txt` 中定义。
 
 ## OpenSceneGraph_SOURCE_DIR  Project_SOURCE_DIR CMake_SOURCE_DIR ？
+
+# 6.  ​​混合链接模式​​
+
+## 问题：
+
+```sh
+$ ls /usr/lib/x86_64-linux-gnu/libGLU.a
+/usr/lib/x86_64-linux-gnu/libGLU.a
+```
+所以可以写成
+```cmake
+cmake -S ${SrcDir_src}/osg -B ${BuildDIR_lib} \
+  # 保留其他配置...
+  # 修改OpenGL相关配置
+  -DBUILD_SHARED_LIBS=ON \
+  -DOPENGL_PROFILE="GL3" \
+  -DOPENGL_GLX_LIBRARY="/usr/lib/x86_64-linux-gnu/libGL.so" \
+  -DOPENGL_glu_LIBRARY="/usr/lib/x86_64-linux-gnu/libGLU.a" \
+  # 其他库保持静态
+  -DZLIB_USE_STATIC_LIBS=ON \
+  -DZLIB_LIBRARY="${INSTALL_PREFIX_zlib}/lib/libz.a"
+```  
+## 腾讯元宝
+
+您的思路是正确的！既然系统提供了 `libGLU.a` 静态库但缺少 `libGL.a` 静态库，可以采用 **混合链接模式**。以下是优化后的完整方案：
+
+---
+
+### **1. 最终修正方案**
+```bash
+cmake -S ${SrcDir_src}/osg -B ${BuildDIR_lib} \
+  # 保留所有原有配置...
+  # 关键修改如下：
+  -DBUILD_SHARED_LIBS=OFF \
+  -DOPENGL_PROFILE="GL3" \
+  -DOPENGL_GLX_LIBRARY="/usr/lib/x86_64-linux-gnu/libGL.so" \  # 动态链接GL
+  -DOPENGL_glu_LIBRARY="/usr/lib/x86_64-linux-gnu/libGLU.a" \  # 静态链接GLU
+  # 显式指定链接策略
+  -DCMAKE_EXE_LINKER_FLAGS="\
+    -Wl,-Bstatic -lGLU \
+    -Wl,-Bdynamic -lGL \
+    -Wl,--as-needed"
+```
+
+---
+
+### **2. 技术原理**
+| 库           | 链接方式      | 必要性说明                     |
+|--------------|-------------|------------------------------|
+| **libGL**    | 动态链接(`.so`) | 系统通常不提供静态版，必须动态链接 |
+| **libGLU**   | 静态链接(`.a`)  | 利用系统提供的静态库             |
+| **其他依赖**  | 静态链接       | 保持部署独立性                  |
+
+---
+
+### **3. 验证方法**
+构建后检查：
+```bash
+# 检查libGL链接方式
+ldd ${BuildDIR_lib}/bin/osgviewer | grep libGL
+# 应显示动态链接：libGL.so.1 => /usr/lib/x86_64-linux-gnu/libGL.so.1
+
+# 检查libGLU是否静态链接
+nm ${BuildDIR_lib}/bin/osgviewer | grep gluBeginCurve
+# 应显示符号来自静态库：T gluBeginCurve
+```
+
+---
+
+### **4. 异常处理**
+如果链接失败，尝试以下调整：
+```bash
+# 添加X11依赖（GL需要）
+-DCMAKE_EXE_LINKER_FLAGS="${
+  CMAKE_EXE_LINKER_FLAGS} -lX11 -lXext -ldl -lpthread"
+
+# 确保链接顺序正确
+-DCMAKE_LINK_LIBRARY_FLAG="-Wl,--start-group" \
+-DCMAKE_LINK_LIBRARY_AFTER_FLAG="-Wl,--end-group"
+```
+
+---
+
+### **5. 完整示例**
+```bash
+cmake -S ${SrcDir_src}/osg -B ${BuildDIR_lib} \
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  # OpenGL配置
+  -DOPENGL_PROFILE="GL3" \
+  -DOPENGL_GLX_LIBRARY="/usr/lib/x86_64-linux-gnu/libGL.so" \
+  -DOPENGL_glu_LIBRARY="/usr/lib/x86_64-linux-gnu/libGLU.a" \
+  # 其他静态库
+  -DZLIB_LIBRARY="${INSTALL_PREFIX_zlib}/lib/libz.a" \
+  -DPNG_LIBRARY="${INSTALL_PREFIX_png}/lib/libpng.a" \
+  # 链接控制
+  -DCMAKE_EXE_LINKER_FLAGS="\
+    -Wl,-Bstatic -lGLU -lz -lpng \
+    -Wl,-Bdynamic -lGL -lX11 -ldl \
+    -Wl,--no-as-needed"
+```
+
+---
+
+### **6. 各平台注意事项**
+| 系统           | 解决方案差异                     |
+|---------------|--------------------------------|
+| **Ubuntu/Debian** | 需要安装 `libgl1-mesa-dev` 和 `libglu1-mesa-dev` |
+| **CentOS/RHEL**  | 包名为 `mesa-libGL-devel` 和 `mesa-libGLU-devel` |
+| **Arch Linux**   | 安装 `mesa` 和 `glu` 包          |
+
+---
+
+### **总结**
+您的混合链接方案完全可行，且是Linux下处理此类问题的最佳实践。最终效果：
+- **libGL.so**：动态链接（系统强制要求）
+- **libGLU.a**：静态链接（利用系统提供的静态库）
+- **其他依赖**：全静态链接（保证可移植性）
+
+这种组合既满足了部署独立性要求，又兼容了Linux图形栈的现实限制。
