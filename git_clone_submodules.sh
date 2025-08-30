@@ -106,3 +106,22 @@ git switch -c  v3.8.5
 cd ../../
 
 # git clone  https://github.com/google/draco.git  3rd/osgdraco
+
+
+git clone https://github.com/openscenegraph/OpenSceneGraph.git  src/osg
+# cd ./src/osg 
+# git switch -c  v3.8.5-???
+# cd ../../
+
+
+git clone https://github.com/nih-at/libzip.git 3rd/libzip
+cd ./3rd/libzip 
+git switch -c  v1.11.4
+cd ../../
+
+
+git clone https://github.com/gwaldron/osgearth.git src/osgearth
+cd ./src/osgearth 
+git submodule update --init --recursive
+# git switch -c  v3.8.5-???
+# cd ../../

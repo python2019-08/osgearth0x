@@ -106,3 +106,9 @@
 	url = https://github.com/google/draco.git
 	branch = 1.5.7
 
+[submodule "3rd/libzip"]
+	path = 3rd/libzip
+	url = https://github.com/nih-at/libzip.git
+	branch = v1.11.4
+
+	

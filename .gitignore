@@ -25,6 +25,6 @@ data/osgdata340/
 3rd/json-c 
 3rd/gdal 
 3rd/osgdraco
-
 src/osg
+3rd/libzip/
 src/osgearth

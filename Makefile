@@ -1,7 +1,9 @@
 
 src:=. 
 
- 
+#-- refer to "3rd/zstd/Makefile"
+.PHONY: default
+default: clean ubuntu osg 
 ################################################################################
 #
 # Build ubuntu
@@ -9,9 +11,8 @@ src:=.
 LOCAL_CMAKE_SOURCE_DIR=$(PWD)
 LOCAL_CMAKE_BINARY_DIR=$(PWD)/build/ubuntu
 
-.PHONY: ubuntu clean osg
-
-ubuntu:ubuntu/build   ubuntu/install
+  
+ubuntu:ubuntu/build/clean ubuntu/build   ubuntu/install
 clean: ubuntu/build/clean
 
 ubuntu/build:ubuntu/build/configure ubuntu/build/do-build
@@ -36,6 +37,7 @@ ubuntu/install:
 osg:
 	rm -fr build/ubuntu-osg
 	cd src/osg
+	### below cmd use the 3rdParty libs that is system libs.
 	cmake -Ssrc/osg -Bbuild/ubuntu-osg  -DOPENGL_PROFILE=GL3  \
 			-DOSG_GL_CONTEXT_VERSION=4.6   -DCMAKE_BUILD_TYPE=Debug  \
 			-DBUILD_SHARED_LIBS=OFF  -DDYNAMIC_OPENSCENEGRAPH=OFF -DDYNAMIC_OPENTHREADS=OFF
