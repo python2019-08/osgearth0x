@@ -8,10 +8,17 @@ isTest2=false
 vSameName="docs/test01"
 if [ "${isTest1}" != "true" ] && \
    [ "${isTest2}" = "true"  ] ; then 
+   
     echo "==== in docs/test01.sh: 1" &&  sleep 1
 fi
- 
 
+# 
+if true; then
+     val01="jjjj"
+fi
+echo "==== in docs/test01.sh: $val01" 
+
+# 
 if [ "${isTest1}" != "true" ] && [ "${isTest2}" = "true"  ] ; then 
      echo "========== in docs/test01.sh: 2" &&  sleep 1
 fi
