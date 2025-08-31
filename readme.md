@@ -1,4 +1,4 @@
-# 1. how to build
+# 1. how to build on ubuntu 24.04
 
 ## 1.1 use mk4ubuntu.sh to build 
 ```sh
@@ -18,3 +18,19 @@ osg data download url:
 https://openscenegraph.github.io/OpenSceneGraphDotComBackup/OpenSceneGraph/www.openscenegraph.com/index.php/download-section/data.html
 
 [OpenSceneGraph-Data ](https://github.com/openscenegraph/OpenSceneGraph-Data.git)
+
+
+# 3. about cmake/FindZLIB.cmake 
+
+cmake/FindZLIB.cmake is copy from  /usr/share/cmake-3.28/Modules/FindZLIB.cmake of  ubuntu 24.04
+```sh
+#---- on ubuntu 24.04 
+$ cp /usr/share/cmake-3.28/Modules/FindZLIB.cmake  ./cmake/
+```
+
+# 4.cmake/FindSQLite3.cmake
+cmake/FindSQLite3.cmake is copy from  /usr/share/cmake-3.28/Modules/FindSQLite3.cmake of  ubuntu 24.04
+```sh
+#---- on ubuntu 24.04 
+ cp /usr/share/cmake-3.28/Modules/FindSQLite3.cmake  ./cmake/
+``` 
