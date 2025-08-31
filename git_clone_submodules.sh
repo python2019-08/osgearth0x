@@ -120,6 +120,16 @@ git switch -c  v1.11.4
 cd ../../
 
 
+# git clone https://github.com/gabime/spdlog.git  3rd/spdlog
+# cd 3rd/spdlog
+# git switch -c  v1.11.4
+# cd ../../
+# # 编译并安装
+# cmake .. -DSPDLOG_BUILD_EXAMPLE=OFF  # 禁用示例程序
+# make -j$(nproc)
+# sudo make install
+
+
 git clone https://github.com/gwaldron/osgearth.git src/osgearth
 cd ./src/osgearth 
 git submodule update --init --recursive

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+
+CMAKE_MAKE_PROGRAM=${ANDROID_NDK}/prebuilt/linux-x86_64/bin/make
+
 Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 
 

@@ -12,4 +12,6 @@ source ./test01.sh
 echo "in  docs/test02.sh :vSameName=${vSameName}" 
 
 
+
+
 exit 11 
