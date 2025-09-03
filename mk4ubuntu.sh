@@ -24,7 +24,7 @@ isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true
 isFinished_build_gdal=true
-isFinished_build_osg=false
+isFinished_build_osg=true
 isFinished_build_zip=true
 isFinished_build_osgearth=false
 
@@ -1240,7 +1240,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DOPENGL_EGL_INCLUDE_DIR=/usr/include/EGL            \
         -DOPENGL_INCLUDE_DIR=/usr/include/GL                  \
         -DOPENGL_gl_LIBRARY=/usr/lib/x86_64-linux-gnu/libGL.so \
-        -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config \
+        -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config             \
         -DOSG_FIND_3RD_PARTY_DEPS=ON  \
         -DZLIB_USE_STATIC_LIBS=ON \
         -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
@@ -1298,9 +1298,9 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         #    而 lib/cmake/PNG/PNGConfig.cmake 中 没提供PNG_LIBRARY
         #    所以 cmake -S -B 必须添加 -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a
         # (6)针对cmakeCommonParams，特化设置：
-        #    -DEGL_LIBRARY=... -DEGL_INCLUDE_DIR=... -DEGL_LIBRARY=...
-        #    -DOPENGL_EGL_INCLUDE_DIR=...  -DOPENGL_INCLUDE_DIR=... -DOPENGL_gl_LIBRARY= 
-
+        #    -DEGL_LIBRARY=  -DEGL_INCLUDE_DIR=  -DEGL_LIBRARY= 
+        #    -DOPENGL_EGL_INCLUDE_DIR=  -DOPENGL_INCLUDE_DIR=  -DOPENGL_gl_LIBRARY=
+        #    -DPKG_CONFIG_EXECUTABLE= 
 
         # -DBoost_ROOT=${INSTALL_PREFIX_boost}  \ ## 现代CMake（>=3.12）官方标准
         # -DBOOST_ROOT=${INSTALL_PREFIX_boost}  \ ## 旧版兼容（FindBoost.cmake传统方式）
@@ -1318,7 +1318,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
 
 fi    
 
-exit 11 
+ 
 # -------------------------------------------------
 # libzip 
 # ------------------------------------------------- 
