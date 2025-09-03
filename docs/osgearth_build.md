@@ -97,3 +97,5 @@ readelf -d libosgEarth.so.3.7.3 | grep RPATH
 - **`-Wl,-rpath` 的作用**：指定程序运行时加载动态库的路径。
 - **在您的命令中**：它确保 `libosgEarth.so` 运行时能正确找到 Miniconda、libpng 和 HDF5 的库。
 - **关键区别**：`-L` 用于链接时，`-rpath` 用于运行时。
+
+===================================================
