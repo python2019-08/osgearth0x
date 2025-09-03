@@ -15,6 +15,8 @@
         "wfs": "cpp",
         "xyzfeaturesource": "cpp",
         "groundcoverfeaturesource": "cpp",
-        "nodegraph": "cpp"
+        "nodegraph": "cpp",
+        "export": "c",
+        "pointsprite": "cpp"
     }
 }
