@@ -1296,7 +1296,10 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         # -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
         # (5) osg/src/osgPlugins/png/CMakeLists.txt中强制 SET(TARGET_LIBRARIES_VARS PNG_LIBRARY ZLIB_LIBRARIES )
         #    而 lib/cmake/PNG/PNGConfig.cmake 中 没提供PNG_LIBRARY
-        #     所以 cmake -S -B 必须添加 -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a
+        #    所以 cmake -S -B 必须添加 -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a
+        # (6)针对cmakeCommonParams，特化设置：
+        #    -DEGL_LIBRARY=... -DEGL_INCLUDE_DIR=... -DEGL_LIBRARY=...
+        #    -DOPENGL_EGL_INCLUDE_DIR=...  -DOPENGL_INCLUDE_DIR=... -DOPENGL_gl_LIBRARY= 
 
 
         # -DBoost_ROOT=${INSTALL_PREFIX_boost}  \ ## 现代CMake（>=3.12）官方标准
