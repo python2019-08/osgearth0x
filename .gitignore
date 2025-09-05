@@ -26,6 +26,6 @@ data/osgdata340/
 3rd/gdal 
 3rd/osgdraco
 3rd/boost/
-src/osg
+3rd/osg
 3rd/libzip/
-src/osgearth
+3rd/osgearth

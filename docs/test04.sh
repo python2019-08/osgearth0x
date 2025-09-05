@@ -61,3 +61,18 @@ cmk_prefixPath1="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_xz};${INSTALL_PREFIX_jp
                  ${INSTALL_PREFIX_openssl};${INSTALL_PREFIX_curl};${INSTALL_PREFIX_sqlite}"
 
 echo "cmk_prefixPath1=${cmk_prefixPath1}"
+
+
+echo "----------------------------------------"
+set -x
+
+if [ -n "${PKG_CONFIG_PATH}" ]; then
+export PKG_CONFIG_PATH="/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osg/lib/pkgconfig:$PKG_CONFIG_PATH"
+else
+export PKG_CONFIG_PATH="/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osg/lib/pkgconfig"
+fi
+
+echo $PKG_CONFIG_PATH
+pkg-config --libs  openscenegraph-osg
+
+set +x

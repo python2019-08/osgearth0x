@@ -17,6 +17,10 @@
         "groundcoverfeaturesource": "cpp",
         "nodegraph": "cpp",
         "export": "c",
-        "pointsprite": "cpp"
+        "pointsprite": "cpp",
+        "gl": "cpp",
+        "iostream": "cpp",
+        "version": "cpp",
+        "argumentparser": "cpp"
     }
 }
