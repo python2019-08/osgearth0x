@@ -1,8 +1,39 @@
 #!/bin/bash
+# **************************************************************************
+# false  ;;;   ./mk4ubuntu.sh  >b0.txt 2>&1
+isRebuild=true
 
+isFinished_build_zlib=true
+isFinished_build_zstd=true
+isFinished_build_openssl=true  
+# isFinished_build_icu=true  
+# isFinished_build_libidn2=true 
+isFinished_build_libpsl=true  
+isFinished_build_curl=true   # false
+# isFinished_build_jpeg9f=true  
+isFinished_build_libjpegTurbo=true  
+isFinished_build_libpng=true 
+isFinished_build_xz=true  
+isFinished_build_libtiff=true 
+isFinished_build_freetype=true  
+isFinished_build_geos=true     # false
+isFinished_build_sqlite=true  
+isFinished_build_proj=true 
+isFinished_build_libexpat=true  
+isFinished_build_absl=true
+isFinished_build_protobuf=true
+isFinished_build_boost=true
+isFinished_build_gdal=true
+isFinished_build_osg=true
+isFinished_build_zip=true
+isFinished_build_osgearth=false
 
+CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=${ANDROID_NDK}/prebuilt/linux-x86_64/bin/make
+CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
+CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
 
+# **************************************************************************
 Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 
 
@@ -52,17 +83,7 @@ if [ "${isFinished_build_zlib}" != "true" ] ; then
     #
     # cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
     ####################################################################
- 
-    cd ${BuildDIR_lib}
-    #  --enable-debug  会自动添加 -DZLIB_DEBUG 宏）
-    CFLAGS="-fPIC" \
-    ${OSG3RD_srcDir}/zlib/configure \
-                --prefix=${OSG3RD_INSTALL_PREFIX_ubuntu} \
-                --enable-debug  --static
-
-    make  -j$(nproc)  
-    make install
-    echo "========== finished building zlib 4 ubuntu ========== " &&  sleep 3
+  
 fi
 
 
