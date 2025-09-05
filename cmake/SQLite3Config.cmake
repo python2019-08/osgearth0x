@@ -1,3 +1,4 @@
+#----------example by 腾讯元宝----------
 # SQLite3Config.cmake
 include(CMakeFindDependencyMacro)
 
