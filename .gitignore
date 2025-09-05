@@ -16,13 +16,13 @@ data/osgdata340/
 3rd/xz 
 3rd/libtiff 
 3rd/freetype 
-3rd/geos 
+3rd/geos
 3rd/sqlite 
 3rd/proj
 3rd/libexpat 
 3rd/abseil-cpp
 3rd/protobuf 
-3rd/json-c 
+3rd/json-c
 3rd/gdal 
 3rd/osgdraco
 3rd/boost/

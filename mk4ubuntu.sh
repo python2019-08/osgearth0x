@@ -546,7 +546,8 @@ if [ "${isFinished_build_libpng}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_png} \
             -DZLIB_ROOT="${INSTALL_PREFIX_zlib}" \
-            -DPNG_SHARED=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DPNG_SHARED=OFF \
             -DPNG_STATIC=ON   
             
             # -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
@@ -1436,9 +1437,10 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
             -DCMAKE_CXX_FLAGS="-fPIC -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG" \
             -DBUILD_SHARED_LIBS=OFF   \
         -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=OFF \
+        -DCMAKE_SKIP_RPATH=ON  \
         -DANDROID=OFF \
         -DDYNAMIC_OPENTHREADS=OFF     -DDYNAMIC_OPENSCENEGRAPH=OFF \
-        -DOSGEARTH_ENABLE_FASTDXT=OFF -DOSGEARTH_BUILD_EXAMPLES=OFF \
+        -DOSGEARTH_ENABLE_FASTDXT=OFF -DOSGEARTH_BUILD_EXAMPLES=ON \
         -DOSG_GL1_AVAILABLE=OFF \
         -DOSG_GL2_AVAILABLE=OFF \
         -DOSG_GL3_AVAILABLE=ON \
@@ -1494,10 +1496,10 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
         -DSSL_EAY_RELEASE=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
         -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
         -DLIB_EAY_RELEASE=""  \
-    -DCMAKE_EXE_LINKER_FLAGS=" \
-        -Wl,--whole-archive  -fvisibility=hidden   -Wl,--no-whole-archive   \
-        -Wl,-Bdynamic -lstdc++  -lGL -lGLU -ldl -lm -lc -lpthread -lrt     \
-        -Wl,--no-as-needed -lX11 -lXext "  
+        -DCMAKE_EXE_LINKER_FLAGS=" \
+          -Wl,--whole-archive  -fvisibility=hidden   -Wl,--no-whole-archive   \
+          -Wl,-Bdynamic -lstdc++  -lGL -lGLU -ldl -lm -lc -lpthread -lrt     \
+          -Wl,--no-as-needed -lX11 -lXext "  
    
  
         # (1) osgearth ->GEOS::geos_c ; osgearth -> gdal -> GEOS::GEOS

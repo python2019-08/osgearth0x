@@ -532,6 +532,7 @@ cp new_lib.so old_lib.so
 ========================================================
 # 4. cmake 调试语句汇总
 
+## 1. get_target_property(SSL_LIB01   OpenSSL::SSL   LOCATION)
 ```sh
 if(CURL_USE_OPENSSL)
   message(STATUS "haha....OPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}") ## added-by-Abner
@@ -550,7 +551,33 @@ if(CURL_USE_OPENSSL)
 
 endif(CURL_USE_OPENSSL)
 ```  
+## 2.get_target_properties 获取某个target 链接的库
+### 一、核心原理：明确目标链接库的属性类型
+CMake 中，目标的链接库通过 `target_link_libraries` 命令设置，且分为 **3种作用域**，对应不同的 CMake 属性，查询时需针对性使用：
 
+| 链接库作用域 | 说明 | 对应 CMake 属性 | 适用场景 |
+|--------------|------|----------------|----------|
+| `PRIVATE`    | 仅目标自身编译/链接时使用，不传递给依赖该目标的其他目标 | `LINK_LIBRARIES` | 目标内部依赖的库（如工具类库） |
+| `PUBLIC`     | 目标自身使用 + 传递给依赖该目标的其他目标（依赖方需链接） | `INTERFACE_LINK_LIBRARIES` | 目标对外暴露的核心依赖（如 GDAL 依赖的 PROJ、GEOS） |
+| `INTERFACE`  | 仅传递给依赖该目标的其他目标，目标自身不使用 | `INTERFACE_LINK_LIBRARIES` | 接口库（如仅提供头文件的库） |
+
+> 关键结论：  
+> - 查 **目标自身链接的所有库**（含 PRIVATE/PUBLIC）：用 `LINK_LIBRARIES` 属性；  
+> - 查 **目标对外传递的库**（含 PUBLIC/INTERFACE）：用 `INTERFACE_LINK_LIBRARIES` 属性；  
+> - 查 **最终需要链接的所有库**（含传递依赖）：需结合 `LINK_LIBRARIES` + `INTERFACE_LINK_LIBRARIES`，或用 `get_link_dependencies`（CMake 3.19+）。
+
+
+### 二、具体操作步骤
+#### 1. 基础用法：通过 `get_target_property` 查询单个属性
+`get_target_property` 是查询目标属性的核心命令，语法如下：
+```cmake
+get_target_property(<输出变量> <目标名> <属性名>)
+```
+- `<输出变量>`：存储查询结果的变量（若查询失败，变量会被设为 `NOTFOUND`）；  
+- `<目标名>`：要查询的目标（如你示例中的 `GDAL::GDAL` 或 `${GDAL_LIB_TARGET_NAME}`）；  
+- `<属性名>`：需查询的属性（如 `LINK_LIBRARIES` 或 `INTERFACE_LINK_LIBRARIES`）。
+
+#### 例1
 ```sh
 add_executable(${EXE_NAME} ${CURL_CFILES} 
         ${CURL_HFILES} ${_curl_cfiles_gen} 
@@ -562,7 +589,7 @@ add_executable(${EXE_NAME} ${CURL_CFILES}
 get_target_property(DIRECT_LIBS ${EXE_NAME}  LINK_LIBRARIES)
 # 获取目标的传递性依赖库
 get_target_property(INTERFACE_LIBS ${EXE_NAME}  INTERFACE_LINK_LIBRARIES)
-message(STATUS "hi----target=${EXE_NAME} :directLibs=${DIRECT_LIBS}===interfaceLibs=${INTERFACE_LINK_LIBRARIES}")
+message(STATUS "hi----target=${EXE_NAME}:directLibs=${DIRECT_LIBS};;interfaceLibs=${INTERFACE_LINK_LIBRARIES}")
 #-----------
 # 合并结果（需处理空值）
 set(ALL_LIBS)
@@ -575,11 +602,31 @@ endif()
 
 # 去重（可选）
 list(REMOVE_DUPLICATES ALL_LIBS)
-
 # 打印结果
 message(STATUS "haha----All linked libraries--${EXE_NAME} : ${ALL_LIBS}")
-```
+``` 
+ 
+  
 
+### 三、常见问题与注意事项
+1. **查询结果为 `NOTFOUND`？**  
+   - 检查目标名是否正确（如是否存在拼写错误，或目标是否已定义）；  
+   - 检查属性是否适用（如接口库没有 `LINK_LIBRARIES` 属性，仅 `INTERFACE_LINK_LIBRARIES`）；  
+   - 确保在目标被定义后再查询（如 `add_library` 或 `find_package` 之后）。
+
+2. **结果包含生成器表达式（如 `$<LINK_ONLY:...>`）？**  
+   这是正常现象（如你示例中的 `$<LINK_ONLY:ZLIB::ZLIB>`），生成器表达式用于控制编译/链接阶段的条件逻辑（如 `LINK_ONLY` 表示仅链接不传递包含路径），无需手动处理，CMake 会自动解析。
+
+3. **如何区分静态库/动态库？**  
+   可结合 `TYPE` 属性先判断目标类型，再查询链接库：
+   ```cmake
+   # 查询目标类型（STATIC_LIBRARY/DYNAMIC_LIBRARY/INTERFACE_LIBRARY）
+   get_target_property(GDAL_TARGET_TYPE ${TARGET_TO_QUERY} TYPE)
+   message(STATUS "【${TARGET_TO_QUERY} 类型】: ${GDAL_TARGET_TYPE}")
+   ```
+ 
+
+## 例3. get_target_property(ZLIB_LOC ZLIB::ZLIB   IMPORTED_LOCATION)
 ```sh
 ##----------in src/osg/CMakeLists.txt--------
     FIND_PACKAGE(ZLIB) 
