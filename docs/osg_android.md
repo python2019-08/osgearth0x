@@ -163,3 +163,6 @@ cmake -DCMAKE_SYSTEM_ROOT=/opt/arm-rootfs ...
 - **目标平台的根路径”的官方变量是 `CMAKE_SYSTEM_ROOT`**，它代表目标系统的根目录；
 - `CMAKE_FIND_ROOT_PATH` 会默认包含 `CMAKE_SYSTEM_ROOT`，因此 `CMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER` 通过禁止搜索 `CMAKE_FIND_ROOT_PATH`，间接实现了“禁止从目标根路径（`CMAKE_SYSTEM_ROOT`）查找程序”；
 - 交叉编译中，`CMAKE_SYSTEM_ROOT` 是“目标根路径的基准”，`CMAKE_FIND_ROOT_PATH` 是“查找范围的扩展”，二者共同影响文件查找行为。
+
+=============================================================================
+#
