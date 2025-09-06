@@ -1,31 +1,31 @@
 #!/bin/bash
 # **************************************************************************
 # false  ;;;   ./mk4ubuntu.sh  >b0.txt 2>&1
-isRebuild=true
+isRebuild=false
 
-isFinished_build_zlib=false
-isFinished_build_zstd=false
-isFinished_build_openssl=false  
+isFinished_build_zlib=true
+isFinished_build_zstd=true
+isFinished_build_openssl=true  
 # isFinished_build_icu=true  
 # isFinished_build_libidn2=true 
-isFinished_build_libpsl=false  
-isFinished_build_curl=false   # false
+isFinished_build_libpsl=true  
+isFinished_build_curl=true   # false
 # isFinished_build_jpeg9f=true  
-isFinished_build_libjpegTurbo=false  
-isFinished_build_libpng=false 
-isFinished_build_xz=false  
-isFinished_build_libtiff=false 
-isFinished_build_freetype=false  
-isFinished_build_geos=false     # false
-isFinished_build_sqlite=false  
-isFinished_build_proj=false 
-isFinished_build_libexpat=false  
-isFinished_build_absl=false
-isFinished_build_protobuf=false
-isFinished_build_boost=false
-isFinished_build_gdal=false
-isFinished_build_osg=false
-isFinished_build_zip=false
+isFinished_build_libjpegTurbo=true  
+isFinished_build_libpng=true 
+isFinished_build_xz=true  
+isFinished_build_libtiff=true 
+isFinished_build_freetype=true  
+isFinished_build_geos=true     # false
+isFinished_build_sqlite=true  
+isFinished_build_proj=true 
+isFinished_build_libexpat=true  
+isFinished_build_absl=true
+isFinished_build_protobuf=true
+isFinished_build_boost=true
+isFinished_build_gdal=true
+isFinished_build_osg=true
+isFinished_build_zip=true
 isFinished_build_osgearth=false
 
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
@@ -1399,24 +1399,14 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
     osgearth_MODULE_PATH="${osgearth_MODULE_PATH};${INSTALL_PREFIX_zstd}/lib/cmake/zstd/"
 
 
-    cmakeCommonParams_osgearth=(
-    "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
-    "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
-    "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
-    "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
-    "-DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config"
-    "-DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_ubt}"
-    "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
-    "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
+    cmakeParams_osgearth=(  
     "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH" # BOTH：先查根路径，再查系统路径    
     "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH"  
-    "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
+    # "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
     # 是否访问 /usr/include/、/usr/lib/ 等 系统路径   
     "-DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=ON"
     # 是否访问PATH\LD_LIBRARY_PATH等环境变量
-    "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF" 
-    "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a"
-    "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"    
+    "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF"  
     )
     # 2. 清理环境
     unset LD_LIBRARY_PATH
@@ -1428,7 +1418,7 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
     # --debug-find    --debug-output 
     GLEW_ROOT="/usr/lib/x86_64-linux-gnu/" \
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find   \
-            "${cmakeCommonParams_osgearth[@]}" \
+            "${cmakeCommonParams[@]}"  "${cmakeParams_osgearth[@]}" \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH} \
