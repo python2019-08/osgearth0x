@@ -1,7 +1,7 @@
 #!/bin/bash
 # **************************************************************************
-# false  ;;;   ./mk4ubuntu.sh  >b0.txt 2>&1
-isRebuild=false
+# false  ;;;   ./mk4ubuntu.sh  >bu.txt 2>&1
+isRebuild=true
 
 isFinished_build_zlib=true
 isFinished_build_zstd=true
@@ -17,7 +17,7 @@ isFinished_build_xz=true
 isFinished_build_libtiff=true 
 isFinished_build_freetype=true  
 isFinished_build_geos=true     # false
-isFinished_build_sqlite=true  
+isFinished_build_sqlite=false  
 isFinished_build_proj=true 
 isFinished_build_libexpat=true  
 isFinished_build_absl=true
@@ -26,7 +26,7 @@ isFinished_build_boost=true
 isFinished_build_gdal=true
 isFinished_build_osg=true
 isFinished_build_zip=true
-isFinished_build_osgearth=false
+isFinished_build_osgearth=true
 
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
@@ -61,7 +61,8 @@ cmakeCommonParams=(
   # 是否访问PATH\LD_LIBRARY_PATH等环境变量
   "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF" 
   "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a"
-  "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"    
+  "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+  "-DBUILD_SHARED_LIBS=OFF"    
 )
   #  -DCMAKE_C_FLAGS= "-fPIC"     
   #  -DCMAKE_CXX_FLAGS="-fPIC" 
@@ -212,7 +213,7 @@ fi
 INSTALL_PREFIX_zstd=${INSTALL_PREFIX_ubt}/zstd
 
 if [ "${isFinished_build_zstd}" != "true" ]; then 
-    echo "========== building zstd 4 ubuntu========== " &&  sleep 3
+    echo "========== building zstd 4 ubuntu========== " &&  sleep 1
     SrcDIR_zstd=${SrcDIR_3rd}/zstd
     BuildDIR_lib=${BuildDir_ubuntu}/3rd/zstd
     prepareBuilding  ${SrcDIR_zstd} ${BuildDIR_lib} ${INSTALL_PREFIX_zstd} ${isRebuild} 
@@ -230,12 +231,15 @@ if [ "${isFinished_build_zstd}" != "true" ]; then
 
     cmake --build ${BuildDIR_lib} --target install    
 
-    echo "========== finished building zstd 4 ubuntu ========== " &&  sleep 2
+    echo "========== finished building zstd 4 ubuntu ========== " 
 fi    
  
 
 # -------------------------------------------------
 # openssl
+# -------
+# libssl.a是静态库​​，通常依赖 libcrypto.a提供底层加密函数
+# （如 SHA256_Init、EVP_CIPHER_CTX_new）。
 # -------------------------------------------------
 INSTALL_PREFIX_openssl=${INSTALL_PREFIX_ubt}/openssl
 
@@ -268,7 +272,6 @@ if [ "${isFinished_build_openssl}" != "true" ]; then
 
     make install_sw  
     echo "========== finished building openssl 4 ubuntu ========== " &&  sleep 2
-    # libssl.a是静态库​​，通常依赖 libcrypto.a提供底层加密函数（如 SHA256_Init、EVP_CIPHER_CTX_new）。
 fi
 
 
@@ -743,32 +746,50 @@ INSTALL_PREFIX_sqlite=${INSTALL_PREFIX_ubt}/sqlite
 
 if [ "${isFinished_build_sqlite}" != "true" ] ; then 
     echo "========== building sqlite 4 ubuntu========== " &&  sleep 1
-    SrcDIR_lib=${SrcDIR_3rd}/sqlite
+    SrcDIR_lib=${SrcDIR_3rd}/sqlite3cmake
     BuildDIR_lib=${BuildDir_ubuntu}/3rd/sqlite
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_sqlite} ${isRebuild}   
 
     #################################################################### 
-    # 在构建目录中运行configure
-    cd ${BuildDIR_lib} 
+    # SrcDIR_lib=${SrcDIR_3rd}/sqlite 代码来自于github 而不是官网
+    # ------ 
+    # cd ${BuildDIR_lib}  # 在构建目录中运行configure
+    # 
+    # # CFLAGS="-I${INSTALL_PREFIX_icu}/include/icu" \
+    # # LDFLAGS="-L${INSTALL_PREFIX_icu}/lib" \ 
+    # cFlags="-fPIC -O0 -g -DSQLITE_ENABLE_RTREE=1 "
+    # cFlags="${cFlags} -DSQLITE_THREADSAFE=1"
+    # cFlags+=" -DSQLITE_MUTEX=unix" 
+    #  
+    # ldFlags="-Wl,-rpath=${INSTALL_PREFIX_sqlite}/lib -lz -lm"
+    # 
+    # 
+    # echo "sqlite...SrcDIR=${SrcDIR_lib};BuildDIR=${BuildDir_ubuntu}/3rd/sqlite"
+    # CC=${CMAKE_C_COMPILER} \
+    # ${SrcDIR_lib}/configure  --prefix=${INSTALL_PREFIX_sqlite} \
+	# 	--host=x86_64-linux-musl \
+    #     --disable-shared  --enable-static    \
+    #     --enable-debug   CFLAGS="${cFlags}" 
+    # 
+    #     #CFLAGS="-fPIC -DSQLITE_OMIT_LOAD_EXTENSION=1 "  
+    # echo "sqlite...........make -j......................."
+    # make   -j$(nproc)  ## -d
+    # echo "sqlite...........make install.................."
+    # make   install   ##  -d
+    # 
+    # -- 把 FindSQLite3.cmake 放到 ${INSTALL_PREFIX_sqlite}/lib/cmake/SQLite3 ???   
+    # ------------------------------------------------------------------
+    # SrcDIR_lib=${SrcDIR_3rd}/sqlite3cmake  代码来自于 官网 https://sqlite.org
+    cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
+            "${cmakeCommonParams[@]}"  \
+            -DCMAKE_PREFIX_PATH=${cmkPrefixPath} \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_sqlite}  
+       
+ 
+    cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
 
-    # CFLAGS="-I${INSTALL_PREFIX_icu}/include/icu" \
-    # LDFLAGS="-L${INSTALL_PREFIX_icu}/lib" \ 
-    CC=${CMAKE_C_COMPILER} \
-    ${SrcDIR_lib}/configure  --prefix=${INSTALL_PREFIX_sqlite} \
-        --disable-shared   \
-        --enable-static    \
-        --enable-debug  \
-        --host=x86_64-linux-musl \
-        CFLAGS="-fPIC -DSQLITE_ENABLE_RTREE=1 -DSQLITE_THREADSAFE=1 -DSQLITE_MUTEX=unix"
+    cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -v
 
-       #CFLAGS="-fPIC -DSQLITE_OMIT_LOAD_EXTENSION=1 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_THREADSAFE=1"  
-    make   -j$(nproc)  
-    make install       
-
-
-    # -- 把 FindSQLite3.cmake 放到 ${INSTALL_PREFIX_sqlite}/lib/cmake/SQLite3
-    mkdir -p ${INSTALL_PREFIX_sqlite}/lib/cmake/SQLite3
-    cp ${Repo_ROOT}/cmake/FindSQLite3.cmake   ${INSTALL_PREFIX_sqlite}/lib/cmake/SQLite3    
     #################################################################### 
     echo "========== finished building sqlite 4 ubuntu ========== " &&  sleep 1 
 fi

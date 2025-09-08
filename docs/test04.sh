@@ -36,8 +36,13 @@ cmakeCommonParams2=(
   "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"  ## = -fPIC
 ) 
 
-echo "cmakeCommonParams2=${cmakeCommonParams2[@]}"
+cmakeCommonParams2+=(
+  "-DAppend01=${CMAKE_C_COMPILER}"
+  "-DAppend02=22"
+)
 
+echo "cmakeCommonParams2=${cmakeCommonParams2[@]}"
+exit 11
 echo "----------------------------------------"
 INSTALL_PREFIX_zlib=11
 INSTALL_PREFIX_xz=22
