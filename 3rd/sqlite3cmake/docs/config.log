@@ -1,0 +1,71 @@
+Invoked as: /home/abner/abner2/zdev/nv/osgearth0x/3rd/sqlite/configure --prefix=/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/sqlite --disable-shared --enable-static --enable-debug --host=x86_64-pc-linux-gnu "CFLAGS=-fPIC  -D_FILE_OFFSET_BITS=64 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_THREADSAFE=1 -DSQLITE_MUTEX=unix -DSQLITE_OMIT_AUTOINIT=1 -DSQLITE_USE_URI=0 -DSQLITE_ENABLE_LOCKING_STYLE=0 -DSQLITE_OMIT_LOCALTIME_S=1 -DSQLITE_OMIT_DEPRECATED=1" "LDFLAGS=-Wl,-rpath=/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/sqlite/lib -lz -lm"
+Tclsh: /home/abner/programs/miniconda3/bin/tclsh
+Failed: /usr/bin/gcc -c -fPIC -D_FILE_OFFSET_BITS=64 -DSQLITE_THREADSAFE=1 -DSQLITE_MUTEX=unix -DSQLITE_USE_URI=0 conftest__.c -o conftest__.o
+conftest__.c: In function ‘main’:
+conftest__.c:3:12: error: size of array ‘_x’ is negative
+    3 | static int _x[sizeof(off_t) == 4 ? 1 : -1] = { 1 };
+      |            ^~
+child process exited abnormally
+============
+The failed code was:
+#include <sys/types.h>
+int main(void) {
+static int _x[sizeof(off_t) == 4 ? 1 : -1] = { 1 };
+return 0;
+}
+============
+Failed: /usr/bin/gcc -Wl,-rpath=/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/sqlite/lib -lz -lm -fPIC -D_FILE_OFFSET_BITS=64 -DSQLITE_THREADSAFE=1 -DSQLITE_MUTEX=unix -DSQLITE_USE_URI=0 conftest__.c -o conftest__
+/usr/bin/ld: /tmp/ccGbjf6a.o: in function `main':
+conftest__.c:(.text+0x9): undefined reference to `localtime_s'
+collect2: error: ld returned 1 exit status
+child process exited abnormally
+============
+The failed code was:
+extern void localtime_s(void);
+int main(void) {
+localtime_s();
+return 0;
+}
+============
+Failed: /usr/bin/gcc -Wl,-rpath=/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/sqlite/lib -lz -lm -fPIC -D_FILE_OFFSET_BITS=64 -DSQLITE_THREADSAFE=1 -DSQLITE_MUTEX=unix -DSQLITE_USE_URI=0 conftest__.c -o conftest__
+/usr/bin/ld: /tmp/cc0TEdCm.o: in function `main':
+conftest__.c:(.text+0x9): undefined reference to `deflate'
+collect2: error: ld returned 1 exit status
+child process exited abnormally
+============
+The failed code was:
+extern void deflate(void);
+int main(void) {
+deflate();
+return 0;
+}
+============
+Failed: /usr/bin/gcc -Wl,-rpath=/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/sqlite/lib -lz -lm -rpath /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/sqlite/lib -fPIC -D_FILE_OFFSET_BITS=64 -DSQLITE_THREADSAFE=1 -DSQLITE_MUTEX=unix -DSQLITE_USE_URI=0 conftest__.c -o conftest__
+gcc: error: unrecognized command-line option ‘-rpath’
+child process exited abnormally
+============
+The failed code was:
+int main(void) {
+
+return 0;
+}
+============
+Failed: /usr/bin/gcc -Wl,-rpath=/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/sqlite/lib -lz -lm -fPIC -D_FILE_OFFSET_BITS=64 -DSQLITE_THREADSAFE=1 -DSQLITE_MUTEX=unix -DSQLITE_USE_URI=0 conftest__.c -o conftest__
+conftest__.c:1:13: warning: conflicting types for built-in function ‘ceil’; expected ‘double(double)’ [-Wbuiltin-declaration-mismatch]
+    1 | extern void ceil(void);
+      |             ^~~~
+conftest__.c:1:1: note: ‘ceil’ is declared in header ‘<math.h>’
+  +++ |+#include <math.h>
+    1 | extern void ceil(void);
+/usr/bin/ld: /tmp/ccXXaaj2.o: in function `main':
+conftest__.c:(.text+0x9): undefined reference to `ceil'
+collect2: error: ld returned 1 exit status
+child process exited abnormally
+============
+The failed code was:
+extern void ceil(void);
+int main(void) {
+ceil();
+return 0;
+}
+============

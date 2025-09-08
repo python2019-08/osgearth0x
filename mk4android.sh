@@ -3,13 +3,13 @@
 # false  ;;;   ./mk4android.sh  >ba.txt 2>&1
 isRebuild=true
 
-isFinished_build_zlib=false
-isFinished_build_zstd=true
-isFinished_build_openssl=true  
+isFinished_build_zlib=true  #v
+# isFinished_build_zstd=true
+isFinished_build_openssl=true  # v
 # isFinished_build_icu=true  
 # isFinished_build_libidn2=true 
-isFinished_build_libpsl=true  
-isFinished_build_curl=true   # false
+# isFinished_build_libpsl=true  
+isFinished_build_curl=true   # false v
 # isFinished_build_jpeg9f=true  
 isFinished_build_libjpegTurbo=true  
 isFinished_build_libpng=true 
@@ -17,7 +17,7 @@ isFinished_build_xz=true
 isFinished_build_libtiff=true 
 isFinished_build_freetype=true  
 isFinished_build_geos=true     # false
-isFinished_build_sqlite=true  
+isFinished_build_sqlite=false  # v
 isFinished_build_proj=true 
 isFinished_build_libexpat=true  
 isFinished_build_absl=true
@@ -27,8 +27,15 @@ isFinished_build_gdal=true
 isFinished_build_osg=true
 isFinished_build_zip=true
 isFinished_build_osgearth=false
-
-ANDROID_NDK_HOME=/home/abner/Android/Sdk/ndk/27.1.12297006
+    
+# ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
+export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006    
+# ANDROID_NDK_HOME​ ​:后来 Android Studio 和 Gradle 更倾向于使用此变量。    
+export ANDROID_NDK_HOME="${ANDROID_NDK_ROOT}"
+# CMAKE_SYSROOT=${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+# 
+export PATH=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+export PATH=$PATH:$ANDROID_NDK_HOME
 
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=${ANDROID_NDK_HOME}/prebuilt/linux-x86_64/bin/make
@@ -51,7 +58,7 @@ mkdir -p ${INSTALL_PREFIX_andro}
 
 # 定义需要编译的 Android ABI 列表
 ABIS=("arm64-v8a" "armeabi-v7a" "x86" "x86_64")
- 
+CMAKE_ANDROID_ARCH_ABI="x86_64" 
  
 cmakeCommonParams=(
   "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
@@ -68,10 +75,10 @@ cmakeCommonParams=(
   # 是否访问PATH\LD_LIBRARY_PATH等环境变量
   "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF" 
   "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a"
-  "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"    
+  "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" 
+  "-DBUILD_SHARED_LIBS=OFF"   
 )
-  #  -DCMAKE_C_FLAGS= "-fPIC"     
-  #  -DCMAKE_CXX_FLAGS="-fPIC" 
+ 
 echo "cmakeCommonParams=${cmakeCommonParams[@]}"
 # **************************************************************************
 # functions
@@ -81,10 +88,10 @@ prepareBuilding()
     local aSubBuildDir="$2"
     local aSubInstallDir="$3"
     local aIsRebuild="$4"
-    # echo "aSubSrcDir= $aSubSrcDir"
-    # echo "aSubBuildDir=$aSubBuildDir"
-    # echo "aSubInstallDir=$aSubInstallDir" 
-    # echo "aIsRebuild=$aIsRebuild" 
+    echo "aSubSrcDir= $aSubSrcDir"
+    echo "aSubBuildDir=$aSubBuildDir"
+    echo "aSubInstallDir=$aSubInstallDir" 
+    echo "aIsRebuild=$aIsRebuild" 
     if [ ! -d "${aSubSrcDir}" ]; then
         echo "Folder ${aSubSrcDir}  NOT exist!"
         exit 1001
@@ -116,7 +123,7 @@ SrcDIR_3rd=${Repo_ROOT}/3rd
 # -------------------------------------------------
 # zlib
 # -------------------------------------------------
-INSTALL_PREFIX_zlib=${INSTALL_PREFIX_andro}/zlib
+INSTALL_PREFIX_zlib=${INSTALL_PREFIX_andro}/3rd/zlib
 
 if [ "${isFinished_build_zlib}" != "true" ]; then 
     echo "========== building zlib 4 ubuntu========== " &&  sleep 1
@@ -134,7 +141,7 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
     #----------------------------------------------------  
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find  \
         -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
-        -DANDROID_ABI=armeabi-v7a \
+        -DANDROID_ABI="${CMAKE_ANDROID_ARCH_ABI}" \
         -DANDROID_NATIVE_API_LEVEL=24 \
         -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_zlib}  \
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
@@ -152,23 +159,134 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
 
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
  
-    # ## zlib源码编译后产生的ZLIBConfig.cmake 只有 ZLIB::ZLIBSTATIC ;
-    #    要获得导入型目标 ZLIB::ZLIB，需要默认的、来自系统路径的FindZlib.cmake 
-    # 
-    # --备份 zlib源码编译后产生的ZLIBConfig.cmake
-    mv    ${INSTALL_PREFIX_zlib}/lib/cmake  ${INSTALL_PREFIX_zlib}/lib/cmake-bk
-    mv    ${INSTALL_PREFIX_zlib}/lib/pkgconfig  ${INSTALL_PREFIX_zlib}/lib/pkgconfig-bk
-    # -- 把 FindZLIB.cmake 放到 ${INSTALL_PREFIX_zlib}/lib/cmake/
+    #--## zlib源码编译后产生的ZLIBConfig.cmake 只有 ZLIB::ZLIBSTATIC ;
+    #--  要获得导入型目标 ZLIB::ZLIB，需要默认的、来自系统路径的FindZlib.cmake 
+    #--
+    #----备份 zlib源码编译后产生的ZLIBConfig.cmake
+    mv  ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/ZLIBConfig.cmake  ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/ZLIBConfig.cmake-bk
+    mv  ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/pkgconfig  ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/pkgconfig-bk
+    #---- 把 FindZLIB.cmake 放到 ${INSTALL_PREFIX_zlib}/lib/cmake/
     # mkdir -p ${INSTALL_PREFIX_zlib}/lib/cmake/zlib
     # cp ${Repo_ROOT}/cmake/FindZLIB.cmake  ${INSTALL_PREFIX_zlib}/lib/cmake/zlib
 
     echo "========== finished building zlib 4 ubuntu ========== " &&  sleep 1
 fi 
  
-exit 11     
+
+
+# -------------------------------------------------
+# openssl
+# -------
+# libssl.a是静态库​​，通常依赖 libcrypto.a提供底层加密函数
+# （如 SHA256_Init、EVP_CIPHER_CTX_new）。
+# -------------------------------------------------
+INSTALL_PREFIX_openssl=${INSTALL_PREFIX_andro}/3rd/openssl
+
+if [ "${isFinished_build_openssl}" != "true" ]; then 
+    echo "========== Building openssl 4 ubuntu ========== " &&  sleep 3
+
+    SrcDIR_openssl=${SrcDIR_3rd}/openssl
+    BuildDIR_openssl=${BuildDir_andro}/3rd/openssl
+    prepareBuilding  ${SrcDIR_openssl} ${BuildDIR_openssl} ${INSTALL_PREFIX_openssl} ${isRebuild}
 
  
+    cd ${BuildDIR_openssl}
+    # (1) 如需调试支持，改用 enable-asan或 -d​​
+    # # 方案1：使用 OpenSSL 的调试模式（生成调试符号）
+    #     ./Configure linux-x86_64 -d --prefix=...
+    # 
+    # # 方案2：启用 AddressSanitizer（调试内存问题）
+    #     ./Configure linux-x86_64 enable-asan --prefix=...
+    # (2) 如需调试符号，改用 -g：
+    #     CFLAGS="-fPIC -g" ./Configure ...
+    # (3) 根据设备选择正确的 目标架构
+    #   ${SrcDIR_openssl}/Configure android-arm # 32 位 ARM    
+    #   ${SrcDIR_openssl}/Configure android-arm64 # 64 位 ARM
+    target_ARCH="android-x86_64"
 
+    # 在编译时标记符号为 "hidden"（仅限动态链接）
+    CFLAGS="-fPIC -fvisibility=hidden" \
+    ${SrcDIR_openssl}/Configure ${target_ARCH} -d \
+                -D__ANDROID_API__=24 \
+                --prefix=${INSTALL_PREFIX_openssl} \
+                --openssldir=${INSTALL_PREFIX_openssl}/ssl  \
+                no-shared  no-zlib no-module  no-dso 
+
+      #  (1)-static确保完全静态链接,导致"ld.lld: error: duplicate symbol: time"
+      #  即使 -fvisibility=hidden 也无法消除
+
+    make build_sw -j$(nproc)  V=1
+
+    make install_sw  
+    echo "========== finished building openssl 4 ubuntu ========== " &&  sleep 2
+    
+fi 
+  
+
+# -------------------------------------------------
+# curl
+# -------------------------------------------------
+INSTALL_PREFIX_curl=${INSTALL_PREFIX_andro}/3rd/curl
+
+if [ "${isFinished_build_curl}" != "true" ] ; then 
+    echo "======== Building curl =========" &&  sleep 1 && set -x     
+
+    SrcDIR_lib=${SrcDIR_3rd}/curl
+    BuildDIR_lib=${BuildDir_andro}/3rd/curl 
+    prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_curl} ${isRebuild}              
+    # ---------------------    
+    cmkPrefixPath_Arr=(
+        "${INSTALL_PREFIX_zlib}"  
+        "${INSTALL_PREFIX_openssl}" 
+        )
+    # 使用;号连接数组元素.
+    cmkPrefixPath=$(IFS=";"; echo "${cmkPrefixPath_Arr[*]}")
+    echo "For building curl: cmkPrefixPath=${cmkPrefixPath}" 
+
+    cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
+        -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=${CMAKE_ANDROID_ARCH_ABI} \
+            -DANDROID_NATIVE_API_LEVEL=24 \
+            "${cmakeCommonParams[@]}"  \
+            -DCMAKE_PREFIX_PATH=${cmkPrefixPath} \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_curl}  \
+            -DBUILD_SHARED_LIBS=OFF    \
+            -DCURL_DISABLE_LDAP=ON     \
+            -DCURL_DISABLE_FTP=ON      \
+            -DCURL_DISABLE_TELNET=ON   \
+            -DCURL_DISABLE_DICT=ON     \
+            -DCURL_DISABLE_FILE=ON     \
+            -DCURL_DISABLE_TFTP=ON     \
+            -DCURL_BROTLI=OFF  -DCURL_USE_LIBSSH2=OFF \
+            -DUSE_LIBIDN2=OFF  -DUSE_NGHTTP2=OFF      \
+            -DCURL_ZLIB=ON  -DZLIB_USE_STATIC_LIBS=ON \
+            -DCURL_ZSTD=OFF \
+            -DBUILD_DOCS=OFF \
+            -DCMAKE_INSTALL_DOCDIR=OFF \
+            -DCURL_USE_PKGCONFIG=OFF -DCURL_USE_LIBPSL=OFF \
+            -DCURL_USE_OPENSSL=ON \
+            -DOPENSSL_USE_STATIC_LIBS=ON  \
+            -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl} \
+            -DOPENSSL_LIBRARIES=${INSTALL_PREFIX_openssl}/lib \
+            -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include  
+                         
+            # -DCMAKE_MODULE_PATH=${SrcDIR_lib}/cmake  # 优先使用项目内的 FindZLIB.cmake
+
+            #  -DZstd_LIBRARY="${INSTALL_PREFIX_zstd}/lib/libzstd.a" \
+            #  -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
+            #  -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
+            #  -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+            #  -DLIBPSL_LIBRARY=${INSTALL_PREFIX_psl}/lib/libpsl.a          
+
+            # -DOPENSSL_LIBRARIES="${INSTALL_PREFIX_openssl}/lib/libssl.a; ${INSTALL_PREFIX_openssl}/lib/libcrypto.a" \
+    cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
+
+    cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -v
+    echo "========== Finished Building curl =========" &&  set +x
+    
+fi
+
+ 
 # # -------------------------------------------------
 # # jpeg-9f 
 # # remark: libjpeg-turbo是 标准版libjpeg的超集，所以这里不再特地编译标准libjpeg（jpeg-9f）
@@ -190,7 +308,7 @@ exit 11
 #         echo "++++++++++++ Building jpeg-9f for ${ABI} ++++++++++++" && sleep 5
 #
 #         # 设置当前架构的构建目录和安装目录
-#         BuildDIR_Jpeg9f=${BuildDir_androi}/3rd/jpeg-9f/build/${ABI}
+#         BuildDIR_Jpeg9f=${BuildDir_andro}/3rd/jpeg-9f/build/${ABI}
 #         rm -rf ${BuildDIR_Jpeg9f}
 #         mkdir -p ${BuildDIR_Jpeg9f}
 #
@@ -270,7 +388,7 @@ if [ "${isFinished_build_libjpegTurbo}" != "true" ] ; then
         echo "++++++++++++ Building libjpeg-turbo for ${ABI} ++++++++++++"
         mkdir -p ${LIB3RD_INSTALL_DIR}/android/$ABI
 
-        BuildDIR_andro=${BuildDir_androi}/3rd/libjpeg-turbo/build/$ABI
+        BuildDIR_andro=${BuildDir_andro}/3rd/libjpeg-turbo/build/$ABI
         
         cmake  -S${OSG3RD_srcDir}/libjpeg-turbo -B ${BuildDIR_andro} -G"Unix Makefiles" \
             -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
@@ -294,8 +412,61 @@ if [ "${isFinished_build_libjpegTurbo}" != "true" ] ; then
 fi
 
  
-  
-  
+# # 根据架构设置编译器
+# case ${ANDROID_ABI} in
+#     arm64-v8a)
+#         CC=${TOOLCHAIN}/bin/aarch64-linux-android${ANDROID_API}-clang
+#         CXX=${TOOLCHAIN}/bin/aarch64-linux-android${ANDROID_API}-clang++
+#         ;;
+#     armeabi-v7a)
+#         CC=${TOOLCHAIN}/bin/armv7a-linux-androideabi${ANDROID_API}-clang
+#         CXX=${TOOLCHAIN}/bin/armv7a-linux-androideabi${ANDROID_API}-clang++
+#         ;;
+#     x86_64)
+#         CC=${TOOLCHAIN}/bin/x86_64-linux-android${ANDROID_API}-clang
+#         CXX=${TOOLCHAIN}/bin/x86_64-linux-android${ANDROID_API}-clang++
+#         ;;
+#     x86)
+#         CC=${TOOLCHAIN}/bin/i686-linux-android${ANDROID_API}-clang
+#         CXX=${TOOLCHAIN}/bin/i686-linux-android${ANDROID_API}-clang++
+#         ;;
+#     *)
+#         echo "不支持的架构: ${ANDROID_ABI}"
+#         exit 1
+#         ;;
+# esac
+ 
+# -------------------------------------------------
+# sqlite
+# ------------------------------------------------- 
+INSTALL_PREFIX_sqlite=${INSTALL_PREFIX_andro}/3rd/sqlite
+
+if [ "${isFinished_build_sqlite}" != "true" ] ; then 
+    echo "========== building sqlite 4 android========== " &&  sleep 1
+    SrcDIR_lib=${SrcDIR_3rd}/sqlite
+    BuildDIR_lib=${BuildDir_andro}/3rd/sqlite
+    prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_sqlite} ${isRebuild}   
+
+    #################################################################### 
+    
+    cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
+        -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=${CMAKE_ANDROID_ARCH_ABI} \
+            -DANDROID_NATIVE_API_LEVEL=24 \
+            "${cmakeCommonParams[@]}"  \
+            -DCMAKE_PREFIX_PATH=${cmkPrefixPath} \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_sqlite}  
+       
+ 
+    cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
+
+    cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -v
+ 
+    #################################################################### 
+    echo "========== finished building sqlite 4 android ========== " &&  sleep 1 
+fi
+
+exit 11  
     
 
 

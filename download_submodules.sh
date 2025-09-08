@@ -77,10 +77,14 @@ cd ./3rd/geos
 git checkout -b my-3.13.1 tags/3.13.1
 cd ../../    
 
-git clone  https://github.com/sqlite/sqlite.git    3rd/sqlite
-cd ./3rd/sqlite 
-git checkout -b my-version-3.50.4 tags/version-3.50.4
-cd ../../    
+# --------------------------------------------------------------
+# git clone  https://github.com/sqlite/sqlite.git    3rd/sqlite
+# cd ./3rd/sqlite 
+# git checkout -b my-version-3.50.4 tags/version-3.50.4
+# cd ../../    
+# ------------
+# wget  https://sqlite.org/2025/sqlite-amalgamation-3500400.zip
+# 
 
 
 git clone  https://github.com/OSGeo/PROJ.git    3rd/proj

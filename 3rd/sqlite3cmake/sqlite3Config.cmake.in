@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+ 
+
+include("${CMAKE_CURRENT_LIST_DIR}/Sqlite3Targets.cmake")
+
+check_required_components("Sqlite3")

@@ -1,5 +1,7 @@
 # 1. how to build on ubuntu 24.04
-
+<!-- 
+3rd/sqlite\**\*.txt,3rd/sqlite\**\*.md  
+-->
 ## 1.1 use mk4ubuntu.sh to build 
 ```sh
 $ git clone https://github.com/python2019-08/osgearth0x.git
