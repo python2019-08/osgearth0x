@@ -865,10 +865,11 @@ Dynamic section at offset 0x123456 contains:
 - **在 Android 模拟器/设备上运行 `curl`**，而不是在 Linux 上。
 - **使用 `readelf -d` 检查依赖**，而不是 `ldd`（除非在 Android 环境中）。
 
-### my 测试 
+### mytest-on-android-emulator 
 
 已经成功将 curl推送到 Android 模拟器，并且它能够正常运行（./curl --version输出了正确的版本信息）。
 ```sh
+# 先 在Android Studio 启动 Android 模拟器，然后...
 (base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ adb push /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl   /data/local/tmp/
 /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl: 1 file pushed, 0 skipped. 328.4 MB/s (12790168 bytes in 0.037s)
 (base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ adb shell
@@ -897,4 +898,25 @@ error: expected absolute path: "./curl"
 	libm.so => /apex/com.android.runtime/lib64/bionic/libm.so (0x79b34b5a0000)
 	libc.so => /apex/com.android.runtime/lib64/bionic/libc.so (0x79b34b469000)
 emu64xa:/data/local/tmp $ 
+```
+
+已经成功将 sqlite3推送到 Android 模拟器，并且它能够正常运行 
+```sh
+# 先 在Android Studio 启动 Android 模拟器，然后...
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ ls
+sqlite3
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ adb push sqlite3 /data/local/tmp/
+sqlite3: 1 file pushed, 0 skipped. 177.1 MB/s (5881208 bytes in 0.032s)
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ adb shell
+emu64xa:/ $ cd /data/local/tmp/
+emu64xa:/data/local/tmp $ ls
+curl  sqlite3
+emu64xa:/data/local/tmp $ ./sqlite3                                                                                                                                                                
+SQLite version 3.50.4 2025-07-30 19:33:53
+Enter ".help" for usage hints.
+Connected to a transient in-memory database.
+Use ".open FILENAME" to reopen on a persistent database.
+sqlite> .quit
+emu64xa:/data/local/tmp $ exit
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ 
 ```

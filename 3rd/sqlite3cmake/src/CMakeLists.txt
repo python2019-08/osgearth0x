@@ -99,11 +99,20 @@ target_compile_options(SQLite3
     PRIVATE "-Wextra"
 )
 
-target_link_libraries(SQLite3 PRIVATE
-    -lm
-    -lpthread
+if(CMAKE_SYSTEM_NAME MATCHES "Android")
+    target_link_libraries(SQLite3 PRIVATE
+    -lm 
     -ldl
-)    
+    )    
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    target_link_libraries(SQLite3 PRIVATE
+        -lm
+        -lpthread
+        -ldl
+    )    
+endif()
+
+
 # target_link_libraries(mbgl-core
 #     PUBLIC jni.hpp
 #     PUBLIC -llog

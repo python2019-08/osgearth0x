@@ -751,8 +751,9 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_sqlite} ${isRebuild}   
 
     #################################################################### 
-    # SrcDIR_lib=${SrcDIR_3rd}/sqlite 代码来自于github 而不是官网
+    # ${SrcDIR_3rd}/sqlite 代码来自于github 而不是官网
     # ------ 
+    # SrcDIR_lib=${SrcDIR_3rd}/sqlite
     # cd ${BuildDIR_lib}  # 在构建目录中运行configure
     # 
     # # CFLAGS="-I${INSTALL_PREFIX_icu}/include/icu" \
@@ -779,7 +780,7 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
     # 
     # -- 把 FindSQLite3.cmake 放到 ${INSTALL_PREFIX_sqlite}/lib/cmake/SQLite3 ???   
     # ------------------------------------------------------------------
-    # SrcDIR_lib=${SrcDIR_3rd}/sqlite3cmake  代码来自于 官网 https://sqlite.org
+    # ${SrcDIR_3rd}/sqlite3cmake 代码来自于官网 https://sqlite.org，**cmake脚本是自定义的**
     cmkPrefixPath=${INSTALL_PREFIX_zlib}
 
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
