@@ -17,8 +17,8 @@ isFinished_build_xz=true
 isFinished_build_libtiff=true 
 isFinished_build_freetype=true  
 isFinished_build_geos=true     # false
-isFinished_build_sqlite=false  # v
-isFinished_build_proj=true 
+isFinished_build_sqlite=true  # v
+isFinished_build_proj=false 
 isFinished_build_libexpat=true  
 isFinished_build_absl=true
 isFinished_build_protobuf=true
@@ -411,30 +411,7 @@ if [ "${isFinished_build_libjpegTurbo}" != "true" ] ; then
     echo "========== Finished Building libjpeg-turbo for Android ==========" && sleep 5    
 fi
 
- 
-# # 根据架构设置编译器
-# case ${ANDROID_ABI} in
-#     arm64-v8a)
-#         CC=${TOOLCHAIN}/bin/aarch64-linux-android${ANDROID_API}-clang
-#         CXX=${TOOLCHAIN}/bin/aarch64-linux-android${ANDROID_API}-clang++
-#         ;;
-#     armeabi-v7a)
-#         CC=${TOOLCHAIN}/bin/armv7a-linux-androideabi${ANDROID_API}-clang
-#         CXX=${TOOLCHAIN}/bin/armv7a-linux-androideabi${ANDROID_API}-clang++
-#         ;;
-#     x86_64)
-#         CC=${TOOLCHAIN}/bin/x86_64-linux-android${ANDROID_API}-clang
-#         CXX=${TOOLCHAIN}/bin/x86_64-linux-android${ANDROID_API}-clang++
-#         ;;
-#     x86)
-#         CC=${TOOLCHAIN}/bin/i686-linux-android${ANDROID_API}-clang
-#         CXX=${TOOLCHAIN}/bin/i686-linux-android${ANDROID_API}-clang++
-#         ;;
-#     *)
-#         echo "不支持的架构: ${ANDROID_ABI}"
-#         exit 1
-#         ;;
-# esac
+  
  
 # -------------------------------------------------
 # sqlite
@@ -443,12 +420,19 @@ INSTALL_PREFIX_sqlite=${INSTALL_PREFIX_andro}/3rd/sqlite
 
 if [ "${isFinished_build_sqlite}" != "true" ] ; then 
     echo "========== building sqlite 4 android========== " &&  sleep 1
-    SrcDIR_lib=${SrcDIR_3rd}/sqlite
+    SrcDIR_lib=${SrcDIR_3rd}/sqlite3cmake
     BuildDIR_lib=${BuildDir_andro}/3rd/sqlite
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_sqlite} ${isRebuild}   
 
     #################################################################### 
-    
+    # ---------------------    
+    cmkPrefixPath_Arr=(
+        "${INSTALL_PREFIX_zlib}"   
+        )
+    # 使用;号连接数组元素.
+    cmkPrefixPath=$(IFS=";"; echo "${cmkPrefixPath_Arr[*]}")
+    echo "For building curl: cmkPrefixPath=${cmkPrefixPath}" 
+
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
         -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=${CMAKE_ANDROID_ARCH_ABI} \
