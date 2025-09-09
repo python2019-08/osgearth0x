@@ -1,4 +1,107 @@
-# 1.Boost 为 CMake 构建系统提供的 “配置模块”
+# 1.boost库
+
+## boost 下载
+```sh
+
+$ wget https://sourceforge.net/projects/boost/files/boost/1.88.0/boost_1_88_0.zip
+```
+<!-- src/osg/CMakeModules/FindAsio.cmake -->
+## 编译成果
+```
+(base) abner@abner-XPS:/mnt/disk2/abner/zdev/nv/osgearth0x$ ls build_by_sh/ubuntu/install/boost/include/boost-1_88/
+boost
+(base) abner@abner-XPS:/mnt/disk2/abner/zdev/nv/osgearth0x$ ls build_by_sh/ubuntu/install/boost/
+include  lib  share
+(base) abner@abner-XPS:/mnt/disk2/abner/zdev/nv/osgearth0x$ ls build_by_sh/ubuntu/install/boost/lib/
+cmake      libboost_locale-gcc13-mt-s-x64-1_88.a    libboost_serialization-gcc13-mt-s-x64-1_88.a
+libboost_atomic-gcc13-mt-sd-x64-1_88.a           
+```
+如何使用该boost库
+
+要使用你本地编译的 Boost 库（路径为 `build_by_sh/ubuntu/install/boost/`），需要在编译时指定库的**头文件路径**和**链接库路径**，确保编译器能找到 Boost 的头文件和二进制库。以下是具体步骤：
+
+
+### 一、确认 Boost 库的关键路径
+从你的目录结构看，Boost 库的关键路径为：
+- **头文件路径**：`build_by_sh/ubuntu/install/boost/include/boost-1_88/`（包含 `boost/` 子目录，存放所有 `.hpp` 头文件）
+- **库文件路径**：`build_by_sh/ubuntu/install/boost/lib/`（存放 `.a` 静态库文件，如 `libboost_atomic-xxx.a`）
+ 
+### 二、示例代码与编译
+#### 示例代码（`main.cpp`，使用 Boost.Thread）：
+```cpp
+#include <boost/thread.hpp>
+#include <iostream>
+
+void thread_func() {
+    std::cout << "Hello from Boost thread!" << std::endl;
+}
+
+int main() {
+    boost::thread t(thread_func);
+    t.join();
+    return 0;
+}
+```
+
+#### 编译命令（替换为你的实际路径）：
+```bash
+g++ main.cpp -o test_boost \
+  -I/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/boost/include/boost-1_88 \
+  -L/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/boost/lib \
+  -lboost_thread-gcc13-mt-s-x64-1_88 \
+  -lboost_system-gcc13-mt-s-x64-1_88 \  # 线程库依赖 system 库
+  -pthread
+```
+
+
+### 三、使用 CMake 管理（推荐，适合大型项目）
+如果用 CMake 构建项目，在 `CMakeLists.txt` 中添加以下配置：
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(my_boost_project)
+
+# 设置 Boost 根目录
+set(BOOST_ROOT "/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/boost")
+
+# 指定 Boost 头文件路径（可不写，BOOST_ROOT 会自动查找）
+include_directories(${BOOST_ROOT}/include/boost-1_88)
+
+# 指定 Boost 库文件路径
+link_directories(${BOOST_ROOT}/lib)
+
+# 查找并链接需要的 Boost 组件（例如 thread、system）
+find_package(Boost 1.88 REQUIRED COMPONENTS thread system)
+
+# 添加可执行文件
+add_executable(myprogram main.cpp)
+
+# 链接 Boost 库
+target_link_libraries(myprogram 
+  Boost::thread 
+  Boost::system 
+  pthread  # 系统线程库
+)
+```
+
+然后执行编译：
+```bash
+mkdir build && cd build
+cmake ..
+make
+```
+
+
+### 四、注意事项
+1. **库文件名匹配**：你的 Boost 库是静态库（`.a`），且文件名包含编译选项（如 `mt` 表示多线程，`s` 表示静态链接），确保链接时使用的库名与文件名完全一致。
+
+2. **运行时依赖**：由于使用静态库（`.a`），编译后的程序无需额外设置 `LD_LIBRARY_PATH` 即可运行（静态库已嵌入可执行文件）。
+
+3. **多组件依赖**：不同的 Boost 功能需要链接对应的组件（如用 `Boost.FileSystem` 需链接 `boost_filesystem` 库），可通过 `ls build_by_sh/ubuntu/install/boost/lib/` 查看所有可用库。
+
+通过以上方法，即可正确引用你本地编译的 Boost 1.88 库。
+========================================================================
+# 2.Boost 为 CMake 构建系统提供的 “配置模块”
 
 ## Q
 编译boost_1_88_0.zip，安装在 build_by_sh/ubuntu/install/boost/，请解释build_by_sh/ubuntu/install/boost/lib/cmake/下的文件
@@ -105,3 +208,4 @@ CMake 会自动通过以下流程工作：
 
 
 总结：`lib/cmake/` 下的文件是 Boost 与 CMake 交互的“桥梁”，它们将 Boost 的模块化特性、跨平台适配、版本管理封装成 CMake 能识别的格式，让依赖 Boost 的项目配置更简单、更跨平台。
+

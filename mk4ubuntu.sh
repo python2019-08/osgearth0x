@@ -780,6 +780,8 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
     # -- 把 FindSQLite3.cmake 放到 ${INSTALL_PREFIX_sqlite}/lib/cmake/SQLite3 ???   
     # ------------------------------------------------------------------
     # SrcDIR_lib=${SrcDIR_3rd}/sqlite3cmake  代码来自于 官网 https://sqlite.org
+    cmkPrefixPath=${INSTALL_PREFIX_zlib}
+
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
             "${cmakeCommonParams[@]}"  \
             -DCMAKE_PREFIX_PATH=${cmkPrefixPath} \

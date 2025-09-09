@@ -13,6 +13,12 @@
 #     endif()
 # endfunction()
 
+# Add gzip support
+set(ZLIB_FOUND False)
+if (SQLITE_ENABLE_ZLIB)
+    find_package(ZLIB REQUIRED)
+endif ()
+
 # Configure threading support
 if(SQLITE_MULTITHREAD_SUPPORT AND UNIX)
     if(CMAKE_SYSTEM_NAME MATCHES "HP-UX")
