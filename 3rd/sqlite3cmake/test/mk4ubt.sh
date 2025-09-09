@@ -99,8 +99,8 @@ cmkPrefixPath="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_sqlite}"
 cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
 		"${cmakeCommonParams[@]}"  \
 		-DCMAKE_PREFIX_PATH=${cmkPrefixPath} \
-		-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_sqlitetest}  
-	
+		-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_sqlitetest}  \
+		-DSQLITE_BUILD_TOOLS=ON
 
 cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
 
