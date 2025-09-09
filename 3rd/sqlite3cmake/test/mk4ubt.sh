@@ -108,3 +108,4 @@ cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -v
 
 echo "========== finished building sqlite 4 ubuntu ========== " &&  sleep 1 
  
+ 
