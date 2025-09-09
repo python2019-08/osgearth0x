@@ -61,13 +61,23 @@ set(SQLITE_COMMON_DEFINITIONS
     -DSQLITE_ENABLE_MEMSYS5
     -DSQLITE_ENABLE_SELECTTRACE
     -DSQLITE_ENABLE_WHERETRACE
-    -DSQLITE_HAVE_ZLIB=1
 )
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND SQLITE_COMMON_DEFINITIONS
         -DSQLITE_DEBUG
     )
 endif()
+
+if (ZLIB_FOUND)
+    list(APPEND SQLITE_COMMON_DEFINITIONS
+        -DSQLITE_HAVE_ZLIB=1
+    )
+    include_directories(${ZLIB_INCLUDE_DIRS})
+    target_link_libraries(SQLite3 PRIVATE ${ZLIB_LIBRARIES})
+else ()
+    message(SEND_ERROR "zlib library is missing")
+endif ()
+
 
 target_compile_definitions(SQLite3 
     PRIVATE ${SQLITE_COMMON_DEFINITIONS}
@@ -90,7 +100,6 @@ target_compile_options(SQLite3
 )
 
 target_link_libraries(SQLite3 PRIVATE
-    -lz
     -lm
     -lpthread
     -ldl
@@ -102,9 +111,9 @@ target_link_libraries(SQLite3 PRIVATE
 #     PUBLIC -lz
 # )
 
-add_library(libsqlite3 INTERFACE)
-target_link_libraries(libsqlite3 INTERFACE SQLite3)
-list(APPEND library_targets libsqlite3)
+# add_library(libsqlite3 INTERFACE)
+# target_link_libraries(libsqlite3 INTERFACE SQLite3)
+# list(APPEND library_targets libsqlite3)
  
 
 if(SQLITE_BUILD_TOOLS)
@@ -114,8 +123,7 @@ if(SQLITE_BUILD_TOOLS)
 
     target_compile_definitions(sqlite3_shell PRIVATE
         ${SQLITE_COMMON_DEFINITIONS}
-    )    
-
+    )   
     # list(APPEND library_targets sqlite3_shell)
 
     install(TARGETS sqlite3_shell
