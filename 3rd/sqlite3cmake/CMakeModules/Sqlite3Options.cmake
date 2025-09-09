@@ -5,8 +5,9 @@
 # RTREE support configuration
 option(SQLITE_ENABLE_ZLIB "Enable Zlib support" ON)
 
+# only build static library "libsqlite3.a"
+# option(SQLITE_BUILD_STATIC "BUILD STATIC LIBRARIES" ON) 
 
-option(SQLITE_BUILD_STATIC "BUILD STATIC LIBRARIES" ON) 
 option(SQLITE_BUILD_TOOLS "Build command-line tools" ON) 
  
 # SQLITE_MUTEX support configuration

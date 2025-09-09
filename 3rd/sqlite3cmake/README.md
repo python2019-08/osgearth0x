@@ -65,38 +65,28 @@ target_link_libraries(sqlite3 log)
 As cmake doesn't support command like `cmake clean`, it's recommended to perform an "out of source build".
 To do this, you can create a new directory and build in it:
 ```sh
-cd build/cmake
-mkdir builddir
-cd builddir
-cmake ..
-make
+mkdir builddir 
+cmake -S. -Bbuilddir
+cmake --build builddir -v
 ```
 Then you can clean all cmake caches by simply delete the new directory:
 ```sh
-rm -rf build/cmake/builddir
+rm -rf ./builddir
 ```
-
-And of course, you can directly build in build/cmake:
-```sh
-cd build/cmake
-cmake
-make
-```
-
+ 
 To show cmake build options, you can:
 ```sh
-cd build/cmake/builddir
+cd ./builddir
 cmake -LH ..
 ```
 
 Bool options can be set to `ON/OFF` with `-D[option]=[ON/OFF]`. You can configure cmake options like this:
 ```sh
-cd build/cmake/builddir
-cmake -DZSTD_BUILD_TESTS=ON -DZSTD_LEGACY_SUPPORT=OFF ..
-make
+cmake -S. -Bbuilddir -DSQLITE_BUILD_TOOLS=ON -DSQLITE_ENABLE_ZLIB=OFF ..
+cmake --build builddir 
 ```
-===============================================
-<!--  -->
+ 
+<!--  
 
 **Apple Frameworks**
 It's generally recommended to have CMake with versions higher than 3.14 for [iOS-derived platforms](https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#id27).
@@ -106,40 +96,8 @@ cmake -S. -B build-cmake -DZSTD_FRAMEWORK=ON -DCMAKE_SYSTEM_NAME=iOS
 Or you can utilize [iOS-CMake](https://github.com/leetal/ios-cmake) toolchain for CMake versions lower than 3.14
 ```sh
 cmake -B build -G Xcode -DCMAKE_TOOLCHAIN_FILE=<Path To ios.toolchain.cmake> -DPLATFORM=OS64 -DZSTD_FRAMEWORK=ON
-```
-
-### how to use it with CMake FetchContent
-
-For all options available, you can see it on <https://github.com/facebook/zstd/blob/dev/build/cmake/lib/CMakeLists.txt>
-```cmake
-include(FetchContent)
-
-set(ZSTD_BUILD_STATIC ON)
-set(ZSTD_BUILD_SHARED OFF)
-
-FetchContent_Declare(
-    zstd
-    URL "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz"
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    SOURCE_SUBDIR build/cmake
-)
-
-FetchContent_MakeAvailable(zstd)
-
-target_link_libraries(
-    ${PROJECT_NAME}
-    PRIVATE
-    libzstd_static
-)
-
-# On windows and macos this is needed
-target_include_directories(
-    ${PROJECT_NAME}
-    PRIVATE
-    ${zstd_SOURCE_DIR}/lib
-)
-```
-
+``` -->
+ 
 ### referring
 [Looking for a 'cmake clean' command to clear up CMake output](https://stackoverflow.com/questions/9680420/looking-for-a-cmake-clean-command-to-clear-up-cmake-output)
 

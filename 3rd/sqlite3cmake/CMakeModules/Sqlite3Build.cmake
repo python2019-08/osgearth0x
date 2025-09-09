@@ -2,7 +2,7 @@
 # Sqlite3 Build Targets Configuration
 # ################################################################
 
-# Always build the library first (this defines SQLITE_BUILD_STATIC/SHARED options)
+# Always build the library first
 add_subdirectory(src)
  
 # Clean-all target for thorough cleanup
