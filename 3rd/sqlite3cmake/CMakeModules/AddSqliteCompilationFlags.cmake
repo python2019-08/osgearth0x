@@ -136,16 +136,30 @@ macro(CONFIG_ANDROID_COMPILATION_FLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections")
 
-    if ((ANDROID_ABI STREQUAL "armeabi-v7a") OR (ANDROID_ABI STREQUAL "arm64-v8a") OR
-        (ANDROID_ABI STREQUAL "x86") OR (ANDROID_ABI STREQUAL "x86_64"))
-        # Use Identical Code Folding on platforms that support the gold linker.
-        set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=gold -Wl,--icf=safe ${CMAKE_EXE_LINKER_FLAGS}")
-        set(CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=gold -Wl,--icf=safe ${CMAKE_SHARED_LINKER_FLAGS}")
-    endif()
+
+    # `-fuse-ld` 是 GCC/Clang 编译器的一个选项，用于指定链接器（linker）的类型。
+    # ### **作用**
+    # `-fuse-ld` 允许你选择不同的链接器，例如：
+    # - `-fuse-ld=gold` → 使用 **GNU gold** 链接器
+    # - `-fuse-ld=bfd` → 使用 **GNU binutils** 的传统 `ld.bfd` 链接器
+    # - `-fuse-ld=lld` → 使用 **LLVM lld** 链接器（LLVM 项目的高性能链接器）
+    # - `-fuse-ld=mold` → 使用 **mold**（现代高性能链接器）
+    # ----------- 
+    # if ((ANDROID_ABI STREQUAL "armeabi-v7a") OR (ANDROID_ABI STREQUAL "arm64-v8a") OR
+    #     (ANDROID_ABI STREQUAL "x86") OR (ANDROID_ABI STREQUAL "x86_64"))
+    #     # Use Identical Code Folding on platforms that support the gold linker.
+    #     # -fuse-ld=gold 改为 -fuse-ld=lld ; NDK 默认使用 lld, gold对 Android AArch64 支持不完善
+    #     # 移除 "-Wl,--icf=safe", lld的 ICF 行为与 gold不同，无需手动指定
+    #     set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=gold -Wl,--icf=safe ${CMAKE_EXE_LINKER_FLAGS}")
+    #     set(CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=gold -Wl,--icf=safe ${CMAKE_SHARED_LINKER_FLAGS}")
+    # endif()
 
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections ")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections ")
 
+    # `-flto` 是 GCC 和 Clang 编译器的一个优化选项，全称是 **Link Time Optimization（链接时优化）**。
+    # 它的作用是在编译和链接阶段进行全局优化，以提高程序的运行性能或减少代码体积。
+    # 
     # Use LTO in Release builds. Due to a toolchain issue, -O2 is also required for the link step
     #  (https://github.com/android-ndk/ndk/issues/721)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")

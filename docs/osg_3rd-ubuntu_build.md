@@ -1482,3 +1482,152 @@ GDAL 的 `install(EXPORT ... EXPORT_LINK_INTERFACE_LIBRARIES)` 是其依赖传�
 3. 本质：是 GDAL 为兼容旧 CMake、简化依赖维护而选择的历史属性方案，虽非现代最佳实践，但适配了其复杂的依赖管理场景。
 
 这也解释了为什么你之前编译时，GDAL 会传递 `GEOS::GEOS` 目标——正是这个选项的作用。
+
+================================================
+# 15. FindTIFF.cmake为何调用 find_package(tiff CONFIG QUIET ${_TIFF_args})
+
+/usr/share/cmake-3.28/Modules/FindTIFF.cmake内容是
+``` 
+.......
+
+# Always find with QUIET to avoid noise when it is not found.
+find_package(tiff CONFIG QUIET ${_TIFF_args})
+unset(_TIFF_args)
+if (tiff_FOUND)
+  if (NOT TARGET TIFF::TIFF)
+    add_library(TIFF::TIFF IMPORTED INTERFACE)
+    set_target_properties(TIFF::TIFF PROPERTIES
+      INTERFACE_LINK_LIBRARIES TIFF::tiff)
+  endif ()
+  ................
+  return ()
+endif ()
+
+find_path(TIFF_INCLUDE_DIR tiff.h)
+..........
+
+if(NOT TIFF_LIBRARY)
+  find_library(TIFF_LIBRARY_RELEASE NAMES ${TIFF_NAMES})
+  find_library(TIFF_LIBRARY_DEBUG NAMES ${TIFF_NAMES_DEBUG})
+  include(${CMAKE_CURRENT_LIST_DIR}/SelectLibraryConfigurations.cmake)
+  select_library_configurations(TIFF)
+  mark_as_advanced(TIFF_LIBRARY_RELEASE TIFF_LIBRARY_DEBUG)
+endif()
+
+if(TIFF_INCLUDE_DIR AND EXISTS "${TIFF_INCLUDE_DIR}/tiffvers.h")
+   .......
+endif()
+
+foreach(_comp IN LISTS TIFF_FIND_COMPONENTS)
+  ..............
+endforeach()
+unset(_comp)
+
+unset(TIFF_NAMES)
+unset(TIFF_NAMES_DEBUG)
+
+include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(TIFF
+                                  HANDLE_COMPONENTS
+                                  REQUIRED_VARS TIFF_LIBRARY TIFF_INCLUDE_DIR
+                                  VERSION_VAR TIFF_VERSION_STRING)
+
+if(TIFF_FOUND)
+  set(TIFF_LIBRARIES ${TIFF_LIBRARY})
+  ........
+  set(TIFF_INCLUDE_DIRS "${TIFF_INCLUDE_DIR}")
+
+  if(NOT TARGET TIFF::TIFF)
+    add_library(TIFF::TIFF UNKNOWN IMPORTED)
+    ..............
+  endif()
+
+  if(NOT TARGET TIFF::CXX)
+    if(MSVC)
+      add_library(TIFF::CXX INTERFACE IMPORTED)
+      set_property(TARGET TIFF::CXX PROPERTY INTERFACE_LINK_LIBRARIES TIFF::TIFF)
+    else()
+      add_library(TIFF::CXX UNKNOWN IMPORTED)
+      set_property(TARGET TIFF::CXX PROPERTY INTERFACE_LINK_LIBRARIES TIFF::TIFF)
+      ........... 
+    endif()
+  endif()
+
+endif()
+
+mark_as_advanced(TIFF_INCLUDE_DIR)
+cmake_policy(POP)
+```
+其中为何调用 find_package(tiff CONFIG QUIET ${_TIFF_args}) ？不会导致 无限递归调用吗
+
+在 CMake 的 `FindTIFF.cmake` 模块中调用 `find_package(tiff CONFIG QUIET ${_TIFF_args})` **不会导致无限递归**，原因如下：
+
+---
+
+### **1. 为什么不会递归？**
+#### **(1) 命名空间隔离**
+- `find_package(tiff CONFIG)` 查找的是 **TIFF 的配置文件包**（如 `tiffConfig.cmake` 或 `tiff-config.cmake`），而当前模块是 `FindTIFF.cmake`。
+- 两者属于不同的搜索机制：
+  - `FindTIFF.cmake` → 模块模式（Module Mode）
+  - `tiffConfig.cmake` → 配置模式（Config Mode）
+
+#### **(2) 优先级控制**
+- `find_package(tiff CONFIG)` **显式指定了 `CONFIG` 模式**，强制跳过 `FindTIFF.cmake` 的模块模式，避免循环。
+
+#### **(3) 设计意图**
+- 该代码的逻辑是：**先尝试用 Config 模式查找 TIFF（优先使用项目自带的 TIFF 配置），如果失败再回退到模块模式**。
+
+---
+
+### **2. 具体执行流程**
+```cmake
+# 1. 先尝试 Config 模式（不会触发 FindTIFF.cmake）
+find_package(tiff CONFIG QUIET ${_TIFF_args})
+
+# 2. 如果 Config 模式失败（tiff_FOUND 为假），则继续执行下方的模块模式代码
+if (NOT tiff_FOUND)
+    # 这里是传统的 FindTIFF.cmake 实现（查找头文件和库）
+    find_path(TIFF_INCLUDE_DIR tiff.h)
+    find_library(TIFF_LIBRARY ...)
+    ...
+endif()
+```
+
+---
+
+### **3. 为什么这样设计？**
+#### **(1) 兼容性**
+- 允许用户通过 `tiffConfig.cmake` **自定义 TIFF 的路径和版本**（如自行编译的 TIFF）。
+- 如果用户未提供 Config 文件，则回退到系统默认的查找逻辑。
+
+#### **(2) 性能优化**
+- Config 模式通常比模块模式更快（直接读取预生成的配置）。
+
+#### **(3) 功能扩展**
+- Config 模式支持 **组件（COMPONENTS）** 和 **版本检查**，而传统模块模式可能不支持。
+
+---
+
+### **4. 如何验证？**
+#### **(1) 查看 TIFF 的安装路径**
+如果系统中安装了 TIFF 的开发包（如 `libtiff-dev`），通常会包含 `tiffConfig.cmake`：
+```bash
+find /usr -name "tiffConfig.cmake"
+```
+
+#### **(2) 手动指定 Config 文件**
+```cmake
+# 强制使用指定路径的 Config 文件
+find_package(tiff CONFIG PATHS "/path/to/tiff/install")
+```
+
+---
+
+### **5. 总结**
+| 关键点 | 说明 |
+|--------|------|
+| **避免递归** | `CONFIG` 模式与 `FindTIFF.cmake` 模块模式互斥 |
+| **设计目的** | 优先使用项目自定义配置，回退到系统默认查找 |
+| **实际效果** | 不会无限递归，而是按优先级顺序执行 |
+
+这种设计是 CMake 的通用模式，许多 `FindXXX.cmake` 模块（如 `FindOpenSSL.cmake`）都采用类似的逻辑。

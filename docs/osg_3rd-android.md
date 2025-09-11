@@ -1,3 +1,142 @@
+# 0. 如何为x86_64 模拟器编译 的curl  使用ldd
+
+## Q
+```sh
+abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ ls /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl
+/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl
+
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ ldd /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl
+
+/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl: error while loading shared libraries: /lib/x86_64-linux-gnu/libm.so: invalid ELF header
+```
+
+## A-YuanbaoAI
+这个错误表明你尝试在 **Linux x86_64 主机** 上运行一个 **Android x86_64 编译的 `curl`**，而 `ldd` 试图加载 **Linux 的动态库**（如 `/lib/x86_64-linux-gnu/libm.so`），但该二进制文件是 **Android 格式**，导致 `ELF header` 不匹配。
+
+---
+
+## **解决方案**
+### **1. 不要在 Linux 上直接运行 Android 二进制文件**
+Android 和 Linux 的二进制文件虽然都是 `x86_64`，但它们的 **动态链接库（.so）不兼容**。  
+- **Linux 动态库**：`/lib/x86_64-linux-gnu/libm.so`（GNU/Linux 格式）
+- **Android 动态库**：`/system/lib64/libm.so`（Bionic libc 格式）
+
+### **2. 正确检查 Android 二进制文件的依赖**
+在 **Android 环境**（模拟器或真机）中运行：
+```bash
+adb push /path/to/curl /data/local/tmp/
+adb shell
+cd /data/local/tmp/
+./curl --version  # 测试运行
+```
+然后使用 **Android 的 `readelf` 或 `ldd`（如果有）** 检查依赖：
+```bash
+adb shell readelf -d /data/local/tmp/curl
+```
+或
+```bash
+adb shell ldd /data/local/temp/curl  # 部分 Android 设备支持
+```
+
+---
+
+### **3. 如果必须在 Linux 上检查 Android 二进制文件的依赖**
+可以使用 **`patchelf`** 或 **`readelf`**：
+```bash
+readelf -d /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl
+```
+输出示例：
+```
+Dynamic section at offset 0x123456 contains:
+  Tag        Type                         Name/Value
+ 0x0000000000000001 (NEEDED)             Shared library: [libssl.so.1.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libcrypto.so.1.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so]
+```
+这可以让你看到 `curl` 依赖哪些 Android 动态库。
+
+---
+
+### **4. 修复方法（如果你想在 Linux 上运行 Android 二进制文件）**
+如果你想在 **Linux 上运行 Android x86_64 二进制文件**（不推荐），可以尝试：
+1. **使用 `qemu-x86_64` 模拟 Android 环境**：
+   ```bash
+   qemu-x86_64 -L /path/to/android/ndk/sysroot /path/to/curl
+   ```
+2. **确保所有依赖的 `.so` 文件来自 Android NDK**：
+   ```bash
+   LD_LIBRARY_PATH=/path/to/android/ndk/libs ./curl
+   ```
+
+---
+
+## **总结**
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| `ldd` 报错 `invalid ELF header` | 在 Linux 上运行 Android 二进制文件 | **不要在 Linux 上直接运行**，改用 `adb shell` 或 `readelf` |
+| 依赖库不匹配 | Android 使用 Bionic libc，Linux 使用 GNU libc | 在 Android 环境中运行 |
+| 想在 Linux 上调试 | 使用 `qemu-x86_64` 模拟 Android | `qemu-x86_64 -L /android/sysroot ./curl` |
+
+**正确做法：**
+- **在 Android 模拟器/设备上运行 `curl`**，而不是在 Linux 上。
+- **使用 `readelf -d` 检查依赖**，而不是 `ldd`（除非在 Android 环境中）。
+
+## mytest-on-android-emulator 
+
+已经成功将 curl推送到 Android 模拟器，并且它能够正常运行（./curl --version输出了正确的版本信息）。
+```sh
+# 先 在Android Studio 启动 Android 模拟器，然后...
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ adb push /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl   /data/local/tmp/
+/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl: 1 file pushed, 0 skipped. 328.4 MB/s (12790168 bytes in 0.037s)
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ adb shell
+
+
+emu64xa:/ $ cd /data/local/tmp/
+emu64xa:/data/local/tmp $ ls
+curl
+
+emu64xa:/data/local/tmp $ ./curl --version
+                                                                                                                     
+curl 8.15.0-DEV (x86_64-none-linux-android24) libcurl/8.15.0-DEV OpenSSL/3.5.2 zlib/1.3.1.1-motley
+Release-Date: [unreleased]
+Protocols: gopher gophers http https imap imaps ipfs ipns mqtt pop3 pop3s rtsp smb smbs smtp smtps ws wss
+Features: alt-svc AsynchDNS HSTS HTTPS-proxy IPv6 Largefile libz NTLM SSL threadsafe TLS-SRP UnixSockets
+
+emu64xa:/data/local/tmp $ ldd
+usage: ldd FILE
+
+1|emu64xa:/data/local/tmp $ ldd ./curl  
+error: expected absolute path: "./curl"
+
+1|emu64xa:/data/local/tmp $ ldd /data/local/tmp/curl  
+	linux-vdso.so.1 => [vdso] (0x7ffe347de000)
+	libdl.so => /apex/com.android.runtime/lib64/bionic/libdl.so (0x79b34b62f000)
+	libm.so => /apex/com.android.runtime/lib64/bionic/libm.so (0x79b34b5a0000)
+	libc.so => /apex/com.android.runtime/lib64/bionic/libc.so (0x79b34b469000)
+emu64xa:/data/local/tmp $ 
+```
+
+已经成功将 sqlite3推送到 Android 模拟器，并且它能够正常运行 
+```sh
+# 先 在Android Studio 启动 Android 模拟器，然后...
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ ls
+sqlite3
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ adb push sqlite3 /data/local/tmp/
+sqlite3: 1 file pushed, 0 skipped. 177.1 MB/s (5881208 bytes in 0.032s)
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ adb shell
+emu64xa:/ $ cd /data/local/tmp/
+emu64xa:/data/local/tmp $ ls
+curl  sqlite3
+emu64xa:/data/local/tmp $ ./sqlite3                                                                                                                                                                
+SQLite version 3.50.4 2025-07-30 19:33:53
+Enter ".help" for usage hints.
+Connected to a transient in-memory database.
+Use ".open FILENAME" to reopen on a persistent database.
+sqlite> .quit
+emu64xa:/data/local/tmp $ exit
+(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ 
+```
+
 # 1.${SrcDIR_openssl}/Configure android-arm64 -D__ANDROID_API__=24
 <!--  ./3rd/sqlite/**/CMakeLists.txt,./3rd/sqlite/**/*.cmake   -->
 ## Q
@@ -782,141 +921,3 @@ CFLAGS="-O3 -march=x86-64-v2"  # 根据宿主 CPU 调整
 
 
 ========================================================================
-# 7. 如何为x86_64 模拟器编译 的curl  使用ldd
-
-## Q
-```sh
-abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ ls /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl
-/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl
-
-(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ ldd /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl
-
-/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl: error while loading shared libraries: /lib/x86_64-linux-gnu/libm.so: invalid ELF header
-```
-
-## A-YuanbaoAI
-这个错误表明你尝试在 **Linux x86_64 主机** 上运行一个 **Android x86_64 编译的 `curl`**，而 `ldd` 试图加载 **Linux 的动态库**（如 `/lib/x86_64-linux-gnu/libm.so`），但该二进制文件是 **Android 格式**，导致 `ELF header` 不匹配。
-
----
-
-## **解决方案**
-### **1. 不要在 Linux 上直接运行 Android 二进制文件**
-Android 和 Linux 的二进制文件虽然都是 `x86_64`，但它们的 **动态链接库（.so）不兼容**。  
-- **Linux 动态库**：`/lib/x86_64-linux-gnu/libm.so`（GNU/Linux 格式）
-- **Android 动态库**：`/system/lib64/libm.so`（Bionic libc 格式）
-
-### **2. 正确检查 Android 二进制文件的依赖**
-在 **Android 环境**（模拟器或真机）中运行：
-```bash
-adb push /path/to/curl /data/local/tmp/
-adb shell
-cd /data/local/tmp/
-./curl --version  # 测试运行
-```
-然后使用 **Android 的 `readelf` 或 `ldd`（如果有）** 检查依赖：
-```bash
-adb shell readelf -d /data/local/tmp/curl
-```
-或
-```bash
-adb shell ldd /data/local/temp/curl  # 部分 Android 设备支持
-```
-
----
-
-### **3. 如果必须在 Linux 上检查 Android 二进制文件的依赖**
-可以使用 **`patchelf`** 或 **`readelf`**：
-```bash
-readelf -d /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl
-```
-输出示例：
-```
-Dynamic section at offset 0x123456 contains:
-  Tag        Type                         Name/Value
- 0x0000000000000001 (NEEDED)             Shared library: [libssl.so.1.1]
- 0x0000000000000001 (NEEDED)             Shared library: [libcrypto.so.1.1]
- 0x0000000000000001 (NEEDED)             Shared library: [libc.so]
-```
-这可以让你看到 `curl` 依赖哪些 Android 动态库。
-
----
-
-### **4. 修复方法（如果你想在 Linux 上运行 Android 二进制文件）**
-如果你想在 **Linux 上运行 Android x86_64 二进制文件**（不推荐），可以尝试：
-1. **使用 `qemu-x86_64` 模拟 Android 环境**：
-   ```bash
-   qemu-x86_64 -L /path/to/android/ndk/sysroot /path/to/curl
-   ```
-2. **确保所有依赖的 `.so` 文件来自 Android NDK**：
-   ```bash
-   LD_LIBRARY_PATH=/path/to/android/ndk/libs ./curl
-   ```
-
----
-
-## **总结**
-| 问题 | 原因 | 解决方案 |
-|------|------|----------|
-| `ldd` 报错 `invalid ELF header` | 在 Linux 上运行 Android 二进制文件 | **不要在 Linux 上直接运行**，改用 `adb shell` 或 `readelf` |
-| 依赖库不匹配 | Android 使用 Bionic libc，Linux 使用 GNU libc | 在 Android 环境中运行 |
-| 想在 Linux 上调试 | 使用 `qemu-x86_64` 模拟 Android | `qemu-x86_64 -L /android/sysroot ./curl` |
-
-**正确做法：**
-- **在 Android 模拟器/设备上运行 `curl`**，而不是在 Linux 上。
-- **使用 `readelf -d` 检查依赖**，而不是 `ldd`（除非在 Android 环境中）。
-
-### mytest-on-android-emulator 
-
-已经成功将 curl推送到 Android 模拟器，并且它能够正常运行（./curl --version输出了正确的版本信息）。
-```sh
-# 先 在Android Studio 启动 Android 模拟器，然后...
-(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ adb push /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl   /data/local/tmp/
-/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/curl/bin/curl: 1 file pushed, 0 skipped. 328.4 MB/s (12790168 bytes in 0.037s)
-(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x$ adb shell
-
-
-emu64xa:/ $ cd /data/local/tmp/
-emu64xa:/data/local/tmp $ ls
-curl
-
-emu64xa:/data/local/tmp $ ./curl --version
-                                                                                                                     
-curl 8.15.0-DEV (x86_64-none-linux-android24) libcurl/8.15.0-DEV OpenSSL/3.5.2 zlib/1.3.1.1-motley
-Release-Date: [unreleased]
-Protocols: gopher gophers http https imap imaps ipfs ipns mqtt pop3 pop3s rtsp smb smbs smtp smtps ws wss
-Features: alt-svc AsynchDNS HSTS HTTPS-proxy IPv6 Largefile libz NTLM SSL threadsafe TLS-SRP UnixSockets
-
-emu64xa:/data/local/tmp $ ldd
-usage: ldd FILE
-
-1|emu64xa:/data/local/tmp $ ldd ./curl  
-error: expected absolute path: "./curl"
-
-1|emu64xa:/data/local/tmp $ ldd /data/local/tmp/curl  
-	linux-vdso.so.1 => [vdso] (0x7ffe347de000)
-	libdl.so => /apex/com.android.runtime/lib64/bionic/libdl.so (0x79b34b62f000)
-	libm.so => /apex/com.android.runtime/lib64/bionic/libm.so (0x79b34b5a0000)
-	libc.so => /apex/com.android.runtime/lib64/bionic/libc.so (0x79b34b469000)
-emu64xa:/data/local/tmp $ 
-```
-
-已经成功将 sqlite3推送到 Android 模拟器，并且它能够正常运行 
-```sh
-# 先 在Android Studio 启动 Android 模拟器，然后...
-(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ ls
-sqlite3
-(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ adb push sqlite3 /data/local/tmp/
-sqlite3: 1 file pushed, 0 skipped. 177.1 MB/s (5881208 bytes in 0.032s)
-(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ adb shell
-emu64xa:/ $ cd /data/local/tmp/
-emu64xa:/data/local/tmp $ ls
-curl  sqlite3
-emu64xa:/data/local/tmp $ ./sqlite3                                                                                                                                                                
-SQLite version 3.50.4 2025-07-30 19:33:53
-Enter ".help" for usage hints.
-Connected to a transient in-memory database.
-Use ".open FILENAME" to reopen on a persistent database.
-sqlite> .quit
-emu64xa:/data/local/tmp $ exit
-(base) abner@abner-XPS:~/abner2/zdev/nv/osgearth0x/build_by_sh/android/install/3rd/sqlite/bin$ 
-```

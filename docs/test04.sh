@@ -1,3 +1,42 @@
+ 
+ABIS=("aa01")
+for ABI in "${ABIS[@]}"; do
+    echo "++++++++++++ ABI=${ABI} ++++++++++++"
+done
+
+echo "----------------------------------------"
+get_targetHost_byABILvl()
+{
+    local ABI_level=$1
+
+    # 根据 ABI 选择对应的 NDK 工具链和交叉编译参数
+    case ${ABI_level} in
+        arm64-v8a)
+            TARGET_HOST=aarch64-linux-android
+            ;;
+        armeabi-v7a)
+            TARGET_HOST=arm-linux-androideabi
+            ;;
+        x86)
+            TARGET_HOST=i686-linux-android
+            ;;
+        x86_64)
+            TARGET_HOST=x86_64-linux-android
+            ;;
+        *)
+            echo "ERROR: Unsupported ABI ${ABI}"
+            exit 1
+            ;;
+    esac
+
+    echo "${TARGET_HOST}"
+}
+ret_targetHost=$(get_targetHost_byABILvl "arm64-v8a")
+echo "....ret_targetHost=${ret_targetHost}"  
+
+exit 11
+
+echo "----------------------------------------"
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
 CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 

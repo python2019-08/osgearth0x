@@ -209,3 +209,123 @@ CMake 会自动通过以下流程工作：
 
 总结：`lib/cmake/` 下的文件是 Boost 与 CMake 交互的“桥梁”，它们将 Boost 的模块化特性、跨平台适配、版本管理封装成 CMake 能识别的格式，让依赖 Boost 的项目配置更简单、更跨平台。
 
+============================================================
+# 3.仅想 使用 boost 纯头文件库，是否需要b2, 如何使用b2，
+
+如果仅需要使用 **Boost 的纯头文件库（Header-only Libraries）**，你可以完全跳过 `b2` 的编译步骤，直接使用头文件即可。以下是具体方法和注意事项：
+
+---
+
+### **1. 纯头文件库列表**
+以下 Boost 库是纯头文件的（无需编译）：
+| 库名 | 常用头文件 | 用途 |
+|------|------------|------|
+| **Boost.Array** | `<boost/array.hpp>` | 固定大小数组 |
+| **Boost.SmartPtr** | `<boost/shared_ptr.hpp>`, `<boost/weak_ptr.hpp>` | 智能指针 |
+| **Boost.Optional** | `<boost/optional.hpp>` | 可选值封装 |
+| **Boost.Variant** | `<boost/variant.hpp>` | 类型安全的联合体 |
+| **Boost.Any** | `<boost/any.hpp>` | 任意类型容器 |
+| **Boost.Tuple** | `<boost/tuple/tuple.hpp>` | 元组 |
+| **Boost.Core** | `<boost/noncopyable.hpp>`, `<boost/core/ignore_unused.hpp>` | 核心工具 |
+| **Boost.MPL** | `<boost/mpl/vector.hpp>` | 模板元编程 |
+| **Boost.TypeTraits** | `<boost/type_traits.hpp>` | 类型特性 |
+| **Boost.Utility** | `<boost/utility.hpp>` | 工具类 |
+
+---
+
+### **2. 使用方法**
+#### **(1) 直接下载头文件（推荐）**
+```bash
+# 下载 Boost 源码（无需编译）
+wget https://boostorg.jfrog.io/artifactory/main/release/1.83.0/source/boost_1_83_0.tar.gz
+tar -xzf boost_1_83_0.tar.gz
+
+# 仅提取头文件
+cp -r boost_1_83_0/boost /path/to/your/project/include/
+```
+然后在代码中直接包含：
+```cpp
+#include <boost/array.hpp>
+#include <boost/shared_ptr.hpp>
+```
+
+#### **(2) 使用 `b2` 仅安装头文件**
+如果你已经下载了 Boost 源码，可以仅安装头文件：
+```bash
+./bootstrap.sh  # 生成 b2 工具
+./b2 headers    # 仅安装头文件到系统目录（如 /usr/local/include/boost）
+```
+或指定自定义路径：
+```bash
+./b2 install --prefix=/path/to/install --layout=system headers
+```
+
+---
+
+### **3. 项目中配置**
+#### **(1) CMake 配置**
+```cmake
+# 添加 Boost 头文件路径
+include_directories(/path/to/boost_headers)
+
+# 示例目标
+add_executable(my_app main.cpp)
+target_include_directories(my_app PRIVATE /path/to/boost_headers)
+```
+
+#### **(2) 手动编译**
+```bash
+g++ -I/path/to/boost_headers my_app.cpp -o my_app
+```
+
+---
+
+### **4. 注意事项**
+1. **无需链接库**：  
+   纯头文件库不需要 `-lboost_xxx` 链接参数。
+2. **版本一致性**：  
+   确保所有头文件来自同一 Boost 版本。
+3. **性能影响**：  
+   某些头文件库（如 MPL）可能在编译时增加开销。
+
+---
+
+### **5. 验证是否纯头文件**
+检查库的文档或头文件中的宏：
+```cpp
+// 在头文件中查找类似定义
+#define BOOST_HEADER_ONLY
+// 或
+#define BOOST_XXX_HEADER_ONLY
+```
+
+---
+
+### **6. 常见问题**
+#### **Q1: 如何知道一个库是否是纯头文件？**
+- 查看 https://www.boost.org/doc/libs/。
+- 检查库目录中是否有 `src/` 或 `build/` 子目录（如果有则需要编译）。
+
+#### **Q2: 混合使用纯头文件和需编译的库？**
+如果项目同时需要：
+```bash
+# 安装纯头文件 + 部分需编译的库
+./b2 install --prefix=/path/to/install --with-system --with-thread headers
+```
+
+#### **Q3: 如何减少头文件体积？**
+手动删除不需要的库头文件：
+```bash
+rm -rf /path/to/boost/mpl  # 示例：删除 MPL 元编程库
+```
+
+---
+
+### **7. 总结**
+| 场景 | 操作 |
+|------|------|
+| **仅使用纯头文件库** | 直接复制 `boost/` 目录到项目 |
+| **全量安装头文件** | `./b2 headers` |
+| **混合使用** | `./b2 install --with-xxx` |
+
+对于纯头文件需求，**无需运行 `b2 install`**，直接引用头文件即可！ 🚀
