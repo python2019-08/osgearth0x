@@ -17,8 +17,8 @@ isFinished_build_xz=true
 isFinished_build_libtiff=true 
 isFinished_build_freetype=true  
 isFinished_build_geos=true     # false
-isFinished_build_sqlite=false  
-isFinished_build_proj=true 
+isFinished_build_sqlite=true  
+isFinished_build_proj=false 
 isFinished_build_libexpat=true  
 isFinished_build_absl=true
 isFinished_build_protobuf=true
@@ -509,20 +509,21 @@ if [ "${isFinished_build_libjpegTurbo}" != "true" ]  ; then
     fi
 
     SrcDIR_lib=${SrcDIR_3rd}/libjpeg-turbo
-    BuildDIR_libjpeg=${BuildDir_ubuntu}/3rd/libjpeg-turbo
-    prepareBuilding  ${SrcDIR_lib} ${BuildDIR_libjpeg} ${INSTALL_PREFIX_jpegTurbo} ${isRebuild}  
+    BuildDIR_lib=${BuildDir_ubuntu}/3rd/libjpeg-turbo
+    prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_jpegTurbo} ${isRebuild}  
 
-    cmake -S${SrcDIR_lib}  -B ${BuildDIR_libjpeg} --debug-find \
+    cmake -S${SrcDIR_lib}  -B ${BuildDIR_lib} --debug-find \
             "${cmakeCommonParams[@]}"   \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a"  \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_jpegTurbo}  \
             -DWITH_JPEG8=ON      \
             -DENABLE_SHARED=OFF  \
             -DWITH_SIMD=ON       # 启用 SIMD 优化（需安装 NASM）
+    echo "make-----------------------------------------"
+    cmake --build ${BuildDIR_lib} -j$(nproc) -v
 
-    cmake --build ${BuildDIR_libjpeg} -j$(nproc)
-
-    cmake --build ${BuildDIR_libjpeg} --target install
+    echo "make install-----------------------------------------"
+    cmake --build ${BuildDIR_lib} --target install -v
 
     echo "========== Finished building libjpeg-turbo  4 Ubuntu==========" && sleep 5
 fi
@@ -729,8 +730,7 @@ if [ "${isFinished_build_geos}" != "true" ] ; then
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
             -DBUILD_SHARED_LIBS=OFF     \
             -DCMAKE_EXE_LINKER_FLAGS="-static" 
-            # -DZLIB_BUILD_SHARED=ON \
-            # -DZLIB_BUILD_STATIC=ON  \    
+ 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
     
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
@@ -846,8 +846,8 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
             -DSQLite3_DISABLE_DYNAMIC_EXTENSIONS=ON \
             -DCURL_DISABLE_ARES=ON  \
             -DZLIB_ROOT="${INSTALL_PREFIX_zlib}" \
-            -DZLIB_LIBRARY="${INSTALL_PREFIX_zlib}/lib/libz.a"
-
+            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  \
+            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include 
  
             # (1)proj源码中，只有find_package(SQLite3 REQUIRED)  find_package(TIFF REQUIRED)
             # find_package(CURL REQUIRED);
@@ -880,8 +880,7 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
             # -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include \
             # -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
             # -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include \
-            # -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  \
-            # -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \            
+        
 
             # -DCMAKE_EXE_LINKER_FLAGS="-static" \
 
@@ -894,7 +893,7 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
     echo "========== finished building proj 4 ubuntu ========== " &&  sleep 1 && set -x
 fi
 
- 
+exit 11 
 
 # -------------------------------------------------
 # libexpat
@@ -1093,7 +1092,7 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 "${INSTALL_PREFIX_curl}"   "${INSTALL_PREFIX_sqlite}")
 
     echo "==========cmk_prefixPath=${cmk_prefixPath}"
-    # 选择Release，否则 osgearth 编译时发生 类型转换错误​​（invalid conversion from 'void*' to 'OGRLayerH'）
+
  
     gdal_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
     gdal_MODULE_PATH="${gdal_MODULE_PATH};${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL/"
@@ -1515,7 +1514,10 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
           -Wl,-Bdynamic -lstdc++  -lGL -lGLU -ldl -lm -lc -lpthread -lrt     \
           -Wl,--no-as-needed -lX11 -lXext "  
    
- 
+
+        # (0) osgearth 编译时发生 类型转换错误​​（invalid conversion from 'void*' to 'OGRLayerH'）,
+        #     用-DCMAKE_C_FLAGS="-U GDAL_DEBUG" 解决
+
         # (1) osgearth ->GEOS::geos_c ; osgearth -> gdal -> GEOS::GEOS
         #   GEOS 自身的 install/geos/lib/cmake/GEOS/geos-config.cmake 生成 GEOS::geos 目标 ,
         #   GDAL 自带的 install/gdal/lib/cmake/gdal/packages/FindGEOS.cmake 生成 GEOS::GEOS 目标。
