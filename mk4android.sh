@@ -22,8 +22,8 @@ isFinished_build_proj=true
 # isFinished_build_libexpat=true  
 isFinished_build_absl=true
 isFinished_build_protobuf=true
-isFinished_build_boost=false  
-isFinished_build_gdal=false # v
+isFinished_build_boost=true  
+isFinished_build_gdal=true # v
 isFinished_build_osg=true
 isFinished_build_zip=true
 isFinished_build_osgearth=false
@@ -71,7 +71,7 @@ mkdir -p ${INSTALL_PREFIX_andro}
 # 定义需要编译的 Android ABI 列表
 # ABIS=("arm64-v8a"  "armeabi-v7a"  "x86_64"  "x86" )
 # CMAKE_ANDROID_ARCH_ABI="x86_64" 
-ABIS=("armeabi-v7a" )  
+ABIS=( "arm64-v8a"  "armeabi-v7a" "x86_64" )  
 ABI_LEVEL=24
  
 cmakeCommonParams=(
@@ -245,8 +245,9 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
 
         cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
     
-        #--## zlib源码编译后产生的ZLIBConfig.cmake 只有 ZLIB::ZLIBSTATIC ;
-        #--  要获得导入型目标 ZLIB::ZLIB，需要默认的、来自系统路径的FindZlib.cmake 
+        # (1)remark: ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/ZLIBConfig.cmake只提供了 ZLIB::ZLIBstatic
+        #        /usr/share/cmake-3.28/Modules/FindZLIB.cmake 提供了 ZLIB::ZLIB
+        #       所以作为workaround，这里使用/usr/share/cmake-3.28/Modules/FindZLIB.cmake        
         #--
         #----备份 zlib源码编译后产生的ZLIBConfig.cmake
         INSTALL_zlib_cmakeDir=${INSTALL_PREFIX_zlib}/lib/cmake/zlib
@@ -372,12 +373,10 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
                 -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include  
                             
                 # -DCMAKE_MODULE_PATH=${SrcDIR_lib}/cmake  # 优先使用项目内的 FindZLIB.cmake
-
-                #  -DZstd_LIBRARY="${INSTALL_PREFIX_zstd}/lib/libzstd.a" \
+ 
                 #  -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
                 #  -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
-                #  -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
-                #  -DLIBPSL_LIBRARY=${INSTALL_PREFIX_psl}/lib/libpsl.a          
+                #  -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \     
 
                 # -DOPENSSL_LIBRARIES="${INSTALL_PREFIX_openssl}/lib/libssl.a; ${INSTALL_PREFIX_openssl}/lib/libcrypto.a" \
         cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
@@ -727,9 +726,9 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
             -DZLIB_ROOT=${INSTALL_PREFIX_zlib}  \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   \
-            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
-            -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld" \
+            -DCMAKE_EXE_LINKER_FLAGS="-static  -fuse-ld=lld" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-static  -fuse-ld=lld" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-static  -fuse-ld=lld" \
             -DSQLITE_ENABLE_COLUMN_METADATA=ON \
             -DSQLITE_OMIT_DEPRECATED=ON \
             -DSQLITE_SECURE_DELETE=ON       
@@ -749,7 +748,9 @@ fi
 # proj
 # ------------------------------------------------- 
 if [ "${isFinished_build_proj}" != "true" ] ; then 
-    echo "========== building proj 4 ubuntu========== " &&  sleep 1 # && set -x
+    echo "========== building proj 4 Android ========== " &&  sleep 1 # && set -x
+
+    SrcDIR_lib=${SrcDIR_3rd}/proj
 
     # 循环编译每个架构
     for ABI in "${ABIS[@]}"; do
@@ -776,6 +777,11 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
         cmkPrefixPath=$(IFS=";"; echo "${cmkPrefixPath_Arr[*]}")
         echo "For building curl: cmkPrefixPath=${cmkPrefixPath}" 
 
+        # 在 proj/data/generate_proj_db.cmake中, 有execute_process(COMMAND "${EXE_SQLITE3}" "${PROJ_DB}"...)
+        # 用 sqlite3 的二进制程序来生成 proj.db。 但是在x86_64的ubuntu系统里， arm64-v8a/bin/sqlite3 和
+        #  armeabi-v7a/bin/sqlite3 都无法运行，所以这里特地指定 EXE_SQLITE3 为 x86_64/bin/sqlite3
+        EXE_SQLITE3=${INSTALL_PREFIX_3rd}/sqlite/x86_64/bin/sqlite3
+
         #  CC=musl-gcc cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}     
         cmake -S ${SrcDIR_lib}  -B ${BuildDIR_lib} --debug-find \
                 "${cmakeCommonParams[@]}"   -DANDROID_ABI=${ABI} \
@@ -783,14 +789,18 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
                 -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" \
                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_proj}  \
                 -DBUILD_TESTING=OFF \
-                -DBUILD_EXAMPLES=ON \
+                -DBUILD_EXAMPLES=OFF \
                 -DENABLE_CURL=ON  \
                 -DENABLE_TIFF=OFF  \
+                -DCMAKE_HAVE_PTHREAD_H=ON    \
+                -DCMAKE_HAVE_LIBC_PTHREAD=ON \
+                -DCMAKE_USE_PTHREADS_INIT=ON \
                 -DSQLite3_DISABLE_DYNAMIC_EXTENSIONS=ON \
                 -DCURL_DISABLE_ARES=ON  \
                 -DZLIB_ROOT="${INSTALL_PREFIX_zlib}" \
                 -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  \
                 -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include  \
+                -DEXE_SQLITE3=${EXE_SQLITE3}  \
                 -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
                 -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include       \
                 -DCURL_ROOT=${INSTALL_PREFIX_curl}                   \
@@ -831,15 +841,15 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
         cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -v
         echo "++++++++++++Finished building proj for ${ABI} ++++++++++++"
     done         
-    echo "========== finished building proj 4 ubuntu ========== "  # && set -x
+    echo "========== finished building proj 4 Android ========== "  # && set -x
 fi
 
-
+ 
 # -------------------------------------------------
 # abseil-cpp  
 # -------------------------------------------------
 if [ "${isFinished_build_absl}" != "true" ] ; then 
-    echo "========== building abseil-cpp 4 ubuntu========== " &&  sleep 5
+    echo "========== building abseil-cpp 4 Android ========== " &&  sleep 5
 
     SrcDIR_lib=${SrcDIR_3rd}/abseil-cpp
 
@@ -867,14 +877,14 @@ if [ "${isFinished_build_absl}" != "true" ] ; then
         cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  
         echo "++++++++++++Finished building abseil-cpp for ${ABI} ++++++++++++"
     done  
-    echo "========== finished building abseil-cpp 4 ubuntu ========== " &&  sleep 2
+    echo "========== finished building abseil-cpp 4 Android ========== " &&  sleep 2
 fi     
 
 # -------------------------------------------------
 # protobuf  
 # -------------------------------------------------
 if [ "${isFinished_build_protobuf}" != "true" ] ; then 
-    echo "========== building protobuf 4 ubuntu========== " &&  sleep 5
+    echo "========== building protobuf 4 Android ========== " &&  sleep 5
 
     SrcDIR_lib=${SrcDIR_3rd}/protobuf
 
@@ -914,7 +924,7 @@ if [ "${isFinished_build_protobuf}" != "true" ] ; then
         echo "++++++++++++Finished building protobuf for ${ABI} ++++++++++++"
     done            
       
-    echo "========== finished building protobuf 4 ubuntu ========== " &&  sleep 1
+    echo "========== finished building protobuf 4 Android ========== " &&  sleep 1
 fi    
 
 
@@ -922,7 +932,7 @@ fi
 # boost  
 # -------------------------------------------------
 if [ "${isFinished_build_boost}" != "true" ] ; then 
-    echo "========== building boost 4 ubuntu========== " &&  sleep 1 # && set -x
+    echo "========== building boost 4 Android========== " &&  sleep 1 # && set -x
 
 
     SrcDIR_lib=${SrcDIR_3rd}/boost
@@ -970,17 +980,15 @@ if [ "${isFinished_build_boost}" != "true" ] ; then
         # ​​(4) 指定 C++ 标准​​:  ./b2 cxxflags="-std=c++17" 
         echo "++++++++++++Finished building protobuf for ${ABI} ++++++++++++"
     done            
-    echo "========== Finished Building boost ========="  # && set +x
+    echo "========== Finished Building boost 4 Android========="  # && set +x
 fi
 
- 
+
 # -------------------------------------------------
 # gdal , see 3rd/gdal/fuzzers/build.sh
 # -------------------------------------------------
-
-
 if [ "${isFinished_build_gdal}" != "true" ] ; then 
-    echo "========== building gdal 4 Android========== " &&  sleep 1 && set -x
+    echo "========== building gdal 4 Android========== " &&  sleep 1 #  && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/gdal
 
@@ -1021,7 +1029,7 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
         # 使用;号连接数组元素.
         cmkPrefixPath=$(IFS=";"; echo "${cmkPrefixPath_Arr[*]}")
         echo "For building gdal: cmkPrefixPath=${cmkPrefixPath}"   
-        # 选择Release，否则 osgearth 编译时发生 类型转换错误​​（invalid conversion from 'void*' to 'OGRLayerH'）
+ 
         
         # ------
         gdal_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
@@ -1062,14 +1070,17 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 -DSQLITE3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include \
                 -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include \
                 -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
-                -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include \
+                -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include/libjpeg \
                 -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
+                -DSQLite3_HAS_COLUMN_METADATA=ON \
+                -DSQLite3_HAS_MUTEX_ALLOC=ON      \
+                -DSQLite3_HAS_RTREE=ON             \
                 -DSQLITE3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
                 -DOPENSSL_DIR=${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL/ \
                 -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl} \
                 -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include \
-                -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
-                -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+                -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a \
+                -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libcrypto.a \
                 -DPROTOBUF_LIBRARY=${INSTALL_PREFIX_protobuf}/lib/libprotobuf.a \
                 -DPROTOBUF_INCLUDE_DIR=${INSTALL_PREFIX_protobuf}/include  \
                 -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
@@ -1077,13 +1088,261 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
 
             # -DHAVE_KEA ## hdf5 support 
-
         cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
         
         cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
         echo "++++++++++++Finished building gdal for ${ABI} ++++++++++++"
     done               
-    echo "========== finished building gdal 4 Android ========== " &&  sleep 1 && set +x
+    echo "========== finished building gdal 4 Android ========== " # && set +x
 fi    
 
+
+
+# -------------------------------------------------
+# osg 
+# -------------------------------------------------
+if [ "${isFinished_build_osg}" != "true" ] ; then 
+    echo "========== building osg 4 ubuntu========== " &&  sleep 1
+
+    SrcDIR_lib=${SrcDIR_3rd}/osg
+
+    for ABI in "${ABIS[@]}"; do
+        echo "++++++++++++ Building osg for ${ABI} ++++++++++++"
+        
+        BuildDIR_lib=${BuildDir_3rd}/osg/$ABI
+        INSTALL_PREFIX_osg=${INSTALL_PREFIX_3rd}/osg/$ABI
+        prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_osg} ${isRebuild}     
+ 
+        # _LINKER_FLAGS="-L${lib_dir} -lcurl -ltiff -ljpeg -lsqlite3 -lprotobuf -lpng -llzma -lz"
+        # _LINKER_FLAGS="${_LINKER_FLAGS} -L${lib64_dir} -lssl -lcrypto" 
+        # 
+        INSTALL_PREFIX_zlib=${INSTALL_PREFIX_3rd}/zlib/$ABI 
+        INSTALL_PREFIX_png=${INSTALL_PREFIX_3rd}/libpng/$ABI
+        INSTALL_PREFIX_absl=${INSTALL_PREFIX_3rd}/abseil-cpp/$ABI 
+        INSTALL_PREFIX_protobuf=${INSTALL_PREFIX_3rd}/protobuf/$ABI
+        INSTALL_PREFIX_jpegTb=${INSTALL_PREFIX_3rd}/libjpeg-turbo/$ABI
+        INSTALL_PREFIX_openssl=${INSTALL_PREFIX_3rd}/openssl/$ABI
+        INSTALL_PREFIX_tiff=${INSTALL_PREFIX_3rd}/libtiff/$ABI   
+        INSTALL_PREFIX_geos=${INSTALL_PREFIX_3rd}/geos/$ABI 
+        INSTALL_PREFIX_proj=${INSTALL_PREFIX_3rd}/proj/$ABI
+        INSTALL_PREFIX_curl=${INSTALL_PREFIX_3rd}/curl/$ABI  
+        INSTALL_PREFIX_sqlite=${INSTALL_PREFIX_3rd}/sqlite/$ABI
+        INSTALL_PREFIX_freetype=${INSTALL_PREFIX_3rd}/freetype/$ABI    
+        INSTALL_PREFIX_gdal=${INSTALL_PREFIX_3rd}/gdal/$ABI     
+        INSTALL_PREFIX_boost=${INSTALL_PREFIX_3rd}/boost/$ABI 
+
+        cmkPrefixPath_Arr=(
+            "${INSTALL_PREFIX_zlib}"     "${INSTALL_PREFIX_png}" 
+            "${INSTALL_PREFIX_absl}"     "${INSTALL_PREFIX_protobuf}"  
+            "${INSTALL_PREFIX_jpegTb}"   "${INSTALL_PREFIX_openssl}" 
+            "${INSTALL_PREFIX_tiff}"     "${INSTALL_PREFIX_geos}"   
+            "${INSTALL_PREFIX_proj}"     "${INSTALL_PREFIX_curl}"   
+            "${INSTALL_PREFIX_sqlite}"   "${INSTALL_PREFIX_freetype}"
+            "${INSTALL_PREFIX_gdal}"     "${INSTALL_PREFIX_boost}"
+            )
+        # 使用;号连接数组元素.
+        cmkPrefixPath=$(IFS=";"; echo "${cmkPrefixPath_Arr[*]}")
+        echo "......For building osg: cmkPrefixPath=${cmkPrefixPath}"   
+
+        # <<osg的间接依赖库>>
+        # 依赖关系：osg -->gdal-->curl-->libpsl， 所以OSG 的 CMake 配置需要确保在
+        # target_link_libraries 时包含所有 cURL 所依赖的库(osg的间接依赖库)。
+        # 这通常在 CMakeLists.txt中通过 find_package(CURL)返回的导入型目标CURL::libCurl获得或直接在
+        # CMake -S -B命令中加 -DCMAKE_EXE_LINKER_FLAGS或CMAKE_SHARED_LINKER_FLAGS来添加缺失的库。​ 
+        # 
+        echo "gg==========_exeLinkerFlags=${_exeLinkerFlags}" 
+        _curlLibs="${INSTALL_PREFIX_curl}/lib/libcurl-d.a;"
+        _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib/libssl.a;"
+        _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib/libcrypto.a;"
+        _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zlib}/lib/libz.a"
+        echo "gg==========_curlLibs=${_curlLibs}" 
+
+
+        osgModulePath_arr=(
+            "${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
+            "${INSTALL_PREFIX_jpegTb}/lib/cmake/libjpeg-turbo"
+            "${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL"
+            "${INSTALL_PREFIX_gdal}/lib/cmake/gdal" 
+        )
+        # 使用;号连接数组元素.
+        # IFS是Shell中的“内部字段分隔符”（Internal Field Separator），默认值包含空格、制表符和换行符
+        osg_MODULE_PATH=$(IFS=";"; echo "${osgModulePath_arr[*]}")
+        echo "gg==========osg_MODULE_PATH=${osg_MODULE_PATH}" 
+    
+
+        echo "=== cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find ......"
+        # -DCMAKE_C_FLAGS="-march=armv7-a -mfpu=neon -DOSG_GLES3_AVAILABLE=1" \
+        # -DCMAKE_CXX_FLAGS="-std=c++14 -march=armv7-a -mfpu=neon -DOSG_GLES3_AVAILABLE=1" \
+        TARGET_HOST=$(get_targetHost_byABILvl "${ABI}")
+        OPENGL_gl_LIBRARY=${CMAKE_SYSROOT}/usr/lib/${TARGET_HOST}/${ABI_LEVEL}/libGLESv3.so
+ 
+        # --debug-find    --debug-output 
+        cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find  \
+            "${cmakeCommonParams[@]}"  -DANDROID_ABI=${ABI}       \
+            -DCMAKE_FIND_LIBRARY_SUFFIXES=".a"         \
+            -DCMAKE_PREFIX_PATH="${cmk_prefixPath}"     \
+            -DCMAKE_MODULE_PATH="${osg_MODULE_PATH}"     \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osg}  \
+            -DCMAKE_C_FLAGS="-fPIC"             \
+            -DCMAKE_CXX_FLAGS="-fPIC -std=c++14" \
+            -DBUILD_SHARED_LIBS=OFF  \
+        -DCMAKE_DEBUG_POSTFIX=""   \
+        -DDYNAMIC_OPENTHREADS=OFF   \
+        -DDYNAMIC_OPENSCENEGRAPH=OFF \
+        -DANDROID=ON                \
+        -DOSG_GL1_AVAILABLE=OFF \
+        -DOSG_GL2_AVAILABLE=OFF \
+        -DOSG_GL3_AVAILABLE=OFF \
+        -DOSG_GLES1_AVAILABLE=OFF \
+        -DOSG_GLES2_AVAILABLE=OFF \
+        -DOSG_GLES3_AVAILABLE=ON  \
+        -DOSG_GL_LIBRARY_STATIC=OFF \
+        -DOSG_GL_DISPLAYLISTS_AVAILABLE=OFF \
+        -DOSG_GL_MATRICES_AVAILABLE=OFF \
+        -DOSG_GL_VERTEX_FUNCS_AVAILABLE=OFF \
+        -DOSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE=OFF \
+        -DOSG_GL_FIXED_FUNCTION_AVAILABLE=OFF \
+        -DOPENGL_PROFILE="GLES3" \
+        -DOPENGL_gl_LIBRARY=${OPENGL_gl_LIBRARY} \
+        -DOSG_FIND_3RD_PARTY_DEPS=OFF  \
+        -DZLIB_USE_STATIC_LIBS=ON \
+        -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+        -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
+        -DZLIB_LIBRARIES="${INSTALL_PREFIX_zlib}/lib/libz.a" \
+        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include/libjpeg \
+        -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
+        -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
+        -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
+        -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
+        -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a \
+        -DOpenSSL_ROOT="${INSTALL_PREFIX_openssl}" \
+        -DOpenSSL_USE_STATIC_LIBS=ON \
+        -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include \
+        -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
+        -DTIFF_LIBRARIES=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
+        -DFREETYPE_DIR=${INSTALL_PREFIX_freetype}/lib/freetype \
+        -DFREETYPE_INCLUDE_DIRS=${INSTALL_PREFIX_freetype}/include/freetype2 \
+        -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
+        -DFREETYPE_LIBRARIES=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
+        -DCURL_DIR="${INSTALL_PREFIX_curl}/lib/cmake/CURL" \
+        -DCURL_LIBRARY=CURL::libcurl   \
+        -DCURL_LIBRARIES="${_curlLibs}" \
+        -DGDAL_DIR=${INSTALL_PREFIX_gdal}                  \
+        -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include   \
+        -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a  \
+        -DNO_DEFAULT_PATH=ON \
+        -DCMAKE_EXE_LINKER_FLAGS="-llog -landroid" 
+
+        # -DJPEG_DIR= \
+        # -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL"  \
+        # -DCMAKE_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/13" \
+        # -DCMAKE_EXE_LINKER_FLAGS=" \
+        #     -Wl,--whole-archive \
+        #     /usr/lib/gcc/x86_64-linux-gnu/13/libstdc++.a \
+        #     -Wl,--no-whole-archive \
+        #     -Wl,-Bdynamic -lm -lc -lGL -lGLU -ldl \
+        #     -Wl,--no-as-needed -lX11 -lXext"
+        
+ 
+        # (1)关于-DCURL_LIBRARY="CURL::libcurl" ：
+        #  -DCURL_LIBRARY="${INSTALL_PREFIX_curl}/lib/libcurl-d.a"  ## 根据一般的规则，ok
+        #  -DCURL_LIBRARIES="CURL::libcurl" ## 根据一般的规则，ok
+        #  -DCURL_LIBRARY="CURL::libcurl" ##  特定于osg项目，是ok的，因为osg/src/osgPlugins/curl/CMakeLists.txt中
+        #     ## SET(TARGET_LIBRARIES_VARS   CURL_LIBRARY     ZLIB_LIBRARIES)用的是CURL_LIBRARY而不是CURL_LIBRARIES
+        
+        # (2)Glibc 的某些函数（如网络相关）在静态链接时需要动态库支持,使用libc.a和libm.a会导致 collect2: error: ld returned 1 exit status
+        #     
+        # (3) -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
+        # (4) osg/src/osgPlugins/png/CMakeLists.txt中强制 SET(TARGET_LIBRARIES_VARS PNG_LIBRARY ZLIB_LIBRARIES )
+        #    而 lib/cmake/PNG/PNGConfig.cmake 中 没提供PNG_LIBRARY
+        #    所以 cmake -S -B 必须添加 -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a
+        # (5)针对cmakeCommonParams，特化设置：
+        #    -DEGL_LIBRARY=  -DEGL_INCLUDE_DIR=  -DEGL_LIBRARY= 
+        #    -DOPENGL_EGL_INCLUDE_DIR=  -DOPENGL_INCLUDE_DIR=  -DOPENGL_gl_LIBRARY=
+        #    -DPKG_CONFIG_EXECUTABLE= 
+        # 
+        # -DEGL_LIBRARY=/usr/lib/x86_64-linux-gnu/libEGL.so \
+        # -DEGL_INCLUDE_DIR=/usr/include/EGL                 \
+        # -DEGL_LIBRARY=/usr/lib/x86_64-linux-gnu/libEGL.so   \
+        # -DOPENGL_EGL_INCLUDE_DIR=/usr/include/EGL            \
+        # -DOPENGL_INCLUDE_DIR=/usr/include/GL                  \
+        # -DOPENGL_gl_LIBRARY=/usr/lib/x86_64-linux-gnu/libGL.so \
+        # -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config             \
+
+        # -DBoost_ROOT=${INSTALL_PREFIX_boost}  \ ## 现代CMake（>=3.12）官方标准
+        # -DBOOST_ROOT=${INSTALL_PREFIX_boost}  \ ## 旧版兼容（FindBoost.cmake传统方式）
+        
+        # -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  \ 
+        # -DCMAKE_STATIC_LINKER_FLAGS=${_LINKER_FLAGS}  
+
+
+ 
+        echo "=== cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v"
+        cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
+        
+        echo "=== cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}"
+        cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  
+        echo "++++++++++++Finished building osg for ${ABI} ++++++++++++"
+    done       
+    echo "========== finished building osg 4 ubuntu ========== " &&  sleep 1 
+
+fi    
+
+
+# -------------------------------------------------
+# libzip 
+# ------------------------------------------------- 
+
+
+if [ "${isFinished_build_zip}" != "true" ]; then 
+    echo "========== building libzip 4 ubuntu========== " &&  sleep 3
+    SrcDIR_lib=${SrcDIR_3rd}/libzip 
+
+    for ABI in "${ABIS[@]}"; do
+        echo "++++++++++++ Building osg for ${ABI} ++++++++++++"
+        
+        BuildDIR_lib=${BuildDir_3rd}/libzip/$ABI
+        INSTALL_PREFIX_zip=${INSTALL_PREFIX_3rd}/libzip/$ABI
+        prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_zip} ${isRebuild}     
+ 
+        # ------
+        INSTALL_PREFIX_zlib=${INSTALL_PREFIX_3rd}/zlib/$ABI 
+
+        # "${INSTALL_PREFIX_xz}" "${INSTALL_PREFIX_zstd}" "${INSTALL_PREFIX_openssl}" 
+        cmk_prefixPath="${INSTALL_PREFIX_zlib}"  
+        echo "==========cmk_prefixPath=${cmk_prefixPath}"   
+
+        # ------
+        cmake -S ${SrcDIR_lib}  -B ${BuildDIR_lib} --debug-find \
+                "${cmakeCommonParams[@]}"  -DANDROID_ABI=${ABI}  \
+                -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+                -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
+                -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_zip}  \
+                -DBUILD_SHARED_LIBS=OFF   \
+            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   \
+            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+            -DENABLE_COMMONCRYPTO=OFF \
+            -DENABLE_GNUTLS=OFF \
+            -DENABLE_MBEDTLS=OFF \
+            -DENABLE_OPENSSL=OFF \
+            -DENABLE_LZMA=OFF \
+            -DENABLE_ZSTD=OFF \
+            -DBUILD_TOOLS=OFF \
+            -DBUILD_EXAMPLES=OFF
+
+            # (1)libzip cmakelists.txt 存在error:"docs/libzip-cmakelists-err.png",导致lzma没起作用，
+            #  所以这里 设置-DENABLE_LZMA=OFF 
+            # (2)类似原因，zstd没有提供ZSTD_FOUND,而libzip-config.cmake.in中有 set(ENABLE_ZSTD "@ZSTD_FOUND@")，
+            #    所以这里-DENABLE_ZSTD=OFF 
+            # 
+            # -Dzstd_LIBRARY=${INSTALL_PREFIX_zstd}/lib/libzstd.a   \
+            # -Dzstd_INCLUDE_DIR=${INSTALL_PREFIX_zstd}/include \
+        cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v 
+
+        cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE} 
+        echo "++++++++++++Finished building osg for ${ABI} ++++++++++++"
+    done           
+    echo "========== finished building libzip 4 ubuntu ========== " &&  sleep 2
+fi
+ 
  

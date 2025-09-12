@@ -1129,6 +1129,9 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
             -DGEOS_LIBRARY=${INSTALL_PREFIX_geos}/lib/libgeos.a \
             -DPROJ_INCLUDE_DIR=${INSTALL_PREFIX_proj}/include \
             -DPROJ_LIBRARY=${INSTALL_PREFIX_proj}/lib/libproj.a \
+            -DSQLite3_HAS_COLUMN_METADATA=ON \
+            -DSQLite3_HAS_MUTEX_ALLOC=ON      \
+            -DSQLite3_HAS_RTREE=ON             \
             -DSQLITE3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include \
             -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include \
             -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
@@ -1345,9 +1348,8 @@ if [ "${isFinished_build_zip}" != "true" ]; then
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_zip} ${isRebuild} 
  
     ####################################################################  
-    cmk_prefixPath=$(check_concat_paths_1  ${INSTALL_PREFIX_zlib} \
-            "${INSTALL_PREFIX_xz}"  "${INSTALL_PREFIX_zstd}" \
-            "${INSTALL_PREFIX_openssl}" )
+    # "${INSTALL_PREFIX_xz}" "${INSTALL_PREFIX_zstd}" "${INSTALL_PREFIX_openssl}" 
+    cmk_prefixPath="${INSTALL_PREFIX_zlib}"  
     echo "==========cmk_prefixPath=${cmk_prefixPath}"   
 
     cmake -S ${SrcDIR_lib}  -B ${BuildDIR_lib} --debug-find \
