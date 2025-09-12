@@ -138,7 +138,15 @@ cd ../../
 
 git clone https://github.com/openscenegraph/OpenSceneGraph.git  3rd/osg
 cd ./3rd/osg 
-git checkout -b my-OpenSceneGraph-3.6.5 tags/OpenSceneGraph-3.6.5
+# git checkout -b my-OpenSceneGraph-3.6.5 tags/OpenSceneGraph-3.6.5
+# 
+# ~/abner2/zdev/nv/osgearth0x/3rd/osg$     git log
+# commit 2e4ae2ea94595995c1fc56860051410b0c0be605 (HEAD -> master, origin/master, origin/HEAD)
+# Author: Robert Osfield <robert@openscenegraph.com>
+# Date:   Thu Dec 1 18:17:31 2022 +0000
+#     Removed indentation to avoid github MD mark up from loosing link.
+# 
+git checkout -b  my-2022-dec01-181731  2e4ae2ea94595995c1fc56860051410b0c0be605
 cd ../../
 
 
