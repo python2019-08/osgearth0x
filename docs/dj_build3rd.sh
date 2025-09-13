@@ -624,8 +624,8 @@ cmake .. \
   -DOPENGL_PROFILE="GLES3" \
   -DANDROID=ON \
   -DOSG_FIND_3RD_PARTY_DEPS=ON \
-  -DCMAKE_C_FLAGS="-march=armv7-a -mfpu=neon -DOSG_GLES3_AVAILABLE=1" \
-  -DCMAKE_CXX_FLAGS="-std=c++14 -march=armv7-a -mfpu=neon -DOSG_GLES3_AVAILABLE=1" \
+  -DCMAKE_C_FLAGS="-march=armv7-a -mfpu=neon  -DGLES32=1 -DGL_GLEXT_PROTOTYPES=1" \
+  -DCMAKE_CXX_FLAGS="-std=c++14 -march=armv7-a -mfpu=neon  -DGL_GLEXT_PROTOTYPES=1" \
   -DZLIB_DIR=/home/x12/work/3rd/zlib \
   -DZLIB_INCLUDE_DIR=/home/x12/work/3rd/zlib/include \
   -DZLIB_LIBRARY=/home/x12/work/3rd/zlib/lib/libz.a \
