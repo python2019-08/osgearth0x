@@ -11,7 +11,8 @@ $ cd osgearth0x
 # $ git submodule update --init --recursive --progress -v
 $ chmod 777 ./git_clone_modules.sh  && ./git_clone_modules.sh 
 
-$   ./mk4ubuntu.sh  >b0sh.txt 2>&1
+$   ./mk4ubuntu.sh  >bu.txt 2>&1
+# 在bu.txt中查询"cmake error" 或“error:” 以确定有无错误
 ```
 
 # 2. osg data url

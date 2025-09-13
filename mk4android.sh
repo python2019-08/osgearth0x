@@ -71,7 +71,7 @@ mkdir -p ${INSTALL_PREFIX_andro}
 # 定义需要编译的 Android ABI 列表
 # ABIS=("arm64-v8a"  "armeabi-v7a"  "x86_64"  "x86" )
 # CMAKE_ANDROID_ARCH_ABI="x86_64" 
-ABIS=( "arm64-v8a"  "armeabi-v7a" "x86_64" )  
+ABIS=("arm64-v8a" "armeabi-v7a"  "x86_64")  
 ABI_LEVEL=24
  
 cmakeCommonParams=(
@@ -1102,7 +1102,7 @@ fi
 # osg 
 # -------------------------------------------------
 if [ "${isFinished_build_osg}" != "true" ] ; then 
-    echo "========== building osg 4 ubuntu========== " &&  sleep 1
+    echo "========== building osg 4 Android========== " &&  sleep 1
 
     SrcDIR_lib=${SrcDIR_3rd}/osg
 
@@ -1284,7 +1284,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  
         echo "++++++++++++Finished building osg for ${ABI} ++++++++++++"
     done       
-    echo "========== finished building osg 4 ubuntu ========== " &&  sleep 1 
+    echo "========== finished building osg 4 Android ========== " &&  sleep 1 
 
 fi    
 
@@ -1292,14 +1292,12 @@ fi
 # -------------------------------------------------
 # libzip 
 # ------------------------------------------------- 
-
-
 if [ "${isFinished_build_zip}" != "true" ]; then 
-    echo "========== building libzip 4 ubuntu========== " &&  sleep 3
+    echo "========== building libzip 4 Android========== " &&  sleep 3
     SrcDIR_lib=${SrcDIR_3rd}/libzip 
 
     for ABI in "${ABIS[@]}"; do
-        echo "++++++++++++ Building osg for ${ABI} ++++++++++++"
+        echo "++++++++++++ Building libzip for ${ABI} ++++++++++++"
         
         BuildDIR_lib=${BuildDir_3rd}/libzip/$ABI
         INSTALL_PREFIX_zip=${INSTALL_PREFIX_3rd}/libzip/$ABI
@@ -1340,9 +1338,224 @@ if [ "${isFinished_build_zip}" != "true" ]; then
         cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v 
 
         cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE} 
-        echo "++++++++++++Finished building osg for ${ABI} ++++++++++++"
+        echo "++++++++++++Finished building libzip for ${ABI} ++++++++++++"
     done           
-    echo "========== finished building libzip 4 ubuntu ========== " &&  sleep 2
+    echo "========== finished building libzip 4 Android ========== " &&  sleep 2
 fi
  
+
+# -------------------------------------------------
+# osgearth 
+# -------------------------------------------------
+if [ "${isFinished_build_osgearth}" != "true" ] ; then 
+    echo "========== building osgearth 4 Android========== " &&  sleep 1 # && set -x
+
+    SrcDIR_lib=${SrcDIR_3rd}/osgearth
+
+    for ABI in "${ABIS[@]}"; do
+        echo "++++++++++++ Building osgearth for ${ABI} ++++++++++++"
+        
+        BuildDIR_lib=${BuildDir_3rd}/osgearth/$ABI
+        INSTALL_PREFIX_osgearth=${INSTALL_PREFIX_3rd}/osgearth/$ABI 
+        echo "gg====         SrcDIR_lib=${SrcDIR_lib}" 
+        echo "gg====       BuildDIR_lib=${BuildDIR_lib}" 
+        echo "gg==== INSTALL_PREFIX_osg=${INSTALL_PREFIX_osgearth}" 
+        prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_osgearth} ${isRebuild}  
  
+        # ------
+        INSTALL_PREFIX_zlib=${INSTALL_PREFIX_3rd}/zlib/$ABI 
+        INSTALL_PREFIX_zip=${INSTALL_PREFIX_3rd}/libzip/$ABI
+        INSTALL_PREFIX_png=${INSTALL_PREFIX_3rd}/libpng/$ABI
+        INSTALL_PREFIX_absl=${INSTALL_PREFIX_3rd}/abseil-cpp/$ABI 
+        INSTALL_PREFIX_protobuf=${INSTALL_PREFIX_3rd}/protobuf/$ABI
+        INSTALL_PREFIX_jpegTb=${INSTALL_PREFIX_3rd}/libjpeg-turbo/$ABI
+        INSTALL_PREFIX_openssl=${INSTALL_PREFIX_3rd}/openssl/$ABI
+        INSTALL_PREFIX_tiff=${INSTALL_PREFIX_3rd}/libtiff/$ABI   
+        INSTALL_PREFIX_geos=${INSTALL_PREFIX_3rd}/geos/$ABI 
+        INSTALL_PREFIX_proj=${INSTALL_PREFIX_3rd}/proj/$ABI
+        INSTALL_PREFIX_curl=${INSTALL_PREFIX_3rd}/curl/$ABI  
+        INSTALL_PREFIX_sqlite=${INSTALL_PREFIX_3rd}/sqlite/$ABI
+        INSTALL_PREFIX_freetype=${INSTALL_PREFIX_3rd}/freetype/$ABI    
+        INSTALL_PREFIX_gdal=${INSTALL_PREFIX_3rd}/gdal/$ABI     
+        INSTALL_PREFIX_boost=${INSTALL_PREFIX_3rd}/boost/$ABI 
+        INSTALL_PREFIX_osg=${INSTALL_PREFIX_3rd}/osg/$ABI
+
+        cmkPrefixPath_Arr=( "${INSTALL_PREFIX_zlib}"
+                "${INSTALL_PREFIX_zip}"      "${INSTALL_PREFIX_png}"   
+                "${INSTALL_PREFIX_absl}"     "${INSTALL_PREFIX_jpegTb}"   
+                "${INSTALL_PREFIX_protobuf}" "${INSTALL_PREFIX_openssl}"      
+                "${INSTALL_PREFIX_tiff}"     "${INSTALL_PREFIX_geos}"         
+                "${INSTALL_PREFIX_proj}"         
+                "${INSTALL_PREFIX_freetype}" "${INSTALL_PREFIX_curl}"   
+                "${INSTALL_PREFIX_sqlite}"   "${INSTALL_PREFIX_gdal}"   
+                "${INSTALL_PREFIX_boost}"    "${INSTALL_PREFIX_osg}" 
+                )
+        cmkPrefixPath=$(IFS=";"; echo "${cmkPrefixPath_Arr[*]}")
+        echo "......For building oearth: cmkPrefixPath=${cmkPrefixPath}"    
+        # ------
+        export PKG_CONFIG_PATH="${INSTALL_PREFIX_osg}/lib/pkgconfig:$PKG_CONFIG_PATH"
+        # ------
+        osgearth_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
+        osgearth_MODULE_PATH="${osgearth_MODULE_PATH};${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL/"
+        osgearth_MODULE_PATH="${osgearth_MODULE_PATH};${INSTALL_PREFIX_gdal}/lib/cmake/gdal/packages/"
+
+        # ------
+        cmakeParams_osgearth=(  
+        "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH" # BOTH：先查根路径，再查系统路径    
+        "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH"  
+        # "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
+        # 是否访问 /usr/include/、/usr/lib/ 等 系统路径   
+        "-DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=ON"
+        # 是否访问PATH\LD_LIBRARY_PATH等环境变量
+        "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF"  
+        )
+        # "${cmakeParams_osgearth[@]}"
+
+        # ------
+        # 2. 清理环境
+        unset LD_LIBRARY_PATH
+        unset LIBRARY_PATH
+        
+ 
+        TARGET_HOST=$(get_targetHost_byABILvl "${ABI}")
+        OPENGL_gl_LIBRARY=${CMAKE_SYSROOT}/usr/lib/${TARGET_HOST}/${ABI_LEVEL}/libGLESv3.so
+        OPENGL_opengl_LIBRARY=${OPENGL_gl_LIBRARY} 
+        OPENGL_EGL_LIBRARY=${CMAKE_SYSROOT}/usr/lib/${TARGET_HOST}/${ABI_LEVEL}/libEGL.so
+        OPENGL_GLES3_INCLUDE_DIR=${CMAKE_SYSROOT}/usr/include/GLES3
+
+
+        # --debug-find    --debug-output 
+        cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find  \
+                "${cmakeCommonParams[@]}" -DANDROID_ABI=${ABI}  \
+                -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+                -DCMAKE_PREFIX_PATH="${cmkPrefixPath}"           \
+                -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH}       \
+                -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osgearth}  \
+                -DCMAKE_C_FLAGS="-fPIC -DGLES32=1 -DANDROID=1 -DGL_GLEXT_PROTOTYPES=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
+                -DCMAKE_CXX_FLAGS="-fPIC -DGLES32=1 -DANDROID=1 -DGL_GLEXT_PROTOTYPES=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"  \
+                -DBUILD_SHARED_LIBS=OFF   \
+            -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=OFF \
+            -DCMAKE_SKIP_RPATH=ON  \
+            -DANDROID=ON            \
+            -DDYNAMIC_OPENTHREADS=OFF  -DDYNAMIC_OPENSCENEGRAPH=OFF \
+            -DOSGEARTH_ENABLE_FASTDXT=OFF \
+            -DOSGEARTH_BUILD_TOOLS=OFF       \
+            -DOSGEARTH_BUILD_EXAMPLES=OFF     \
+            -DOSGEARTH_BUILD_IMGUI_NODEKIT=OFF \
+            -DOSG_GL1_AVAILABLE=OFF \
+            -DOSG_GL2_AVAILABLE=OFF  \
+            -DOSG_GL3_AVAILABLE=OFF   \
+            -DOSG_GLES1_AVAILABLE=OFF  \
+            -DOSG_GLES2_AVAILABLE=OFF   \
+            -DOSG_GLES3_AVAILABLE=ON     \
+            -DOSG_GL_LIBRARY_STATIC=OFF   \
+            -DOSG_GL_DISPLAYLISTS_AVAILABLE=OFF    \
+            -DOSG_GL_MATRICES_AVAILABLE=OFF         \
+            -DOSG_GL_VERTEX_FUNCS_AVAILABLE=OFF      \
+            -DOSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE=OFF \
+            -DOSG_GL_FIXED_FUNCTION_AVAILABLE=OFF      \
+            -DOPENGL_PROFILE="GLES3"                    \
+            -DOPENGL_glx_LIBRARY=NOTFOUND              \
+            -DOPENGL_opengl_LIBRARY=${OPENGL_opengl_LIBRARY} \
+            -DOPENGL_EGL_LIBRARY=${OPENGL_EGL_LIBRARY} \
+            -DOPENGL_gl_LIBRARY=${OPENGL_gl_LIBRARY}    \
+            -DOPENGL_gles3_LIBRARY=${OPENGL_gl_LIBRARY}  \
+            -DOPENGL_INCLUDE_DIR=${OPENGL_GLES3_INCLUDE_DIR}      \
+            -DOPENGL_GLES3_INCLUDE_DIR=${OPENGL_GLES3_INCLUDE_DIR} \
+            -DOSG_LIBRARY_STATIC=ON \
+            -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config \
+            -DOpenSceneGraph_FIND_QUIETLY=OFF  \
+            -DOSG_DIR=${INSTALL_PREFIX_osg}     \
+            -DOPENSCENEGRAPH_INCLUDE_DIR=${INSTALL_PREFIX_osg}/include \
+            -DOPENTHREADS_INCLUDE_DIR=${INSTALL_PREFIX_osg}/include \
+            -DZLIB_ROOT_DIR="${INSTALL_PREFIX_zlib}"         \
+            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   \
+            -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/   \
+            -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a    \
+            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include  \
+            -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
+            -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include  \
+            -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
+            -DFREETYPE_ROOT=${INSTALL_PREFIX_freetype}                    \
+            -DFREETYPE_INCLUDE_DIR=${INSTALL_PREFIX_freetype}/include      \
+            -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetype.a \
+            -DCURL_ROOT=${INSTALL_PREFIX_curl}                  \
+            -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include    \
+            -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
+            -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include     \
+            -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
+            -DGEOS_DIR=${INSTALL_PREFIX_geos}                   \
+            -DGEOS_INCLUDE_DIR=${INSTALL_PREFIX_geos}/include    \
+            -DGEOS_LIBRARY=${INSTALL_PREFIX_geos}/lib/libgeos_c.a \
+            -DPROJ_INCLUDE_DIR=${INSTALL_PREFIX_proj}/include  \
+            -DPROJ_LIBRARY=${INSTALL_PREFIX_proj}/lib/libproj.a \
+            -DPROJ4_LIBRARY=${INSTALL_PREFIX_proj}/lib/libproj.a \
+            -DGDAL_ROOT=${INSTALL_PREFIX_gdal}                \
+            -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include  \
+            -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a \
+            -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a     \
+            -DSSL_EAY_RELEASE=${INSTALL_PREFIX_openssl}/lib64/libssl.a          \
+            -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+            -DLIB_EAY_RELEASE=""  \
+            -DCMAKE_EXE_LINKER_FLAGS="-llog -landroid" 
+
+        # (1)/usr/share/cmake-3.28/Modules/FindGLEW.cmake中需要用 ENV GLEW_ROOT。
+        # (2)在 CMake 命令行中临时设置环境变量（一次性生效），格式为 
+        #   GLEW_ROOT=/path/to/GLEW cmake ...  ，无需提前 export。如：
+        #   GLEW_ROOT="/usr/lib/x86_64-linux-gnu/" cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}\
+
+            # -DGLEW_USE_STATIC_LIBS=OFF  \
+            # -DCMAKE_EXE_LINKER_FLAGS=" \
+            # -Wl,--whole-archive  -fvisibility=hidden   -Wl,--no-whole-archive   \
+            # -Wl,-Bdynamic -lstdc++  -lGL -lGLU -ldl -lm -lc -lpthread -lrt     \
+            # -Wl,--no-as-needed -lX11 -lXext "  
+    
+
+            # (0) osgearth 编译时发生 类型转换错误​​（invalid conversion from 'void*' to 'OGRLayerH'）,
+            #     用-DCMAKE_C_FLAGS="-U GDAL_DEBUG" 解决
+
+            # (1) osgearth ->GEOS::geos_c ; osgearth -> gdal -> GEOS::GEOS
+            #   GEOS 自身的 install/geos/lib/cmake/GEOS/geos-config.cmake 生成 GEOS::geos 目标 ,
+            #   GDAL 自带的 install/gdal/lib/cmake/gdal/packages/FindGEOS.cmake 生成 GEOS::GEOS 目标。
+            #   osgearth 的cmakelists.txt中需要GEOS::geos_c，osgearth依赖gdal，而gdal需要GEOS::GEOS,因为
+            #   gdal/lib/cmake/gdal/GDAL-targets.cmake  有
+            # ```
+            # set_target_properties(GDAL::GDAL PROPERTIES
+            #     INTERFACE_COMPILE_DEFINITIONS "\$<\$<CONFIG:DEBUG>:GDAL_DEBUG>"
+            #     INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+            #     INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:ZLIB::ZLIB>;。。。。。。。。。。。\$<LINK_ONLY:GEOS::GEOS>。。。。
+            # ```
+            # (2)remark: osgearth/src/osgEarth/CMakeLists.txt 
+            # ```
+            # OPTION(NRL_STATIC_LIBRARIES "Link osgEarth against static GDAL and cURL, including static OpenSSL, Proj4, JPEG, PNG, and TIFF." OFF)
+            # if(NOT NRL_STATIC_LIBRARIES)
+            # LINK_WITH_VARIABLES(${LIB_NAME} OSG_LIBRARY ... CURL_LIBRARY GDAL_LIBRARY OSGMANIPULATOR_LIBRARY)
+            # else(NOT NRL_STATIC_LIBRARIES)
+            # LINK_WITH_VARIABLES(${LIB_NAME} OSG_LIBRARY ... CURL_LIBRARY GDAL_LIBRARY OSGMANIPULATOR_LIBRARY 
+            #                           SSL_EAY_RELEASE LIB_EAY_RELEASE 
+            #                           TIFF_LIBRARY PROJ4_LIBRARY PNG_LIBRARY JPEG_LIBRARY)
+            # endif(NOT NRL_STATIC_LIBRARIES)
+            # ```
+            # (3)
+            # OSGDB_LIBRARY  OSGGA_LIBRARY OSGMANIPULATOR_LIBRARY OSGSHADOW_LIBRARY 
+            # OSGSIM_LIBRARY OSGTEXT_LIBRARY OSGUTIL_LIBRARY 
+            # OSGVIEWER_LIBRARY OSG_LIBRARY
+        echo "oe....cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v" 
+        cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
+        
+        echo "oe....cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}" 
+        cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}         
+        echo "++++++++++++Finished building osgearth for ${ABI} ++++++++++++"
+    done         
+    echo "========== finished building osgearth 4 Android ========== "  # && set +x
+
+fi    
+
+ 
+# **************************************************************************
+# **************************************************************************
+#  src/
+# ************************************************************************** 
+SrcDIR_src=${Repo_ROOT}/src
+  
