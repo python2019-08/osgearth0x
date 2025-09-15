@@ -84,7 +84,8 @@ cd ../../
 # cd ../../    
 # ------------
 # wget  https://sqlite.org/2025/sqlite-amalgamation-3500400.zip
-# 
+# cd ./3rd/sqlite3cmake
+# cd ../../   
 
 
 git clone  https://github.com/OSGeo/PROJ.git    3rd/proj
@@ -169,5 +170,6 @@ cd ../../
 git clone https://github.com/gwaldron/osgearth.git 3rd/osgearth
 cd ./3rd/osgearth 
 git submodule update --init --recursive
-git checkout -b my-osgearth-3.7.2   tags/osgearth-3.7.2
+# git checkout -b my-osgearth-3.7.2   tags/osgearth-3.7.2
+git checkout master
 cd ../../
