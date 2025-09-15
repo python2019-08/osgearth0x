@@ -1,6 +1,18 @@
 #!/bin/bash
 # **************************************************************************
 # false  ;;;   ./mk4ubuntu.sh  >bu.txt 2>&1
+echo "mk4ubuntu.sh: param 0=$0"
+# Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
+# 获取脚本的绝对路径（处理符号链接）
+SCRIPT_PATH=$(readlink -f "$0")
+echo "sh-path: $SCRIPT_PATH"
+
+# 额外：获取脚本所在目录的绝对路径
+Repo_ROOT=$(dirname "$SCRIPT_PATH")
+echo "Repo_ROOT=${Repo_ROOT}"
+ 
+echo "============================================================="
+# **************************************************************************
 isRebuild=true
 
 isFinished_build_zlib=true
@@ -17,8 +29,8 @@ isFinished_build_xz=true
 isFinished_build_libtiff=true 
 isFinished_build_freetype=true  
 isFinished_build_geos=true     # false
-isFinished_build_sqlite=true  
-isFinished_build_proj=false 
+isFinished_build_sqlite=false  
+isFinished_build_proj=true 
 isFinished_build_libexpat=true  
 isFinished_build_absl=true
 isFinished_build_protobuf=true
@@ -26,7 +38,7 @@ isFinished_build_boost=true
 isFinished_build_gdal=true
 isFinished_build_osg=true
 isFinished_build_zip=true
-isFinished_build_osgearth=true
+isFinished_build_osgearth=false
 
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
@@ -34,8 +46,6 @@ CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  #
 CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
 
 # **************************************************************************
-Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
-
 # rm -fr ./build_by_sh   
 BuildDir_ubuntu=${Repo_ROOT}/build_by_sh/ubuntu
 
@@ -110,6 +120,9 @@ check_concat_paths()
     for path in "$@"; do
         if [ -n "${path}" ] && [ -d "${path}" ]; then
             finalPaths="${finalPaths};${path}"
+        else 
+            echo "Folder ${path}  NOT exist!"
+            exit 1002
         fi     
     done
     finalPaths="${finalPaths#;}"  # 移除开头的分号
@@ -132,8 +145,11 @@ check_concat_paths_1()
   local finalPaths=""
   for path in "$@"; do
       if [ -n "${path}" ] && [ -d "${path}" ]; then
-          # ${cmk_prefixPath:+;} 表示：若 cmk_prefixPath 非空，则添加 ;，避免开头或结尾出现多余分号。
-          finalPaths="${finalPaths}${finalPaths:+;}${path}"
+        # ${cmk_prefixPath:+;} 表示：若 cmk_prefixPath 非空，则添加 ;，避免开头或结尾出现多余分号。
+        finalPaths="${finalPaths}${finalPaths:+;}${path}"
+      else
+        cho "Folder ${path}  NOT exist!"
+        exit 1002
       fi     
   done  
 
@@ -184,8 +200,9 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
 
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
  
-    # ## zlib源码编译后产生的ZLIBConfig.cmake 只有 ZLIB::ZLIBSTATIC ;
-    #    要获得导入型目标 ZLIB::ZLIB，需要默认的、来自系统路径的FindZlib.cmake 
+    # (1)remark: ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/ZLIBConfig.cmake只提供了 ZLIB::ZLIBstatic
+    #        /usr/share/cmake-3.28/Modules/FindZLIB.cmake 提供了 ZLIB::ZLIB
+    #       所以作为workaround，这里使用/usr/share/cmake-3.28/Modules/FindZLIB.cmake
     # 
     # --备份 zlib源码编译后产生的ZLIBConfig.cmake
     mv    ${INSTALL_PREFIX_zlib}/lib/cmake  ${INSTALL_PREFIX_zlib}/lib/cmake-bk
@@ -227,7 +244,7 @@ if [ "${isFinished_build_zstd}" != "true" ]; then
             -DCMAKE_C_FLAGS="-fPIC" \
             -DCMAKE_CXX_FLAGS="-fPIC" 
 
-    cmake --build ${BuildDIR_lib} -j$(nproc)
+    cmake --build ${BuildDIR_lib} -j$(nproc) -v
 
     cmake --build ${BuildDIR_lib} --target install    
 
@@ -374,9 +391,8 @@ if [ "${isFinished_build_libpsl}" != "true" ] ; then
     CFLAGS="-fPIC" \
     ${SrcDIR_lib}/configure \
                 --prefix=${INSTALL_PREFIX_psl} --enable-debug \
-                --disable-shared \
-                --enable-static  \
-                --disable-runtime --enable-builtin
+                --disable-shared  --enable-static  \
+                --disable-runtime --enable-builtin  -disable-gtk-doc
                 # --without-libidn2 --without-libicu --without-libidn 
     # 
     make   -j$(nproc)  -v
@@ -392,7 +408,7 @@ fi
 INSTALL_PREFIX_curl=${INSTALL_PREFIX_ubt}/curl
 
 if [ "${isFinished_build_curl}" != "true" ] ; then 
-    echo "======== Building curl =========" &&  sleep 3 && set -x     
+    echo "======== Building curl =========" &&  sleep 3 # && set -x     
 
     SrcDIR_lib=${SrcDIR_3rd}/curl
     BuildDIR_lib=${BuildDir_ubuntu}/3rd/curl 
@@ -401,16 +417,26 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
     cmk_prefixPath=$(check_concat_paths  "${INSTALL_PREFIX_openssl}" \
                 "${INSTALL_PREFIX_psl}" \
                 "${INSTALL_PREFIX_zlib}"  "${INSTALL_PREFIX_zstd}" )
- 
+    echo "ubt....for curl: cmk_prefixPath=${cmk_prefixPath}" 
+
+    curlModulePath_arr=(
+        "${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
+        "${INSTALL_PREFIX_zstd}/lib/cmake/zstd"
+        "${INSTALL_PREFIX_psl}/lib/pkgconfig"     
+        "${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL"           
+    )
+    # 使用;号连接数组元素.
+    # IFS是Shell中的“内部字段分隔符”（Internal Field Separator），默认值包含空格、制表符和换行符
+    curl_MODULE_PATH=$(IFS=";"; echo "${curlModulePath_arr[*]}")
+    echo "ubt....for curl: curl_MODULE_PATH=${curl_MODULE_PATH}" 
+    
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
             "${cmakeCommonParams[@]}"   \
-            -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" \
+            -DCMAKE_MODULE_PATH="${curl_MODULE_PATH}" \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}"  \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_curl}  \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_C_FLAGS="-fPIC"               \
             -DCMAKE_CXX_FLAGS="-fPIC"              \
-            -DBUILD_SHARED_LIBS=OFF    \
             -DCURL_DISABLE_LDAP=ON     \
             -DCURL_DISABLE_FTP=ON      \
             -DCURL_DISABLE_TELNET=ON   \
@@ -418,7 +444,7 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
             -DCURL_DISABLE_FILE=ON     \
             -DCURL_DISABLE_TFTP=ON     \
             -DCURL_BROTLI=OFF  -DCURL_USE_LIBSSH2=OFF \
-            -DUSE_LIBIDN2=OFF  -DUSE_NGHTTP2=OFF \
+            -DUSE_LIBIDN2=OFF  -DUSE_NGHTTP2=OFF       \
             -DCURL_ZLIB=ON  -DZLIB_USE_STATIC_LIBS=ON   -DCURL_ZSTD=ON \
             -DBUILD_DOCS=OFF \
             -DCMAKE_INSTALL_DOCDIR=OFF \
@@ -426,42 +452,36 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
             -DOPENSSL_USE_STATIC_LIBS=ON  \
             -DZstd_LIBRARY="${INSTALL_PREFIX_zstd}/lib/libzstd.a" \
             -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
-            -DOPENSSL_LIBRARIES="${INSTALL_PREFIX_openssl}/lib64/libssl.a; ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a" \
+            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  \
+            -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include  \
             -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
-            -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
-            -DLIBPSL_LIBRARY=${INSTALL_PREFIX_psl}/lib/libpsl.a            
+            -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+            -DLIBPSL_INCLUDE_DIR=${INSTALL_PREFIX_psl}/include   \
+            -DLIBPSL_LIBRARY=${INSTALL_PREFIX_psl}/lib/libpsl.a  
 
-            
+
             # -DCMAKE_MODULE_PATH=${SrcDIR_lib}/cmake  # 优先使用项目内的 FindZLIB.cmake
-
+            
+            # -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL"
+            # -DZLIB_DIR="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
+            # -DZstd_DIR="${INSTALL_PREFIX_zstd}/lib/cmake/zstd"
+            #  
             # -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}   \
-            # -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include  \
-            # -DOPENSSL_LIBRARIES=${INSTALL_PREFIX_openssl}/lib64/libssl.a; ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
-            # -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
-            # -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
-            # -DLIBPSL_INCLUDE_DIR=${INSTALL_PREFIX_psl}/include   \
-            # -DLIBPSL_LIBRARY=${INSTALL_PREFIX_psl}/lib/libpsl.a   \
-            # -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
-            # -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  \
-            # -DZSTD_ROOT=${INSTALL_PREFIX_zstd} \
-            # -DZSTD_LIBRARY=${INSTALL_PREFIX_zstd}/lib/libzstd.a 
+            # -DOPENSSL_LIBRARIES="${INSTALL_PREFIX_openssl}/lib64/libssl.a; ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a" \
+            # -DZSTD_ROOT=${INSTALL_PREFIX_zstd} \ 
 
         # -- hi..OPENSSL_LIBRARIES=/home/osg0/install/openssl/lib64/libssl.a;/home/osg0/install/openssl/lib64/libcrypto.a;dl
         # -- hi..OpenSSL::SSL library path: /home/osg0/install/openssl/lib64/libssl.a
         # -- hi..OpenSSL::Crypto library path: /home/osg0/install/openssl/lib64/libcrypto.a
-
  
             # -DCMAKE_EXE_LINKER_FLAGS="-licuuc -licudata -licuio"  # 链接ICU相关静态库
-            
-            # -DUSE_NGHTTP2=ON 
-            # -DCURL_ZLIB=OFF  
-            # -DCURL_ZSTD=OFF \ 
             # -DENABLE_IPV6=OFF
 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
 
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
-    echo "========== Finished Building curl =========" &&  set +x
+    echo "========== Finished Building curl =========" # &&  set +x
     
 fi
 
@@ -550,9 +570,7 @@ if [ "${isFinished_build_libpng}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_png} \
             -DZLIB_ROOT="${INSTALL_PREFIX_zlib}" \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DPNG_SHARED=OFF \
-            -DPNG_STATIC=ON   
+            -DPNG_SHARED=OFF  -DPNG_STATIC=ON   
             
             # -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
             # -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
@@ -576,8 +594,7 @@ if [ "${isFinished_build_xz}" != "true" ]  ; then
 
     cmake -S${SrcDIR_lib}  -B ${BuildDIR_lib}  --debug-find \
             "${cmakeCommonParams[@]}"    \
-            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_xz} \
-            -DBUILD_SHARED_LIBS=OFF 
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_xz}  
 
     cmake --build ${BuildDIR_lib} -j$(nproc)
 
@@ -605,13 +622,14 @@ fi
 INSTALL_PREFIX_tiff=${INSTALL_PREFIX_ubt}/libtiff
  
 if [ "${isFinished_build_libtiff}" != "true" ] ; then 
-    echo "========== Building libtiff 4 Ubuntu==========" && sleep 1 && set -x
+    echo "========== Building libtiff 4 Ubuntu==========" && sleep 1 # && set -x
     SrcDIR_lib=${SrcDIR_3rd}/libtiff
     BuildDIR_lib=${BuildDir_ubuntu}/3rd/libtiff
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_tiff} ${isRebuild}     
 
     cmk_prefixPath="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_xz}"
     cmk_prefixPath="${cmk_prefixPath};${INSTALL_PREFIX_jpegTurbo}"
+    echo "ubt....for libtiff: cmk_prefixPath=${cmk_prefixPath}" 
 
     cmake -S${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
             "${cmakeCommonParams[@]}"   \
@@ -623,10 +641,9 @@ if [ "${isFinished_build_libtiff}" != "true" ] ; then
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \
-            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include \
+            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg \
             -DLIBLZMA_LIBRARY=${INSTALL_PREFIX_xz}/lib/liblzma.a \
             -DLIBLZMA_INCLUDE_DIR=${INSTALL_PREFIX_xz}/include \
-            -DBUILD_SHARED_LIBS=OFF \
             -DCMAKE_C_FLAGS="-fPIC" \
             -DCMAKE_CXX_FLAGS="-fPIC" \
             -DCMAKE_EXE_LINKER_FLAGS="-static" \
@@ -644,7 +661,7 @@ if [ "${isFinished_build_libtiff}" != "true" ] ; then
     cmake --build ${BuildDIR_lib} -j$(nproc) -v
 
     cmake --build ${BuildDIR_lib} --target install  -v
-    echo "========== Finished Building libtiff for Ubuntu ==========" && sleep 1 && set +x 
+    echo "========== Finished Building libtiff for Ubuntu ==========" # && sleep 1 && set +x 
 fi    
 
  
@@ -673,13 +690,14 @@ fi
 INSTALL_PREFIX_freetype=${INSTALL_PREFIX_ubt}/freetype
  
 if [ "${isFinished_build_freetype}" != "true" ] ; then 
-    echo "========== Building freetype 4 Ubuntu==========" && sleep 1 && set -x
+    echo "========== Building freetype 4 Ubuntu==========" && sleep 1 # && set -x
     SrcDIR_lib=${SrcDIR_3rd}/freetype
     BuildDIR_lib=${BuildDir_ubuntu}/3rd/freetype
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_freetype} ${isRebuild}       
  
 
     cmk_prefixPath="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_png}"
+    echo "ubt....for libtiff: cmk_prefixPath=${cmk_prefixPath}" 
 
     cmake -S${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
             "${cmakeCommonParams[@]}"  \
@@ -690,18 +708,20 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
             -DCMAKE_CXX_FLAGS="-fPIC" \
             -DFT_DISABLE_BZIP2=ON \
             -DFT_DISABLE_BROTLI=ON \
-            -DZLIB_ROOT=${INSTALL_PREFIX_zlib}  \
-            -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
-            -DPNG_PNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include \
+            -DZLIB_ROOT=${INSTALL_PREFIX_zlib}              \
+            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
+            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+            -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a  \
+            -DPNG_INCLUDE_DIRS="${INSTALL_PREFIX_png}/include"    \
             -DFT_REQUIRE_ZLIB=ON \
             -DFT_REQUIRE_PNG=ON  \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
 
-    cmake --build ${BuildDIR_lib} -j$(nproc)
+    cmake --build ${BuildDIR_lib} -j$(nproc) -v
 
     cmake --build ${BuildDIR_lib} --target install
 
-    echo "========== Finished Building freetype for Ubuntu ==========" && sleep 1  && set -x
+    echo "========== Finished Building freetype for Ubuntu ==========" # && sleep 1  && set -x
 fi
 
  
@@ -786,8 +806,10 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
             "${cmakeCommonParams[@]}"  \
             -DCMAKE_PREFIX_PATH=${cmkPrefixPath} \
-            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_sqlite}  
-       
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_sqlite}  \
+            -DSQLITE_ENABLE_COLUMN_METADATA=ON \
+            -DSQLITE_OMIT_DEPRECATED=ON \
+            -DSQLITE_SECURE_DELETE=ON      
  
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
 
@@ -805,7 +827,7 @@ fi
 INSTALL_PREFIX_proj=${INSTALL_PREFIX_ubt}/proj
 
 if [ "${isFinished_build_proj}" != "true" ] ; then 
-    echo "========== building proj 4 ubuntu========== " &&  sleep 1 && set -x
+    echo "========== building proj 4 ubuntu========== " &&  sleep 1 # && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/proj
     BuildDIR_lib=${BuildDir_ubuntu}/3rd/proj 
@@ -814,40 +836,51 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
     #################################################################### 
     # libssl_path=${INSTALL_PREFIX_openssl}/lib64/libssl.a 
     # libcrypto_path=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a    
-    echo "DEBUG: INSTALL_PREFIX_ubt = '${INSTALL_PREFIX_ubt}'"
-    echo "DEBUG: INSTALL_PREFIX_zlib = '${INSTALL_PREFIX_zlib}'"
-    echo "DEBUG: INSTALL_PREFIX_xz = '${INSTALL_PREFIX_xz}'"
-    echo "DEBUG: INSTALL_PREFIX_jpegTurbo = '${INSTALL_PREFIX_jpegTurbo}'"
-    echo "DEBUG: INSTALL_PREFIX_openssl = '${INSTALL_PREFIX_openssl}'"
-    echo "DEBUG: INSTALL_PREFIX_curl = '${INSTALL_PREFIX_curl}'"
-    echo "DEBUG: INSTALL_PREFIX_sqlite = '${INSTALL_PREFIX_sqlite}'"
-
     # 检查并拼接路径
     # cmk_prefixPath=${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_xz}; \
     #                ${INSTALL_PREFIX_jpegTurbo}
     cmk_prefixPath=$(check_concat_paths  "${INSTALL_PREFIX_zlib}" \
                 "${INSTALL_PREFIX_xz}" \
                 "${INSTALL_PREFIX_jpegTurbo}" "${INSTALL_PREFIX_openssl}" \
-                "${INSTALL_PREFIX_curl}" "${INSTALL_PREFIX_sqlite}")     
+                "${INSTALL_PREFIX_curl}" "${INSTALL_PREFIX_sqlite}")  
+    echo "ubt...building proj,cmk_prefixPath=${cmk_prefixPath}"    
+    
+    modulePath_arr=(
+        "${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
+        "${INSTALL_PREFIX_xz}/lib/cmake/liblzma"
+        "${INSTALL_PREFIX_zstd}/lib/cmake/zstd"  
+        "${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL" 
+        "${INSTALL_PREFIX_curl}/lib/cmake/CURL" 
+        "${INSTALL_PREFIX_sqlite}/lib/cmake/sqlite3"  
+    )
+    # 使用;号连接数组元素.
+    # IFS是Shell中的“内部字段分隔符”（Internal Field Separator），默认值包含空格、制表符和换行符
+    proj_MODULE_PATH=$(IFS=";"; echo "${modulePath_arr[*]}")
+    echo "ubt....proj_MODULE_PATH=${proj_MODULE_PATH}"                    
 
     #  CC=musl-gcc cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}     
     cmake -S ${SrcDIR_lib}  -B ${BuildDIR_lib} --debug-find \
             "${cmakeCommonParams[@]}"   \
-            -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
-            -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" \
-            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_proj}  \
-            -DBUILD_SHARED_LIBS=OFF     \
-            -DBUILD_TESTING=OFF \
-            -DBUILD_EXAMPLES=ON \
+            -DCMAKE_PREFIX_PATH="${cmk_prefixPath}"  \
+            -DCMAKE_MODULE_PATH="${proj_MODULE_PATH}" \
+            -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX_proj}"  \
+            -DBUILD_TESTING=OFF  -DBUILD_EXAMPLES=ON  \
             -DCMAKE_CXX_FLAGS="-fPIC" \
-            -DCMAKE_C_FLAGS="-fPIC"  \
+            -DCMAKE_C_FLAGS="-fPIC"    \
             -DENABLE_CURL=ON  \
             -DENABLE_TIFF=OFF  \
             -DSQLite3_DISABLE_DYNAMIC_EXTENSIONS=ON \
             -DCURL_DISABLE_ARES=ON  \
             -DZLIB_ROOT="${INSTALL_PREFIX_zlib}" \
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  \
-            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include 
+            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include  \
+            -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include            \
+            -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a      \
+            -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+            -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
+            -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include      \
+            -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
+            -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include                
  
             # (1)proj源码中，只有find_package(SQLite3 REQUIRED)  find_package(TIFF REQUIRED)
             # find_package(CURL REQUIRED);
@@ -867,33 +900,25 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
             #(3)不需要tests 及 examples：  -DBUILD_TESTING=OFF  -DBUILD_EXAMPLES=OFF 
  
 
-
             # # -DCMAKE_SHARED_LINKER_FLAGS="-L${INSTALL_PREFIX_tiff}/lib -ltiff -ljpeg -llzma -lz -L${lib64_dir} -lssl -lcrypto" \
             # # -DCMAKE_EXE_LINKER_FLAGS="-L${lib_dir} -ltiff -ljpeg -llzma -lz -L${lib64_dir} -lssl -lcrypto" \
-            
+            # -DCMAKE_EXE_LINKER_FLAGS="-static" \  
+
             # -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl} \
             # -DOPENSSL_LIBRARIES="${libssl_path};${libcrypto_path}" \
             # -DCURL_ROOT=${INSTALL_PREFIX_curl} \
-            # -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
-            # -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include \
-            # -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
-            # -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include \
+
             # -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
-            # -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include \
-        
+            # -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include \              
 
-            # -DCMAKE_EXE_LINKER_FLAGS="-static" \
-
-        
-
-    cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j15 # -j$(nproc)
+    cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v # 
     
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}
     #################################################################### 
-    echo "========== finished building proj 4 ubuntu ========== " &&  sleep 1 && set -x
+    echo "========== finished building proj 4 ubuntu ========== " # &&  sleep 1 && set -x
 fi
 
-exit 11 
+
 
 # -------------------------------------------------
 # libexpat
@@ -910,19 +935,13 @@ if [ "${isFinished_build_libexpat}" != "true" ] ; then
     ####################################################################
     cmk_prefixPath="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_xz}"
     
-    cmake -S ${SrcDIR_lib}  -B ${BuildDIR_lib} \
-            -DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_ubt} \
+    cmake -S ${SrcDIR_lib}  -B ${BuildDIR_lib} --debug-find \
+            "${cmakeCommonParams[@]}"   \
             -DCMAKE_PREFIX_PATH=${cmk_prefixPath} \
-            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_expat}  \
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_C_FLAGS="-fPIC"   \
             -DCMAKE_CXX_FLAGS="-fPIC" \
-            -DBUILD_SHARED_LIBS=OFF   \
             -DEXPAT_BUILD_TESTS=OFF \
             -DEXPAT_BUILD_EXAMPLES=OFF \
             -DEXPAT_BUILD_DOCS=OFF \
@@ -951,23 +970,13 @@ if [ "${isFinished_build_absl}" != "true" ] ; then
     ####################################################################
     cmk_prefixPath=“” 
     
-    cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} \
-            -DCMAKE_FIND_ROOT_PATH="${INSTALL_PREFIX_ubt}" \
+    cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
+            "${cmakeCommonParams[@]}"   \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
-            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_absl}  \
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_CXX_FLAGS="-fPIC" \
-            -DCMAKE_C_FLAGS="-fPIC"   \
-            -DBUILD_SHARED_LIBS=OFF    
-            
-
-            # -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  \
-            # -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include           
+            -DCMAKE_C_FLAGS="-fPIC"   
 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
     
@@ -993,26 +1002,19 @@ if [ "${isFinished_build_protobuf}" != "true" ] ; then
     protoc_path=/home/abner/programs/protoc-31.1-linux-x86_64/bin/protoc
     
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find \
-            -DCMAKE_FIND_ROOT_PATH="${INSTALL_PREFIX_ubt}" \
+            "${cmakeCommonParams[@]}"  \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
-            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_protobuf}  \
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-            -DCMAKE_CXX_FLAGS="-fPIC" \
             -DCMAKE_C_FLAGS="-fPIC"   \
-            -DBUILD_SHARED_LIBS=OFF   \
+            -DCMAKE_CXX_FLAGS="-fPIC" \
             -Dprotobuf_BUILD_TESTS=OFF \
             -Dprotobuf_BUILD_EXAMPLES=OFF \
             -Dprotobuf_BUILD_PROTOC_BINARIES=OFF \
-            -Dprotobuf_PROTOC_EXE=${protoc_path}
-            
-
-            # -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  \
-            # -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include           
+            -Dprotobuf_PROTOC_EXE=${protoc_path}  \
+            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   
+                   
 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) 
     
@@ -1058,14 +1060,10 @@ if [ "${isFinished_build_boost}" != "true" ] ; then
     #   --without-mpi ### 最推荐的方案，因为 osgearth 通常不需要 Boost.MPI 组件，排除后可避免 MPI 相关的配置问题
      
 
-    # (1) 仅编译特定库​​
-    # ./b2 install --with-thread --with-system --with-filesystem
-    # ​​(2) 仅生成静态库​​
-    # ./b2 link=static
-    # ​​(3) 仅生成动态库​​
-    # ./b2 link=shared
-    # ​​(4) 指定 C++ 标准​​
-    # ./b2 cxxflags="-std=c++17" 
+    # (1) 仅编译特定库​​:   ./b2 install --with-thread --with-system --with-filesystem
+    # ​​(2) 仅生成静态库​​:   ./b2 link=static
+    # ​​(3) 仅生成动态库​​:   ./b2 link=shared
+    # ​​(4) 指定 C++ 标准​​: ./b2 cxxflags="-std=c++17" 
     echo "========== Finished Building boost =========" &&  sleep 1 && set +x
 fi
 
@@ -1076,7 +1074,7 @@ fi
 INSTALL_PREFIX_gdal=${INSTALL_PREFIX_ubt}/gdal
 
 if [ "${isFinished_build_gdal}" != "true" ] ; then 
-    echo "========== building gdal 4 ubuntu========== " &&  sleep 1 && set -x
+    echo "========== building gdal 4 ubuntu========== " &&  sleep 1 # && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/gdal
     BuildDIR_lib=${BuildDir_ubuntu}/3rd/gdal 
@@ -1104,25 +1102,23 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_gdal}  \
             -DCMAKE_C_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0"   \
             -DCMAKE_CXX_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0" \
-            -DBUILD_SHARED_LIBS=OFF   \
-            -DBUILD_APPS=OFF \
-            -DBUILD_TESTING=OFF \
+            -DBUILD_APPS=OFF   -DBUILD_TESTING=OFF \
             -DGDAL_USE_OPENSSL=ON \
-            -DGDAL_USE_ZLIB=ON \
-            -DGDAL_USE_PNG=ON \
-            -DGDAL_USE_JPEG=ON \
-            -DGDAL_USE_CURL=ON \
-            -DGDAL_USE_SQLITE3=ON \
-            -DGDAL_USE_GEOS=ON \
-            -DGDAL_USE_PROJ=ON \
-            -DGDAL_USE_EXTERNAL_LIBS=ON \
-            -DGDAL_USE_JSONC_INTERNAL=ON \
+            -DGDAL_USE_ZLIB=ON     \
+            -DGDAL_USE_PNG=ON       \
+            -DGDAL_USE_JPEG=ON       \
+            -DGDAL_USE_CURL=ON        \
+            -DGDAL_USE_SQLITE3=ON      \
+            -DGDAL_USE_GEOS=ON          \
+            -DGDAL_USE_PROJ=ON           \
+            -DGDAL_USE_EXTERNAL_LIBS=ON   \
+            -DGDAL_USE_JSONC_INTERNAL=ON   \
             -DOGR_BUILD_OPTIONAL_DRIVERS=ON \
-            -DOGR_ENABLE_DRIVER_MVT=ON \
-            -DGDAL_USE_PROTOBUF=ON \
-            -DGDAL_USE_JPEG_INTERNAL=OFF \
+            -DOGR_ENABLE_DRIVER_MVT=ON       \
+            -DGDAL_USE_PROTOBUF=ON            \
+            -DGDAL_USE_JPEG_INTERNAL=OFF       \
             -DHAVE_JPEGTURBO_DUAL_MODE_8_12=OFF \
-            -DHAVE_KEA=OFF \
+            -DHAVE_KEA=OFF                       \
             -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
             -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include \
             -DGEOS_INCLUDE_DIR=${INSTALL_PREFIX_geos}/include \
@@ -1132,22 +1128,22 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
             -DSQLite3_HAS_COLUMN_METADATA=ON \
             -DSQLite3_HAS_MUTEX_ALLOC=ON      \
             -DSQLite3_HAS_RTREE=ON             \
-            -DSQLITE3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include \
+            -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include     \
+            -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
             -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include \
             -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
-            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include \
-            -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \
-            -DSQLITE3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
+            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg \
+            -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a        \
             -DOPENSSL_DIR=${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL/ \
-            -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl} \
-            -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include \
-            -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
+            -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}                  \
+            -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include        \
+            -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a      \
             -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
             -DPROTOBUF_LIBRARY=${INSTALL_PREFIX_protobuf}/lib/libprotobuf.a \
-            -DPROTOBUF_INCLUDE_DIR=${INSTALL_PREFIX_protobuf}/include  \
+            -DPROTOBUF_INCLUDE_DIR=${INSTALL_PREFIX_protobuf}/include        \
             -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
-            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
+            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  
 
             # -DHAVE_KEA ## hdf5 support 
 
@@ -1155,7 +1151,7 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
     
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
     #################################################################### 
-    echo "========== finished building gdal 4 ubuntu ========== " &&  sleep 1 && set +x
+    echo "========== finished building gdal 4 ubuntu ========== " # && set +x
 fi    
 
  
@@ -1163,6 +1159,9 @@ fi
 
 # -------------------------------------------------
 # osg 
+# -----
+# before building osg,
+#     sudo apt-get install libgl1-mesa-dev  libglu1-mesa-dev  libxext-dev 
 # -------------------------------------------------
 INSTALL_PREFIX_osg=${INSTALL_PREFIX_ubt}/osg
 
@@ -1197,7 +1196,6 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     # 这通常在 CMakeLists.txt中通过 find_package(CURL)返回的导入型目标CURL::libCurl获得或直接在
     # CMake -S -B命令中加 -DCMAKE_EXE_LINKER_FLAGS或CMAKE_SHARED_LINKER_FLAGS来添加缺失的库。​ 
     # 
-    echo "gg==========_exeLinkerFlags=${_exeLinkerFlags}" 
     _curlLibs="${INSTALL_PREFIX_curl}/lib/libcurl-d.a;"
     _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib64/libssl.a;"
     _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a;"
@@ -1206,7 +1204,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zlib}/lib/libz.a"
     echo "gg==========_curlLibs=${_curlLibs}" 
 
-
+    # ------
     osgModulePath_arr=(
         "${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
         "${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL"
@@ -1217,99 +1215,106 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     # IFS是Shell中的“内部字段分隔符”（Internal Field Separator），默认值包含空格、制表符和换行符
     osg_MODULE_PATH=$(IFS=";"; echo "${osgModulePath_arr[*]}")
     echo "gg==========osg_MODULE_PATH=${osg_MODULE_PATH}" 
- 
+    
+    # ------
+    libstdcxx_a_path=$(find /usr/lib/gcc/x86_64-linux-gnu -name libstdc++.a)
+    # ------
+    cmakeParams_osg=( 
+    # "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH" 
+    # "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH" # BOTH ：先查根路径，再查系统路径    
+    "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH" # 头文件仍只查根路径 
+    # 是否访问 /usr/include/、/usr/lib/ 等 系统路径   
+    "-DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=ON"
+    # 是否访问PATH\LD_LIBRARY_PATH等环境变量
+    "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=ON" 
+    )
 
+    # ------
     echo "=== cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find ......"
     # --debug-find    --debug-output 
-    cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find   \
-            "${cmakeCommonParams[@]}"   \
-            -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+    cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find --trace-expand  \
+            "${cmakeCommonParams[@]}"  "${cmakeParams_osg[@]}" \
+            -DCMAKE_FIND_LIBRARY_SUFFIXES=".a"     \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_MODULE_PATH="${osg_MODULE_PATH}" \
-            -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
-            -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
-            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osg}  \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_FIND_LIBRARY_SUFFIXES=".a"        \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osg}    \
             -DCMAKE_C_FLAGS="-fPIC  -DOSG_GL3_AVAILABLE=1"   \
             -DCMAKE_CXX_FLAGS="-fPIC -std=c++14  -DOSG_GL3_AVAILABLE=1" \
-            -DBUILD_SHARED_LIBS=OFF  \
-        -DCMAKE_DEBUG_POSTFIX=""   \
+            -DCMAKE_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/" \
+            -DCMAKE_INCLUDE_PATH="/usr/include/"                   \
+            -DCMAKE_DEBUG_POSTFIX=""   \
         -DDYNAMIC_OPENTHREADS=OFF   \
         -DDYNAMIC_OPENSCENEGRAPH=OFF \
         -DANDROID=OFF                 \
-        -DOSG_GL1_AVAILABLE=OFF \
-        -DOSG_GL2_AVAILABLE=OFF \
-        -DOSG_GL3_AVAILABLE=ON \
+        -DOSG_GL1_AVAILABLE=OFF   \
+        -DOSG_GL2_AVAILABLE=OFF   \
+        -DOSG_GL3_AVAILABLE=ON    \
         -DOSG_GLES1_AVAILABLE=OFF \
         -DOSG_GLES2_AVAILABLE=OFF \
         -DOSG_GLES3_AVAILABLE=OFF \
-        -DOSG_GL_LIBRARY_STATIC=OFF \
+        -DOSG_GL_LIBRARY_STATIC=OFF        \
         -DOSG_GL_DISPLAYLISTS_AVAILABLE=OFF \
-        -DOSG_GL_MATRICES_AVAILABLE=OFF \
-        -DOSG_GL_VERTEX_FUNCS_AVAILABLE=OFF \
+        -DOSG_GL_MATRICES_AVAILABLE=OFF      \
+        -DOSG_GL_VERTEX_FUNCS_AVAILABLE=OFF   \
         -DOSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE=OFF \
-        -DOSG_GL_FIXED_FUNCTION_AVAILABLE=OFF \
+        -DOSG_GL_FIXED_FUNCTION_AVAILABLE=OFF      \
         -DOPENGL_PROFILE="GL3" \
-        -DEGL_LIBRARY=/usr/lib/x86_64-linux-gnu/libEGL.so \
-        -DEGL_INCLUDE_DIR=/usr/include/EGL                 \
-        -DEGL_LIBRARY=/usr/lib/x86_64-linux-gnu/libEGL.so   \
-        -DOPENGL_EGL_INCLUDE_DIR=/usr/include/EGL            \
-        -DOPENGL_INCLUDE_DIR=/usr/include/GL                  \
-        -DOPENGL_gl_LIBRARY=/usr/lib/x86_64-linux-gnu/libGL.so \
-        -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config             \
+        -DEGL_INCLUDE_DIR=/usr/include/EGL                    \
+        -DEGL_LIBRARY=/usr/lib/x86_64-linux-gnu/libEGL.so      \
+        -DOPENGL_EGL_INCLUDE_DIR=/usr/include/EGL               \
+        -DOPENGL_INCLUDE_DIR=/usr/include/                       \
+        -DOPENGL_gl_LIBRARY=/usr/lib/x86_64-linux-gnu/libGL.so    \
+        -DOPENGL_glu_LIBRARY="/usr/lib/x86_64-linux-gnu/libGLU.so" \
+        -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config   \
         -DOSG_FIND_3RD_PARTY_DEPS=ON  \
         -DZLIB_USE_STATIC_LIBS=ON \
-        -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
-        -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
+        -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include  \
+        -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a    \
         -DZLIB_LIBRARIES="${INSTALL_PREFIX_zlib}/lib/libz.a" \
         -DJPEG_DIR=${INSTALL_PREFIX_jpegTurbo}/lib/cmake/libjpeg-turbo \
-        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg \
-        -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \
-        -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \
+        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg  \
+        -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a         \
+        -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a        \
         -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
-        -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
-        -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a \
+        -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a          \
+        -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a         \
         -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL"  \
-        -DOpenSSL_ROOT="${INSTALL_PREFIX_openssl}" \
-        -DOpenSSL_USE_STATIC_LIBS=ON \
-        -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include \
-        -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
+        -DOpenSSL_ROOT="${INSTALL_PREFIX_openssl}"                      \
+        -DOpenSSL_USE_STATIC_LIBS=ON                                     \
+        -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include   \
+        -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a  \
         -DTIFF_LIBRARIES=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
-        -DFREETYPE_DIR=${INSTALL_PREFIX_freetype}/lib/freetype \
+        -DFREETYPE_DIR=${INSTALL_PREFIX_freetype}/lib/freetype              \
         -DFREETYPE_INCLUDE_DIRS=${INSTALL_PREFIX_freetype}/include/freetype2 \
-        -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
-        -DFREETYPE_LIBRARIES=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
+        -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a      \
+        -DFREETYPE_LIBRARIES=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a     \
         -DCURL_DIR="${INSTALL_PREFIX_curl}/lib/cmake/CURL" \
-        -DCURL_LIBRARY=CURL::libcurl \
+        -DCURL_LIBRARY=CURL::libcurl   \
         -DCURL_LIBRARIES="${_curlLibs}" \
-        -DGDAL_DIR=${INSTALL_PREFIX_gdal}l \
-        -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include \
-        -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a    \
-        -DCMAKE_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/13" \
+        -DGDAL_DIR=${INSTALL_PREFIX_gdal}                   \
+        -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include    \
+        -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a   \
+        -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  \
         -DNO_DEFAULT_PATH=ON \
         -DCMAKE_EXE_LINKER_FLAGS=" \
-            -Wl,--whole-archive \
-            /usr/lib/gcc/x86_64-linux-gnu/13/libstdc++.a \
-            -Wl,--no-whole-archive \
             -Wl,-Bdynamic -lm -lc -lGL -lGLU -ldl \
             -Wl,--no-as-needed -lX11 -lXext"
         
- 
+
         # (1)关于-DCURL_LIBRARY="CURL::libcurl" ：
         #  -DCURL_LIBRARY="${INSTALL_PREFIX_curl}/lib/libcurl-d.a"  ## 根据一般的规则，ok
         #  -DCURL_LIBRARIES="CURL::libcurl" ## 根据一般的规则，ok
         #  -DCURL_LIBRARY="CURL::libcurl" ##  特定于osg项目，是ok的，因为osg/src/osgPlugins/curl/CMakeLists.txt中
         #     ## SET(TARGET_LIBRARIES_VARS   CURL_LIBRARY     ZLIB_LIBRARIES)用的是CURL_LIBRARY而不是CURL_LIBRARIES
 
-        # (2)remark: ${INSTALL_PREFIX_zlib}/lib/cmake/zlib/ZLIBConfig.cmake只提供了 ZLIB::ZLIBstatic
-        #        /usr/share/cmake-3.28/Modules/FindZLIB.cmake 提供了 ZLIB::ZLIB
-        #       所以作为workaround，这里使用/usr/share/cmake-3.28/Modules/FindZLIB.cmake
         # -DCMAKE_EXE_LINKER_FLAGS="${_exeLinkerFlags}" 
-        
+        # (2) -Wl,--whole-archive /usr/lib/gcc/x86_64-linux-gnu/11/libstdc++.a -Wl,--no-whole-archive
+        #    等价于 -static-libstdc++
         # (3)Glibc 的某些函数（如网络相关）在静态链接时需要动态库支持,使用libc.a和libm.a会导致 collect2: error: ld returned 1 exit status
         #     
         # (4)
-        # -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
+        #  
         # (5) osg/src/osgPlugins/png/CMakeLists.txt中强制 SET(TARGET_LIBRARIES_VARS PNG_LIBRARY ZLIB_LIBRARIES )
         #    而 lib/cmake/PNG/PNGConfig.cmake 中 没提供PNG_LIBRARY
         #    所以 cmake -S -B 必须添加 -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a
@@ -1321,7 +1326,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         # -DBoost_ROOT=${INSTALL_PREFIX_boost}  \ ## 现代CMake（>=3.12）官方标准
         # -DBOOST_ROOT=${INSTALL_PREFIX_boost}  \ ## 旧版兼容（FindBoost.cmake传统方式）
         
-        # -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  \ 
+        #
         # -DCMAKE_STATIC_LINKER_FLAGS=${_LINKER_FLAGS}  
  
     echo "=== cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v"
@@ -1393,7 +1398,7 @@ fi
 INSTALL_PREFIX_osgearth=${INSTALL_PREFIX_ubt}/osgearth
 
 if [ "${isFinished_build_osgearth}" != "true" ] ; then 
-    echo "========== building osgearth 4 ubuntu========== " &&  sleep 1 && set -x
+    echo "========== building osgearth 4 ubuntu========== " &&  sleep 1 # && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/osgearth
     BuildDIR_lib=${BuildDir_ubuntu}/3rd/osgearth
@@ -1415,14 +1420,14 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
             "${INSTALL_PREFIX_expat}"    "${INSTALL_PREFIX_freetype}"    \
             "${INSTALL_PREFIX_curl}"     "${INSTALL_PREFIX_sqlite}"      \
             "${INSTALL_PREFIX_gdal}"     "${INSTALL_PREFIX_osg}" )
-    echo "==========cmk_prefixPath=${cmk_prefixPath}"   
+    echo "oearth...cmk_prefixPath=${cmk_prefixPath}"   
     
     
     osgearth_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
     osgearth_MODULE_PATH="${osgearth_MODULE_PATH};${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL/"
     osgearth_MODULE_PATH="${osgearth_MODULE_PATH};${INSTALL_PREFIX_gdal}/lib/cmake/gdal/packages/"
     osgearth_MODULE_PATH="${osgearth_MODULE_PATH};${INSTALL_PREFIX_zstd}/lib/cmake/zstd/"
-
+    echo "oearth...osgearth_MODULE_PATH=${osgearth_MODULE_PATH}"    
 
     cmakeParams_osgearth=(  
     "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH" # BOTH：先查根路径，再查系统路径    
@@ -1439,7 +1444,7 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
     # (1)/usr/share/cmake-3.28/Modules/FindGLEW.cmake中需要用 ENV GLEW_ROOT。
     # (2)在 CMake 命令行中临时设置环境变量（一次性生效），格式为 
     #   GLEW_ROOT=/path/to/GLEW cmake ...  ，无需提前 export。 
-
+    
     # --debug-find    --debug-output 
     GLEW_ROOT="/usr/lib/x86_64-linux-gnu/" \
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find   \
@@ -1448,26 +1453,28 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osgearth}  \
-            -DCMAKE_C_FLAGS="-fPIC -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG"   \
-            -DCMAKE_CXX_FLAGS="-fPIC -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG" \
+            -DCMAKE_C_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
+            -DCMAKE_CXX_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" \
             -DBUILD_SHARED_LIBS=OFF   \
         -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=OFF \
         -DCMAKE_SKIP_RPATH=ON  \
         -DANDROID=OFF \
         -DDYNAMIC_OPENTHREADS=OFF     -DDYNAMIC_OPENSCENEGRAPH=OFF \
-        -DOSGEARTH_ENABLE_FASTDXT=OFF -DOSGEARTH_BUILD_EXAMPLES=ON \
+        -DOSGEARTH_ENABLE_FASTDXT=OFF \
+        -DOSGEARTH_BUILD_TOOLS=ON    -DOSGEARTH_BUILD_EXAMPLES=OFF   \
+        -DOSGEARTH_BUILD_IMGUI_NODEKIT=OFF \
         -DOSG_GL1_AVAILABLE=OFF \
-        -DOSG_GL2_AVAILABLE=OFF \
-        -DOSG_GL3_AVAILABLE=ON \
-        -DOSG_GLES1_AVAILABLE=OFF \
-        -DOSG_GLES2_AVAILABLE=OFF \
-        -DOSG_GLES3_AVAILABLE=OFF \
-        -DOSG_GL_LIBRARY_STATIC=OFF \
+        -DOSG_GL2_AVAILABLE=OFF  \
+        -DOSG_GL3_AVAILABLE=ON    \
+        -DOSG_GLES1_AVAILABLE=OFF  \
+        -DOSG_GLES2_AVAILABLE=OFF   \
+        -DOSG_GLES3_AVAILABLE=OFF    \
+        -DOSG_GL_LIBRARY_STATIC=OFF        \
         -DOSG_GL_DISPLAYLISTS_AVAILABLE=OFF \
-        -DOSG_GL_MATRICES_AVAILABLE=OFF \
-        -DOSG_GL_VERTEX_FUNCS_AVAILABLE=OFF \
+        -DOSG_GL_MATRICES_AVAILABLE=OFF      \
+        -DOSG_GL_VERTEX_FUNCS_AVAILABLE=OFF   \
         -DOSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE=OFF \
-        -DOSG_GL_FIXED_FUNCTION_AVAILABLE=OFF \
+        -DOSG_GL_FIXED_FUNCTION_AVAILABLE=OFF      \
         -DOPENGL_PROFILE="GL3" \
         -DGLEW_USE_STATIC_LIBS=OFF \
         -DMATH_LIBRARY="/usr/lib/x86_64-linux-gnu/libm.so" \
@@ -1480,12 +1487,13 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
         -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config               \
         -DOpenSceneGraph_FIND_QUIETLY=OFF  \
         -DOSG_DIR=${INSTALL_PREFIX_osg}     \
+        -DOPENSCENEGRAPH_INCLUDE_DIR=${INSTALL_PREFIX_osg}/include \
         -DZLIB_ROOT_DIR="${INSTALL_PREFIX_zlib}"  \
         -DZSTD_LIBRARY="${INSTALL_PREFIX_zstd}/lib/libzstd.a"  \
-        -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
-        -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   \
-        -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/   \
-        -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a    \
+        -DZLIB_INCLUDE_DIR="${INSTALL_PREFIX_zlib}/include" \
+        -DZLIB_LIBRARY="${INSTALL_PREFIX_zlib}/lib/libz.a"   \
+        -DPNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include/"   \
+        -DPNG_LIBRARY="${INSTALL_PREFIX_png}/lib/libpng.a"   \
         -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include  \
         -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \
         -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include  \
@@ -1496,8 +1504,8 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
         -DCURL_ROOT=${INSTALL_PREFIX_curl}                  \
         -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include    \
         -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
-        -DSQLITE3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include     \
-        -DSQLITE3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
+        -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include     \
+        -DSQLite3_LIBRARIES=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
         -DGEOS_DIR=${INSTALL_PREFIX_geos}  \
         -DGEOS_INCLUDE_DIR=${INSTALL_PREFIX_geos}/include  \
         -DGEOS_LIBRARY=${INSTALL_PREFIX_geos}/lib/libgeos_c.a \
@@ -1516,7 +1524,7 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
           -Wl,-Bdynamic -lstdc++  -lGL -lGLU -ldl -lm -lc -lpthread -lrt     \
           -Wl,--no-as-needed -lX11 -lXext "  
    
-
+ 
         # (0) osgearth 编译时发生 类型转换错误​​（invalid conversion from 'void*' to 'OGRLayerH'）,
         #     用-DCMAKE_C_FLAGS="-U GDAL_DEBUG" 解决
 
@@ -1552,7 +1560,7 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
     echo "cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}" 
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
     #################################################################### 
-    echo "========== finished building osgearth 4 ubuntu ========== " &&  sleep 1 && set +x
+    echo "========== finished building osgearth 4 ubuntu ========== " #  && set +x
 
 fi    
 
@@ -1561,5 +1569,6 @@ fi
 # **************************************************************************
 #  src/
 # ************************************************************************** 
-SrcDIR_src=${Repo_ROOT}/src
+SrcDIR_src=${Repo_ROOT}/src 
+echo "in mk4ubuntu.sh....SrcDIR_src=${SrcDIR_src}"
  

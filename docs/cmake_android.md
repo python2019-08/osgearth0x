@@ -639,3 +639,176 @@ file ./myapp
 - **混合使用**：在编译可执行文件时同时指定 `-fPIC` 和 `-fPIE` 是 Android 生态的常见做法，确保兼容性和安全性。
 
 =======================================
+# 8.CMake 不同版本在查找 *Config.cmake文件时的行为差异
+
+## Q
+
+cmake 3.22， 用
+```
+    cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
+            "${cmakeCommonParams[@]}"   \
+            -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" \
+            -DCMAKE_PREFIX_PATH="${cmk_prefixPath}"  \
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_curl}  \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_C_FLAGS="-fPIC"               \
+            -DCMAKE_CXX_FLAGS="-fPIC"              \
+            -DBUILD_SHARED_LIBS=OFF    \
+            -DCURL_DISABLE_LDAP=ON     \
+            -DCURL_DISABLE_FTP=ON      \
+            -DCURL_DISABLE_TELNET=ON   \
+            -DCURL_DISABLE_DICT=ON     \
+            -DCURL_DISABLE_FILE=ON     \
+            -DCURL_DISABLE_TFTP=ON     \
+            -DCURL_BROTLI=OFF  -DCURL_USE_LIBSSH2=OFF \
+            -DUSE_LIBIDN2=OFF  -DUSE_NGHTTP2=OFF \
+            -DCURL_ZLIB=ON  -DZLIB_USE_STATIC_LIBS=ON   -DCURL_ZSTD=ON \
+            -DBUILD_DOCS=OFF \
+            -DCMAKE_INSTALL_DOCDIR=OFF \
+            -DCURL_USE_PKGCONFIG=OFF \
+            -DOPENSSL_USE_STATIC_LIBS=ON  \
+            -DZstd_LIBRARY="${INSTALL_PREFIX_zstd}/lib/libzstd.a" \
+            -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
+            -DOPENSSL_LIBRARIES="${INSTALL_PREFIX_openssl}/lib64/libssl.a; ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a" \
+            -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
+            -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+            -DLIBPSL_LIBRARY=${INSTALL_PREFIX_psl}/lib/libpsl.a            
+```
+输出:   
+
+```sh
+  CMAKE_PREFIX_PATH variable [CMAKE_FIND_USE_CMAKE_PATH].
+
+    /workspace/build_by_sh/ubuntu/install/openssl
+    /workspace/build_by_sh/ubuntu/install/libpsl
+    /workspace/build_by_sh/ubuntu/install/zlib
+    /workspace/build_by_sh/ubuntu/install/zstd
+ 
+  ........... 
+  find_package considered the following locations for the Config module:
+
+    /workspace/build_by_sh/ubuntu/install/openssl/OpenSSLConfig.cmake
+    /workspace/build_by_sh/ubuntu/install/openssl/openssl-config.cmake
+    /workspace/build_by_sh/ubuntu/install/libpsl/OpenSSLConfig.cmake
+    /workspace/build_by_sh/ubuntu/install/libpsl/openssl-config.cmake
+    /workspace/build_by_sh/ubuntu/install/zlib/OpenSSLConfig.cmake
+    /workspace/build_by_sh/ubuntu/install/zlib/openssl-config.cmake
+    /workspace/build_by_sh/ubuntu/install/zstd/OpenSSLConfig.cmake
+    /workspace/build_by_sh/ubuntu/install/zstd/openssl-config.cmake
+
+  The file was not found.
+```
+而cmake 3.28，却能在 $CMAKE_PREFIX_PATH/lib/cmake/${libname}下查找 packageNameConfig.cmake
+
+## A-YuanbaoAI
+
+这个问题涉及到 CMake 不同版本在查找 `*Config.cmake` 文件时的行为差异。以下是详细分析和解决方案：
+
+---
+
+### **1. 问题本质**
+- **CMake 3.22**：默认只在 `CMAKE_PREFIX_PATH/<name>*/` 下查找 `*Config.cmake`
+- **CMake 3.28**：新增了对 `CMAKE_PREFIX_PATH/lib/cmake/<name>*/` 路径的支持
+
+---
+
+### **2. 解决方案**
+
+#### **方法一：升级 CMake（推荐）**
+```bash
+# 安装最新版 CMake
+wget https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.sh
+chmod +x cmake-3.28.3-linux-x86_64.sh
+sudo ./cmake-3.28.3-linux-x86_64.sh --skip-license --prefix=/usr/local
+```
+
+#### **方法二：手动指定 Config 文件路径**
+```cmake
+# 在您的 CMake 命令中添加
+-DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib/cmake/openssl"
+-DZLIB_DIR="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
+-DZstd_DIR="${INSTALL_PREFIX_zstd}/lib/cmake/zstd"
+```
+
+#### **方法三：修改查找策略（兼容旧版）**
+```cmake
+# 在 CMakeLists.txt 中添加
+list(APPEND CMAKE_MODULE_PATH
+  "${INSTALL_PREFIX_openssl}/lib/cmake"
+  "${INSTALL_PREFIX_zlib}/lib/cmake"
+  "${INSTALL_PREFIX_zstd}/lib/cmake"
+)
+```
+
+---
+
+### **3. 各库的标准 Config 路径**
+| 库名称 | 标准 Config 路径 |
+|--------|------------------|
+| OpenSSL | `${prefix}/lib/cmake/openssl/OpenSSLConfig.cmake` |
+| ZLIB | `${prefix}/lib/cmake/zlib/ZLIBConfig.cmake` |
+| Zstd | `${prefix}/lib/cmake/zstd/ZstdConfig.cmake` |
+
+---
+
+### **4. 完整修复命令**
+```bash
+cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} \
+  "${cmakeCommonParams[@]}" \
+  -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" \
+  -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
+  # 显式指定各库的Config路径
+  -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib/cmake/openssl" \
+  -DZLIB_DIR="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" \
+  -DZstd_DIR="${INSTALL_PREFIX_zstd}/lib/cmake/zstd" \
+  # 其他原有参数...
+```
+
+---
+
+### **5. 验证方法**
+```bash
+# 检查CMake是否找到Config文件
+cmake -S . -B build --debug-find 2>&1 | grep -i "Found package configuration file"
+
+# 检查各库是否被正确链接
+cmake --build build --verbose | grep -E "libssl|libz|libzstd"
+```
+
+---
+
+### **6. 版本差异对比**
+| 行为 | CMake 3.22 | CMake 3.28 |
+|------|------------|------------|
+| 查找 `lib/cmake/` | ❌ 不支持 | ✅ 支持 |
+| 默认查找路径 | `<prefix>/<name>*` | `<prefix>/<name>*` + `lib/cmake/<name>*` |
+| 环境变量优先级 | 较低 | 较高 |
+
+---
+
+### **7. 备选方案**
+如果无法升级 CMake，可以手动创建符号链接：
+```bash
+# 为OpenSSL创建兼容路径
+ln -s ${INSTALL_PREFIX_openssl}/lib/cmake/openssl \
+      ${INSTALL_PREFIX_openssl}/openssl
+
+# 在CMake中使用旧式路径
+-DOpenSSL_ROOT="${INSTALL_PREFIX_openssl}/openssl"
+```
+
+---
+
+### **总结**
+1. **根本原因**：CMake 3.22 的查找路径策略较旧
+2. **最佳方案**：升级到 CMake 3.28+
+3. **临时方案**：
+   ```cmake
+   -D<PackageName>_DIR="${prefix}/lib/cmake/<package>"
+   ```
+4. **验证要点**：
+   ```bash
+   cmake --debug-find | grep "considering"
+   ```
+
+通过以上方法，您可以在旧版 CMake 中实现与新版本相同的查找行为。如果仍有问题，请提供 `cmake --debug-find` 的完整输出。

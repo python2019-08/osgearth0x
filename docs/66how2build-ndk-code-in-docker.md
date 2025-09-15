@@ -25,11 +25,15 @@ RUN apt-get update && \
 WORKDIR /workspace
 
 # 下载 Android NDK
-ARG NDK_VERSION=27.1.12297006
-RUN wget https://dl.google.com/android/repository/android-ndk-r${NDK_VERSION}-linux.zip && \
-    unzip android-ndk-r${NDK_VERSION}-linux.zip && \
-    rm android-ndk-r${NDK_VERSION}-linux.zip && \
-    mv android-ndk-r${NDK_VERSION} /opt/android-ndk
+# ARG NDK_VERSION=27.1.12297006
+# RUN wget https://dl.google.com/android/repository/android-ndk-r${NDK_VERSION}-linux.zip && \
+#     unzip android-ndk-r${NDK_VERSION}-linux.zip && \
+#     rm android-ndk-r${NDK_VERSION}-linux.zip && \
+#     mv android-ndk-r${NDK_VERSION} /opt/android-ndk
+RUN wget https://dl.google.com/android/repository/android-ndk-r27d-linux.zip?hl=zh-cn -O android-ndk-r27d-linux.zip && \
+    unzip android-ndk-r27d-linux.zip && \
+    rm android-ndk-r27d-linux.zip && \
+    mv android-ndk-r27d /opt/android-ndk
 
 # 设置环境变量
 ENV ANDROID_NDK_HOME=/opt/android-ndk
@@ -50,8 +54,14 @@ docker build -t android-ndk-builder .
 
 ## **3. 运行容器并挂载项目目录**
 ```bash
+#---- if host os is windows 
 docker run -it --name ndk_builder \
   -v C:/Users/YourName/android_projects:/workspace \
+  android-ndk-builder
+
+#---- if host os is ubuntu   
+docker run -it --name ndk_builder \
+  -v /home/abner/abner2/zdev/nv/osgearth0x/:/workspace \
   android-ndk-builder
 ```
 

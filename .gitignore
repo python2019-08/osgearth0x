@@ -1,5 +1,4 @@
-build/
-build_by_sh/ 
+build*/ 
 tmp.md
 b*.txt
 data/osgdata340/

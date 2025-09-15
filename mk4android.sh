@@ -1,6 +1,17 @@
 #!/bin/bash
 # **************************************************************************
 # false  ;;;   ./mk4android.sh  >ba.txt 2>&1
+
+echo "mk4ubuntu.sh: param 0=$0"
+# Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
+# 获取脚本的绝对路径（处理符号链接）
+SCRIPT_PATH=$(readlink -f "$0")
+echo "sh-path: $SCRIPT_PATH"
+
+# 额外：获取脚本所在目录的绝对路径
+Repo_ROOT=$(dirname "$SCRIPT_PATH")
+echo "Repo_ROOT=${Repo_ROOT}"
+echo "============================================================="
 isRebuild=true
 
 isFinished_build_zlib=true  
@@ -60,8 +71,6 @@ if [ -z "${ANDROID_NDK_HOME}" ]; then
     exit 1001
 fi
 # **************************************************************************
-Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
-
 # rm -fr ./build_by_sh   
 BuildDir_andro=${Repo_ROOT}/build_by_sh/android
 
@@ -1483,8 +1492,9 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
             -DCURL_ROOT=${INSTALL_PREFIX_curl}                  \
             -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include    \
             -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
-            -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include     \
-            -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
+            -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include      \
+            -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a  \
+            -DSQLite3_LIBRARIES=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
             -DGEOS_DIR=${INSTALL_PREFIX_geos}                   \
             -DGEOS_INCLUDE_DIR=${INSTALL_PREFIX_geos}/include    \
             -DGEOS_LIBRARY=${INSTALL_PREFIX_geos}/lib/libgeos_c.a \
