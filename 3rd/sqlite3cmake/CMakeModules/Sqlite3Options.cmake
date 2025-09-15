@@ -1,5 +1,5 @@
 # ################################################################
-# ZSTD Build Options Configuration
+#  Build Options Configuration
 # ################################################################
 
 # RTREE support configuration
