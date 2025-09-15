@@ -25,7 +25,7 @@ set(sqlite_shell_Sources
 
 
 
-# add_compile_options(-DZSTD_DISABLE_ASM)
+# add_compile_options(-DSQLite_DISABLE_ASM)
 
 # Define directories containing the library's public headers
 set(PUBLIC_INCLUDE_DIRS ${SQLITE_SOURCE_DIR})

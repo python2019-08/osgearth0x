@@ -997,3 +997,4 @@ nm ../../osgEarth/libosgEarth.a | grep png_
 如果仍有问题，请提供：  
 - `readelf -d ./osgearth_version` 的输出。  
 - `nm ../../osgEarth/libosgEarth.a | grep png_` 的结果。
+

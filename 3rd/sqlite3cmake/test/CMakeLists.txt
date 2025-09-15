@@ -49,7 +49,7 @@ endif(SQLite_FOUND)
 
 
 # Add gzip support
-if (ZSTD_ZLIB_SUPPORT)
+if (SQLITE3_ZLIB_SUPPORT)
     find_package(ZLIB REQUIRED)
 
     if (ZLIB_FOUND)

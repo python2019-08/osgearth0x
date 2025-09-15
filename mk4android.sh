@@ -368,24 +368,28 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
                 -DCURL_DISABLE_DICT=ON     \
                 -DCURL_DISABLE_FILE=ON     \
                 -DCURL_DISABLE_TFTP=ON     \
-                -DCURL_BROTLI=OFF  -DCURL_USE_LIBSSH2=OFF \
-                -DUSE_LIBIDN2=OFF  -DUSE_NGHTTP2=OFF      \
-                -DCURL_ZLIB=ON  -DZLIB_USE_STATIC_LIBS=ON \
-                -DCURL_ZSTD=OFF \
-                -DBUILD_DOCS=OFF \
-                -DCMAKE_INSTALL_DOCDIR=OFF \
-                -DCURL_USE_PKGCONFIG=OFF -DCURL_USE_LIBPSL=OFF \
-                -DCURL_USE_OPENSSL=ON \
-                -DOPENSSL_USE_STATIC_LIBS=ON  \
-                -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl} \
-                -DOPENSSL_LIBRARIES=${INSTALL_PREFIX_openssl}/lib \
+                -DCURL_BROTLI=OFF  -DCURL_USE_LIBSSH2=OFF  \
+                -DUSE_LIBIDN2=OFF  -DUSE_NGHTTP2=OFF        \
+                -DCURL_ZLIB=ON     -DZLIB_USE_STATIC_LIBS=ON \
+                -DCURL_USE_LIBPSL=OFF   -DCURL_ZSTD=OFF \
+                -DCURL_USE_OPENSSL=ON  \
+                -DBUILD_DOCS=OFF   -DCMAKE_INSTALL_DOCDIR=OFF \
+                -DCURL_USE_PKGCONFIG=OFF \
+                -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+                -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   \
+                -DOPENSSL_USE_STATIC_LIBS=ON                        \
+                -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}         \
+                -DOPENSSL_LIBRARIES=${INSTALL_PREFIX_openssl}/lib     \
+                -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a     \
+                -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
                 -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include  
-                            
+
+
                 # -DCMAKE_MODULE_PATH=${SrcDIR_lib}/cmake  # 优先使用项目内的 FindZLIB.cmake
  
                 #  -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
-                #  -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
-                #  -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \     
+                #  
+                #     
 
                 # -DOPENSSL_LIBRARIES="${INSTALL_PREFIX_openssl}/lib/libssl.a; ${INSTALL_PREFIX_openssl}/lib/libcrypto.a" \
         cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
@@ -1405,7 +1409,6 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
         export PKG_CONFIG_PATH="${INSTALL_PREFIX_osg}/lib/pkgconfig:$PKG_CONFIG_PATH"
         # ------
         osgearth_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"
-        osgearth_MODULE_PATH="${osgearth_MODULE_PATH};${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL/"
         osgearth_MODULE_PATH="${osgearth_MODULE_PATH};${INSTALL_PREFIX_gdal}/lib/cmake/gdal/packages/"
 
         # ------
