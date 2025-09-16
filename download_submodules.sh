@@ -171,5 +171,5 @@ git clone https://github.com/gwaldron/osgearth.git 3rd/osgearth
 cd ./3rd/osgearth 
 git submodule update --init --recursive
 # git checkout -b my-osgearth-3.7.2   tags/osgearth-3.7.2
-git checkout master
+git checkout  -b my-2025Sep12-093115    928195eb74d85eac21c0c727af0fafc6d01be87c  # master
 cd ../../

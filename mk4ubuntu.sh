@@ -15,13 +15,14 @@ echo "============================================================="
 # **************************************************************************
 isRebuild=true
 
+# ------
 isFinished_build_zlib=true
 isFinished_build_zstd=true
 isFinished_build_openssl=true  
 # isFinished_build_icu=true  
 # isFinished_build_libidn2=true 
 isFinished_build_libpsl=true  
-isFinished_build_curl=true   # false
+isFinished_build_curl=true   # false #big code
 # isFinished_build_jpeg9f=true  
 isFinished_build_libjpegTurbo=true  
 isFinished_build_libpng=true 
@@ -30,16 +31,17 @@ isFinished_build_libtiff=true
 isFinished_build_freetype=true  
 isFinished_build_geos=true     
 isFinished_build_sqlite=true  
-isFinished_build_proj=true     #-- false
+isFinished_build_proj=true     #-- false #big code
 isFinished_build_libexpat=true  
 isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true
-isFinished_build_gdal=false   #-- false
+isFinished_build_gdal=true   #-- false #big code
 isFinished_build_osg=true    
 isFinished_build_zip=true
-isFinished_build_osgearth=true
+isFinished_build_osgearth=false 
 
+# ------
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
 CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
@@ -931,8 +933,8 @@ if [ "${isFinished_build_libexpat}" != "true" ] ; then
             -DEXPAT_BUILD_EXAMPLES=OFF \
             -DEXPAT_BUILD_DOCS=OFF \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
- 
 
+        # if " -DEXPAT_BUILD_FUZZERS=ON (测试模式)", expat ->protobuf
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
     
     cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}     
@@ -1068,7 +1070,7 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
     #################################################################### 
     cmk_prefixPath=$(check_concat_paths_1  "${INSTALL_PREFIX_zlib}" \
                 "${INSTALL_PREFIX_xz}"     "${INSTALL_PREFIX_png}" \
-                "${INSTALL_PREFIX_absl}"   "${INSTALL_PREFIX_protobuf}" \
+                "${INSTALL_PREFIX_absl}"     \
                 "${INSTALL_PREFIX_jpegTurbo}"  "${INSTALL_PREFIX_openssl}" \
                 "${INSTALL_PREFIX_tiff}"   "${INSTALL_PREFIX_expat}" \
                 "${INSTALL_PREFIX_geos}"   "${INSTALL_PREFIX_proj}"  \
@@ -1129,15 +1131,15 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
             -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include        \
             -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a      \
             -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
-            -DPROTOBUF_LIBRARY=${INSTALL_PREFIX_protobuf}/lib/libprotobuf.a \
-            -DPROTOBUF_INCLUDE_DIR=${INSTALL_PREFIX_protobuf}/include        \
             -DZLIB_ROOT=${INSTALL_PREFIX_zlib} \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a  
 
-            # -DGDAL_ENABLE_DRIVER_HDF5 ## hdf5 support             
+            # (1) -DGDAL_ENABLE_DRIVER_HDF5 ## hdf5 support             
             #  gdal/lib/cmake/gdal/GDALConfig.cmake ： find_dependency(HDF5 COMPONENTS C)
-      
+            # (2)依赖关系 
+            #      gdal -> EXPAT 
+            #      EXPAT的测试代码部分 -> protobuf -> absl
 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
     
@@ -1176,7 +1178,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     cmk_prefixPath=$(check_concat_paths_1  ${INSTALL_PREFIX_zlib} \
             "${INSTALL_PREFIX_xz}"  "${INSTALL_PREFIX_absl}" "${INSTALL_PREFIX_zstd}"\
             "${INSTALL_PREFIX_png}"  "${INSTALL_PREFIX_jpegTurbo}"  \
-            "${INSTALL_PREFIX_protobuf}" "${INSTALL_PREFIX_openssl}" \
+            "${INSTALL_PREFIX_openssl}" \
             "${INSTALL_PREFIX_tiff}" "${INSTALL_PREFIX_geos}"  "${INSTALL_PREFIX_psl}"\
             "${INSTALL_PREFIX_proj}"  "${INSTALL_PREFIX_expat}" "${INSTALL_PREFIX_freetype}" \
             "${INSTALL_PREFIX_curl}" "${INSTALL_PREFIX_sqlite}" "${INSTALL_PREFIX_gdal}" \
@@ -1399,28 +1401,33 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
     #################################################################### 
     export PKG_CONFIG_PATH="${INSTALL_PREFIX_osg}/lib/pkgconfig:$PKG_CONFIG_PATH"
 
+    #---- osgEarth -> Protobuf -> (absl + utf8_range)
+    #  
     cmk_prefixPath=$(check_concat_paths_1  ${INSTALL_PREFIX_zlib} \
             "${INSTALL_PREFIX_zip}"      "${INSTALL_PREFIX_xz}"   \
-             "${INSTALL_PREFIX_absl}"    "${INSTALL_PREFIX_zstd}" \
+            "${INSTALL_PREFIX_absl}"     "${INSTALL_PREFIX_zstd}" \
             "${INSTALL_PREFIX_png}"      "${INSTALL_PREFIX_jpegTurbo}"   \
             "${INSTALL_PREFIX_protobuf}" "${INSTALL_PREFIX_openssl}"     \
-            "${INSTALL_PREFIX_tiff}"     "${INSTALL_PREFIX_geos}"        \
+            "${INSTALL_PREFIX_tiff}"     "${INSTALL_PREFIX_geos}"      \
             "${INSTALL_PREFIX_psl}"      "${INSTALL_PREFIX_proj}"        \
             "${INSTALL_PREFIX_expat}"    "${INSTALL_PREFIX_freetype}"    \
             "${INSTALL_PREFIX_curl}"     "${INSTALL_PREFIX_sqlite}"      \
             "${INSTALL_PREFIX_gdal}"     "${INSTALL_PREFIX_osg}" )
     echo "oearth...cmk_prefixPath=${cmk_prefixPath}"   
     
-    
-    osgearth_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" 
+    # ----
+    osgearth_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"  
     echo "oearth...osgearth_MODULE_PATH=${osgearth_MODULE_PATH}"    
 
+    # ----
     cmakeParams_osgearth=(  
     "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH" # BOTH：先查根路径，再查系统路径    
     "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH"  
     # "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
     # 是否访问 /usr/include/、/usr/lib/ 等 系统路径   
     "-DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=ON" 
+  
+#   "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=OFF"        
     )
     # 2. 清理环境
     unset LD_LIBRARY_PATH
@@ -1428,7 +1435,9 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
     # (1)/usr/share/cmake-3.28/Modules/FindGLEW.cmake中需要用 ENV GLEW_ROOT。
     # (2)在 CMake 命令行中临时设置环境变量（一次性生效），格式为 
     #   GLEW_ROOT=/path/to/GLEW cmake ...  ，无需提前 export。 
-    
+
+                # "${cmakeCommonParams[@]}"  
+
     # --debug-find    --debug-output 
     GLEW_ROOT="/usr/lib/x86_64-linux-gnu/" \
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find   \
@@ -1490,19 +1499,22 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
         -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
         -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include     \
         -DSQLite3_LIBRARIES=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
-        -DGEOS_DIR=${INSTALL_PREFIX_geos}  \
+        -DGEOS_DIR="${INSTALL_PREFIX_geos}/lib/cmake/GEOS/"  \
+        -Dgeos_DIR="${INSTALL_PREFIX_geos}/lib/cmake/GEOS/"  \
         -DGEOS_INCLUDE_DIR=${INSTALL_PREFIX_geos}/include  \
-        -DGEOS_LIBRARY=${INSTALL_PREFIX_geos}/lib/libgeos_c.a \
         -DPROJ_INCLUDE_DIR=${INSTALL_PREFIX_proj}/include  \
         -DPROJ_LIBRARY=${INSTALL_PREFIX_proj}/lib/libproj.a \
         -DPROJ4_LIBRARY=${INSTALL_PREFIX_proj}/lib/libproj.a \
         -DGDAL_ROOT=${INSTALL_PREFIX_gdal}                \
         -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include  \
         -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a \
-        -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL"  \
-        -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
-        -DSSL_EAY_RELEASE=${INSTALL_PREFIX_openssl}/lib64/libssl.a \
+        -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL"     \
+        -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a     \
+        -DSSL_EAY_RELEASE=${INSTALL_PREFIX_openssl}/lib64/libssl.a          \
         -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+        -Dabsl_DIR="${INSTALL_PREFIX_protobuf}/lib/cmake/absl/"           \
+        -Dutf8_range_DIR="${INSTALL_PREFIX_protobuf}/lib/cmake/utf8_range" \
+        -Dprotobuf_DIR="${INSTALL_PREFIX_protobuf}/lib/cmake/protobuf/"     \
         -DLIB_EAY_RELEASE=""  \
         -DCMAKE_EXE_LINKER_FLAGS=" \
           -Wl,--whole-archive  -fvisibility=hidden   -Wl,--no-whole-archive   \
@@ -1510,10 +1522,14 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
           -Wl,--no-as-needed -lX11 -lXext "  
    
  
+        #         -DGEOS_LIBRARY="${INSTALL_PREFIX_geos}/lib/libgeos_c.a;${INSTALL_PREFIX_geos}/lib/libgeos.a" \
+
+        # -DGEOS_DIR=${INSTALL_PREFIX_geos}/lib/cmake/GEOS  \
         # (0) osgearth 编译时发生 类型转换错误​​（invalid conversion from 'void*' to 'OGRLayerH'）,
         #     用-DCMAKE_C_FLAGS="-U GDAL_DEBUG" 解决
 
-        # (1) osgearth ->GEOS::geos_c ; osgearth -> gdal -> GEOS::GEOS
+        # (1)   GDAL -->|依赖| GEOS_C[libgeos_c.a] -->|依赖| GEOS[libgeos.a] -->|依赖| stdc++[libstdc++]
+        #  osgearth ->GEOS::geos_c ; osgearth -> gdal -> GEOS::GEOS
         #   GEOS 自身的 install/geos/lib/cmake/GEOS/geos-config.cmake 生成 GEOS::geos 目标 ,
         #   GDAL 自带的 install/gdal/lib/cmake/gdal/packages/FindGEOS.cmake 生成 GEOS::GEOS 目标。
         #   osgearth 的cmakelists.txt中需要GEOS::geos_c，osgearth依赖gdal，而gdal需要GEOS::GEOS,因为
@@ -1539,6 +1555,9 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
         # OSGDB_LIBRARY  OSGGA_LIBRARY OSGMANIPULATOR_LIBRARY OSGSHADOW_LIBRARY 
         # OSGSIM_LIBRARY OSGTEXT_LIBRARY OSGUTIL_LIBRARY 
         # OSGVIEWER_LIBRARY OSG_LIBRARY
+        # (4)
+        #  -DPROTOBUF_LIBRARY=${INSTALL_PREFIX_protobuf}/lib/libprotobuf.a \
+        #  -DPROTOBUF_INCLUDE_DIR=${INSTALL_PREFIX_protobuf}/include        \
     echo "ee====cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v" 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
     
