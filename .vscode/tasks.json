@@ -1,0 +1,58 @@
+// .vscode/tasks.json
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "cmake-configure",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/osgearth-cmk-configure.sh",
+            "args": [ ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "cmake-build",
+            "type": "shell",
+            "command": "cmake --build build/ubuntu",
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["cmake-configure"]
+        },
+        {
+            "label": "cmake-build-only",
+            "type": "shell",
+            // ​使用 --target只编译当前调试的目标（如 osgearth_viewer）
+            "command": "cd ${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth && cmake --build . --config debug --target osgearth_map",  // 只编译特定目标
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        }
+    ]
+}
+
+// {
+//     "version": "2.0.0",
+//     "tasks": [
+//         {
+//             "label": "wslCompile",
+//             "type": "shell",
+//             "command": "cd ${workspaceFolder} && cmake -S. -Bbuild/ubuntu -DBUILD_OSG_EXAMPLES=ON -DCMAKE_BUILD_TYPE=debug && cmake --build build/ubuntu",
+//             "group": "build",
+//             "problemMatcher": [
+//                 "$gcc"
+//             ],
+//             "presentation": {
+//                 "reveal": "always",
+//                 "panel": "shared"
+//             }
+//         } 
+//     ]
+// }
