@@ -1,0 +1,46 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug osgearth_viewer",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_map/osgearth_map",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            // "preLaunchTask": "wslCompile", // 确保你有一个名为 wslCompile 的构建任务（见下一步）
+            "preLaunchTask": "cmake-build-only",  // 仅编译目标，不重新配置
+            "miDebuggerPath": "/usr/bin/gdb"
+        }
+    ]
+}
+
+// {
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "Debug osgearth_viewer",
+//             "type": "cppdbg",
+//             "request": "launch",
+//             "program": "${workspaceFolder}/build/ubuntu/applications/osgearth_viewer/osgearth_viewer",
+//             "args": ["--earth", "${workspaceFolder}/data/earth.earth"],
+//             "stopAtEntry": false,
+//             "cwd": "${workspaceFolder}",
+//             "environment": [],
+//             "externalConsole": false,
+//             "MIMode": "gdb",
+//             "preLaunchTask": "cmake-build-viewer"
+//         }
+//     ]
+// }

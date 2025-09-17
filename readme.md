@@ -1,6 +1,8 @@
 # 1. how to build on ubuntu 24.04
 <!-- 
-3rd/sqlite\**\*.txt,3rd/sqlite\**\*.md  
+
+3rd/osg/**/*.txt*,3rd/osg/**/*.cmake
+
 --> 
 ```sh
 # ------安装编译工具
@@ -49,3 +51,9 @@ $ cp /usr/share/cmake-3.28/Modules/FindZLIB.cmake  ./cmake/
 ```
  
  <!-- /usr/share/cmake-3.28/Modules/FindSQLite3.cmake   -->
+
+# 4. 如何处理 静态库的依赖顺序
+
+https://github.com/python2019-08/a-md01.git 
+
+"md_CMake/professional-cmake/20libraries-append.md"  /  "# 3.静态库的依赖顺序问题"
