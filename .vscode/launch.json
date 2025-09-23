@@ -5,11 +5,25 @@
             "name": "Debug osgearth_viewer",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_map/osgearth_map",
-            "args": [],
+            
+            // "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osg/bin/present3D",//osg
+            // "args": ["${workspaceFolder}/data/osgdata340/cow_fixed.osg"],//osg            
+            "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_viewer/osgearth_viewer", //oearth
+            "args": ["/home/abner/abner2/zdev/nv/osgearth0x/3rd/osgearth/tests/boston.earth"],//oearth
+ 
+            
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
+            "environment": [
+                // { //---- for osgEarthDll 
+                //     "name": "OSG_LIBRARY_PATH", 
+                //     "value": "/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgdll/lib/osgPlugins-3.7.0" 
+                // },
+                // { //---- for osgEarthDll    
+                //     "name": "LD_LIBRARY_PATH", 
+                //     "value": "/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgdll/lib/:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgdll/lib/osgPlugins-3.7.0:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgearthdll/lib/osgPlugins-3.7.0:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgearthdll/lib/" 
+                // },
+            ],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [

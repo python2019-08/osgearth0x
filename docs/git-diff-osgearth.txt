@@ -1,0 +1,547 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5efca139e..e27003672 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -136,7 +136,7 @@ option(OSGEARTH_SONAMES "ON to append so-version numbers to libraries" ON)
+ 
+ 
+ # Dependencies ...........................................................
+-
++include(CheckCSourceCompiles) 
+ # Update git submodules
+ # https://cliutils.gitlab.io/modern-cmake/chapters/projects/submodule.html
+ find_package(Git QUIET)
+@@ -153,7 +153,7 @@ endif()
+ # required - globally used
+ find_package(OpenGL REQUIRED)
+ find_package(OpenSceneGraph REQUIRED COMPONENTS osgManipulator osgShadow osgSim osgViewer osgGA osgUtil osgText osgDB osg OpenThreads)
+-
++message(STATUS "oe...OPENSCENEGRAPH_FOUND=${OPENSCENEGRAPH_FOUND};;OPENSCENEGRAPH_LIBRARIES=${OPENSCENEGRAPH_LIBRARIES}")
+ # For static builds we need to link with Fontconfig directly.
+ # There is an unknown issue where the Fc symbols are not found when linking executables statically.
+ if(NOT OSGEARTH_BUILD_SHARED_LIBS)
+diff --git a/cmake/osgearth-macros.cmake b/cmake/osgearth-macros.cmake
+index cea4148cd..a18713141 100644
+--- a/cmake/osgearth-macros.cmake
++++ b/cmake/osgearth-macros.cmake
+@@ -121,7 +121,7 @@ macro(add_osgearth_app)
+         
+     # We always need these so just link them here.
+     target_link_libraries(${MY_TARGET} PRIVATE osgEarth ${OPENSCENEGRAPH_LIBRARIES} ${MY_LIBRARIES})
+-    
++    message(STATUS "oe...add_osgearth_app=${MY_TARGET};;OPENSCENEGRAPH_LIBRARIES=${OPENSCENEGRAPH_LIBRARIES};MY_LIBRARIES=${MY_LIBRARIES}")
+     set_target_properties(${MY_TARGET} PROPERTIES PROJECT_LABEL "${MY_TARGET}")
+     
+     # macos-specific
+diff --git a/src/applications/CMakeLists.txt b/src/applications/CMakeLists.txt
+index 35f89d6ea..10d42909c 100644
+--- a/src/applications/CMakeLists.txt
++++ b/src/applications/CMakeLists.txt
+@@ -50,6 +50,7 @@ if(NOT OSGEARTH_BUILD_PLATFORM_IPHONE)
+     if(OSGEARTH_BUILD_EXAMPLES)
+         set(TARGET_DEFAULT_LABEL_PREFIX "Example")
+         set(TARGET_DEFAULT_APPLICATION_FOLDER "Examples")
++        add_subdirectory(osgearth_city)
+         add_subdirectory(osgearth_simple)
+         add_subdirectory(osgearth_features)
+         add_subdirectory(osgearth_featurefilter)
+diff --git a/src/applications/osgearth_city/osgearth_city.cpp b/src/applications/osgearth_city/osgearth_city.cpp
+index 160df4de9..01aa1abbd 100644
+--- a/src/applications/osgearth_city/osgearth_city.cpp
++++ b/src/applications/osgearth_city/osgearth_city.cpp
+@@ -195,7 +195,7 @@ void addStreets(Map* map)
+     // Render the data as translucent yellow lines that are 7.5m wide.
+     LineSymbol* line = style.getOrCreate<LineSymbol>();
+     line->stroke()->color() = Color(Color::Yellow, 0.5f);
+-    line->stroke()->width() = 7.5f;
++    line->stroke()->width() = osgEarth::Distance(7.5f, Units::METERS);
+     line->stroke()->widthUnits() = Units::METERS;
+ 
+     // Clamp the lines to the terrain.
+diff --git a/src/applications/osgearth_map/CMakeLists.txt b/src/applications/osgearth_map/CMakeLists.txt
+index 41d921ca3..48056859a 100644
+--- a/src/applications/osgearth_map/CMakeLists.txt
++++ b/src/applications/osgearth_map/CMakeLists.txt
+@@ -1,3 +1,49 @@
++message(STATUS  "oe...osgearth_map: OSG_DIR=${OSG_DIR}")
++if(NOT EXISTS "${OSG_DIR}")
++    message(FATAL_ERROR  "oe...osgearth_map: OSG_DIR=${OSG_DIR} not exist.")
++endif(NOT EXISTS "${OSG_DIR}")
++
++message(STATUS  "oe...osgearth_map/CMakeLists.txt: OSGEARTH_BUILD_SHARED_LIBS=${OSGEARTH_BUILD_SHARED_LIBS};;;OPENSCENEGRAPH_LIBRARIES=${OPENSCENEGRAPH_LIBRARIES}")
++if(OSGEARTH_BUILD_SHARED_LIBS)
++    message(STATUS  "oe...osgearth_map/CMakeLists.txt: 1")
++    set(OPENSCENEGRAPH_LIBRARIES 
++        ${OPENSCENEGRAPH_LIBRARIES}
++        ${FREETYPE_LIBRARY}
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_ive.so
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_osg.so
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_p3d.so
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_rgb.so
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_openflight.so
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_obj.so
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_freetype.so
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_png.so
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_jpeg.so  
++        # ${OSG_DIR}/lib/osgPlugins-3.7.0/osgdb_curl.so
++        ${OSG_DIR}/lib/libosgTerrain.so
++        ${OSG_DIR}/lib/libosgFX.so
++        ${OSG_DIR}/lib/libosgParticle.so        
++        )
++else()
++    set(OPENSCENEGRAPH_LIBRARIES 
++        ${OPENSCENEGRAPH_LIBRARIES}
++        ${OSG_DIR}/lib/libosgTerrain.a
++        ${OSG_DIR}/lib/libosgFX.a
++        ${OSG_DIR}/lib/libosgParticle.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_ive.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_osg.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_p3d.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_rgb.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_openflight.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_obj.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_freetype.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_png.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_jpeg.a  
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_curl.a
++        ${FREETYPE_LIBRARY}
++        )
++endif(OSGEARTH_BUILD_SHARED_LIBS)
++
++
+ add_osgearth_app(
+     TARGET osgearth_map
+     SOURCES osgearth_map.cpp
+diff --git a/src/applications/osgearth_map/osgearth_map.cpp b/src/applications/osgearth_map/osgearth_map.cpp
+index b4ee2dd2a..75f6fe0f2 100644
+--- a/src/applications/osgearth_map/osgearth_map.cpp
++++ b/src/applications/osgearth_map/osgearth_map.cpp
+@@ -28,6 +28,53 @@
+ #include <osgDB/ReadFile>
+ #include <osgDB/WriteFile>
+ 
++ 
++#ifdef  OSGEARTH_LIBRARY_STATIC
++    // include the plugins we need
++    // USE_OSGPLUGIN(ive)
++    USE_OSGPLUGIN(osg)
++    USE_OSGPLUGIN(osg2)
++    // USE_OSGPLUGIN(p3d)
++    // USE_OSGPLUGIN(paths)
++    USE_OSGPLUGIN(rgb)
++    // USE_OSGPLUGIN(OpenFlight)
++    USE_OSGPLUGIN(obj)
++
++ 
++    USE_OSGPLUGIN(freetype)
++ 
++    USE_OSGPLUGIN(png)
++ 
++    USE_OSGPLUGIN(jpeg)
++  
++    USE_OSGPLUGIN(curl)
++ 
++
++    // USE_DOTOSGWRAPPER_LIBRARY(osg)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgFX)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgParticle)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgShadow)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgSim)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgTerrain)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgText)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgViewer)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgVolume)
++    // USE_DOTOSGWRAPPER_LIBRARY(osgWidget)
++
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osg)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgAnimation)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgFX)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgManipulator)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgParticle)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgShadow)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgTerrain)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgText)
++    // USE_SERIALIZER_WRAPPER_LIBRARY(osgVolume)
++
++    USE_GRAPHICSWINDOW()
++#endif
++
+ using namespace osgEarth;
+ using namespace osgEarth::Util;
+ 
+@@ -109,10 +156,10 @@ main(int argc, char** argv)
+ 
+     // create the empty map.
+     Map* map = new Map();
+-
++    std::string dataRootDir="/home/abner/Downloads/oearth/data/";
+     // add a simple imagery layer using the GDAL driver:
+     GDALImageLayer* imagery = new GDALImageLayer();
+-    imagery->setURL("../data/world.tif");
++    imagery->setURL(dataRootDir+"../data/world.tif");
+     map->addLayer(imagery);
+ 
+     // add a TMS (Tile Map Service) elevation layer:
+@@ -129,7 +176,8 @@ main(int argc, char** argv)
+ 
+     // a custom layer that displays a user texture:
+     MyTextureLayer* texLayer = new MyTextureLayer();
+-    texLayer->setPath("../data/grid2.png");
++    std::string pngPath=dataRootDir+std::string("../data/grid2.png");
++    texLayer->setPath(pngPath.c_str());
+     texLayer->setOpacity(0.5f);
+     map->addLayer(texLayer);
+ 
+@@ -146,9 +194,11 @@ main(int argc, char** argv)
+ 
+     // Add a composite image layer that combines two other sources:
+     GDALImageLayer* comp1 = new GDALImageLayer();
+-    comp1->setURL("../data/boston-inset-wgs84.tif");
++    std::string tif1Path=dataRootDir+"../data/boston-inset-wgs84.tif";
++    comp1->setURL(tif1Path);
+     GDALImageLayer* comp2 = new GDALImageLayer();
+-    comp2->setURL("../data/nyc-inset-wgs84.tif");
++    tif1Path=dataRootDir+"../data/nyc-inset-wgs84.tif";
++    comp2->setURL(tif1Path);
+     CompositeImageLayer* compImage = new CompositeImageLayer();
+     compImage->addLayer(comp1);
+     compImage->addLayer(comp2);
+@@ -156,9 +206,11 @@ main(int argc, char** argv)
+ 
+     // Add a composite elevation layer tha tcombines two other sources:
+     GDALElevationLayer* elev1 = new GDALElevationLayer();
+-    elev1->setURL("../data/terrain/mt_fuji_90m.tif");
++    std::string tif2Path=dataRootDir+"../data/terrain/mt_fuji_90m.tif";
++    elev1->setURL(tif2Path);
+     GDALElevationLayer* elev2 = new GDALElevationLayer();
+-    elev2->setURL("../data/terrain/mt_everest_90m.tif");
++    tif2Path=dataRootDir+"../data/terrain/mt_everest_90m.tif";
++    elev2->setURL(tif2Path);
+     CompositeElevationLayer* compElev = new CompositeElevationLayer();
+     compElev->addLayer(elev1);
+     compElev->addLayer(elev2);
+@@ -186,7 +238,8 @@ main(int argc, char** argv)
+ 
+     // put a model on the map atop Pike's Peak, Colorado, USA
+     auto modelLayer = new ModelLayer();
+-    modelLayer->setURL("../data/red_flag.osg.2000.scale");
++    std::string scalePath=dataRootDir+"../data/red_flag.osg.2000.scale";
++    modelLayer->setURL(scalePath);
+     modelLayer->setLocation(GeoPoint(SpatialReference::get("wgs84"), -105.042292, 38.840829));
+     map->addLayer(modelLayer);
+ 
+diff --git a/src/applications/osgearth_viewer/CMakeLists.txt b/src/applications/osgearth_viewer/CMakeLists.txt
+index 3625bb767..dc9a7b34a 100644
+--- a/src/applications/osgearth_viewer/CMakeLists.txt
++++ b/src/applications/osgearth_viewer/CMakeLists.txt
+@@ -1,4 +1,34 @@
++if(OSGEARTH_BUILD_SHARED_LIBS) 
++    message(STATUS  "oe...osgearth_viewer/CMakeLists.txt..1: OPENSCENEGRAPH_LIBRARIES=${OPENSCENEGRAPH_LIBRARIES}")
++   
++else()
++    set(OPENSCENEGRAPH_LIBRARIES 
++        ${OPENSCENEGRAPH_LIBRARIES}
++        ${OSG_DIR}/lib/libosgTerrain.a
++        ${OSG_DIR}/lib/libosgFX.a
++        ${OSG_DIR}/lib/libosgParticle.a
++        ${OSG_DIR}//lib/osgPlugins-3.7.0/libosgdb_deprecated_osg.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_osg.a 
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_rgb.a  
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_freetype.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_png.a
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_jpeg.a  
++        ${OSG_DIR}/lib/osgPlugins-3.7.0/libosgdb_curl.a
++        ${CURL_LIBRARY}
++        ${JPEG_LIBRARY}
++        ${PNG_LIBRARY}
++        ${FREETYPE_LIBRARY}
++        )
++    set(MY_LIBRARIES ${MY_LIBRARIES}
++        osgdb_earth
++        osgdb_osgearth_engine_rex
++         )
++    message(STATUS  "oe...osgearth_viewer/CMakeLists.txt...2: OPENSCENEGRAPH_LIBRARIES=${OPENSCENEGRAPH_LIBRARIES};;MY_LIBRARIES=${MY_LIBRARIES}")
++endif(OSGEARTH_BUILD_SHARED_LIBS)
++
+ add_osgearth_app(
+     TARGET osgearth_viewer
+     SOURCES osgearth_viewer.cpp
+-    FOLDER Tools )
++    FOLDER Tools 
++    LIBRARIES ${MY_LIBRARIES})
++ 
+\ No newline at end of file
+diff --git a/src/applications/osgearth_viewer/osgearth_viewer.cpp b/src/applications/osgearth_viewer/osgearth_viewer.cpp
+index 36c4cda16..3e7464e05 100644
+--- a/src/applications/osgearth_viewer/osgearth_viewer.cpp
++++ b/src/applications/osgearth_viewer/osgearth_viewer.cpp
+@@ -10,14 +10,31 @@
+ #include <osgEarth/PhongLightingEffect>
+ #include <osgGA/TrackballManipulator>
+ #include <iostream>
+-
++#include <osgViewer/GraphicsWindow>
+ #include <osgEarth/Metrics>
+ 
+ #define LC "[viewer] "
+-
++// extern "C" OSGVIEWER_EXPORT void graphicswindow_X11(void);
+ using namespace osgEarth;
+ using namespace osgEarth::Util;
+ 
++#ifdef  OSGEARTH_LIBRARY_STATIC
++
++USE_OSGPLUGIN(osg)
++USE_OSGPLUGIN(curl)
++//USE_OSGPLUGIN(tiff)
++USE_OSGPLUGIN(jpeg)
++USE_OSGPLUGIN(earth)
++USE_OSGPLUGIN(osgearth_engine_rex)
++
++USE_DOTOSGWRAPPER_LIBRARY(osg)
++
++
++USE_GRAPHICSWINDOW()
++#endif//#ifdef  OSGEARTH_LIBRARY_STATIC
++
++
++
+ int
+ usage(const char* name)
+ {
+@@ -35,7 +52,7 @@ main(int argc, char** argv)
+ {
+     osg::ArgumentParser arguments(&argc,argv);
+     if ( arguments.read("--help") )
+-        return usage(argv[0]);
++        return usage(argv[0]); 
+ 
+     // start up osgEarth
+     osgEarth::initialize(arguments);
+diff --git a/src/osgEarth/CMakeLists.txt b/src/osgEarth/CMakeLists.txt
+index 0ea36947a..161c74957 100644
+--- a/src/osgEarth/CMakeLists.txt
++++ b/src/osgEarth/CMakeLists.txt
+@@ -13,6 +13,8 @@ find_package(SQLite3 REQUIRED)
+ 
+ # optional
+ find_package(geos QUIET)
++  
++
+ find_package(blend2d QUIET)
+ find_package(spdlog QUIET)
+ find_package(meshoptimizer QUIET)
+@@ -855,7 +857,7 @@ endif()
+ 
+ # MBTiles support?
+ if(SQLite3_FOUND)
+-    message(STATUS "Found SQLite3 - will support MBTiles")
++    message(STATUS "Found SQLite3 - will support MBTiles...SQLite3_INCLUDE_DIR=${SQLite3_INCLUDE_DIR}")
+     set(OSGEARTH_HAVE_SQLITE3 ON)
+     set(OSGEARTH_HAVE_MBTILES ON)
+     include_directories(${SQLite3_INCLUDE_DIR})
+diff --git a/src/osgEarth/GLUtils.cpp b/src/osgEarth/GLUtils.cpp
+index f6f88e3a5..e171960aa 100644
+--- a/src/osgEarth/GLUtils.cpp
++++ b/src/osgEarth/GLUtils.cpp
+@@ -23,6 +23,15 @@
+ #include <osg/Point>
+ #endif
+ 
++
++#if defined(OSG_GLES3_AVAILABLE)
++    // force version numbers for gles
++    #if (defined(ANDROID) || defined(__ANDROID__)) 
++    #include <GLES3/gl32.h> 
++    #endif    
++#endif
++
++
+ using namespace osgEarth;
+ 
+ #define LC "[GLUtils] "
+@@ -1797,11 +1806,14 @@ ComputeImageSession::render(osg::State* state)
+     }
+ 
+     renderImplementation(state);
+-
++#if (! defined(OSG_GLES1_AVAILABLE))&& (! defined(OSG_GLES2_AVAILABLE))&&(! defined(OSG_GLES3_AVAILABLE))
+     // Post an async readback to the GL queue
+     ext->glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, _pbo);
+     glGetTexImage(GL_TEXTURE_2D, 0, _image->getPixelFormat(), _image->getDataType(), 0);
+     ext->glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
++#else
++    // OSG_NOTICE<<"Warning: glGetTexImage() not supported by gles"<<std::endl;        
++#endif    
+ }
+ 
+ void
+diff --git a/src/osgEarth/ShaderGenerator.cpp b/src/osgEarth/ShaderGenerator.cpp
+index b7e3a0b57..612e09e3f 100644
+--- a/src/osgEarth/ShaderGenerator.cpp
++++ b/src/osgEarth/ShaderGenerator.cpp
+@@ -14,6 +14,7 @@
+ #include <osgEarth/Lighting>
+ #include "ShaderLoader"
+ 
++#include <osg/Point>
+ #include <osg/PagedLOD>
+ #include <osg/ProxyNode>
+ #include <osg/Texture1D>
+diff --git a/src/osgEarth/StringUtils b/src/osgEarth/StringUtils
+index 5cc307f94..2cdb68517 100644
+--- a/src/osgEarth/StringUtils
++++ b/src/osgEarth/StringUtils
+@@ -19,6 +19,7 @@
+ #include <unordered_map>
+ #include <set>
+ #include <cctype>
++#include <cstdint>
+ 
+ namespace osgEarth {
+     namespace Util
+diff --git a/src/osgEarth/TileRasterizer.cpp b/src/osgEarth/TileRasterizer.cpp
+index 47d62190b..ee9a2b75e 100644
+--- a/src/osgEarth/TileRasterizer.cpp
++++ b/src/osgEarth/TileRasterizer.cpp
+@@ -297,7 +297,8 @@ GLuint
+ TileRasterizer::Renderer::query(osg::State& state)
+ {
+     GLuint samples = 1;
+-
++#if (! defined(OSG_GLES1_AVAILABLE))&& (! defined(OSG_GLES2_AVAILABLE))&&(! defined(OSG_GLES3_AVAILABLE))
++ 
+     if (_query)
+         _query->getResult(&samples);
+ 
+@@ -326,8 +327,11 @@ TileRasterizer::Renderer::query(osg::State& state)
+         }
+ 
+         _pbo->unbind();
++     
+     }
+-
++#else
++    // OSG_NOTICE<<"Warning: glGetTexImage() not supported by gles"<<std::endl;    
++#endif   
+     return samples;
+ }
+ 
+diff --git a/src/osgEarth/Utils.cpp b/src/osgEarth/Utils.cpp
+index a925eaf34..e85d41ca8 100644
+--- a/src/osgEarth/Utils.cpp
++++ b/src/osgEarth/Utils.cpp
+@@ -701,6 +701,10 @@ CustomRenderLeaf::render(osg::RenderInfo& renderInfo, osgUtil::RenderLeaf* previ
+ #ifdef _WIN32
+ #include <Windows.h>
+ #include <dbghelp.h>
++#elif defined(ANDROID)
++#include <unwind.h>
++#include <android/log.h>
++
+ #elif defined(__GNUC__)
+ #include <execinfo.h>
+ #include <cstdlib>
+@@ -708,6 +712,25 @@ CustomRenderLeaf::render(osg::RenderInfo& renderInfo, osgUtil::RenderLeaf* previ
+ #include <cxxabi.h>
+ #endif
+ 
++
++#if defined(ANDROID)
++// 自定义栈展开回调
++static _Unwind_Reason_Code trace_callback(_Unwind_Context* context, void* arg) {
++    // 获取当前栈帧的程序计数器（PC）
++    uintptr_t pc = _Unwind_GetIP(context);
++    if (pc != 0) {
++        __android_log_print(ANDROID_LOG_DEBUG, "osgEarth", "stack frame: %p", (void*)pc);
++    }
++    return _URC_CONTINUE_UNWIND;
++}
++
++// 在需要获取栈跟踪的地方调用
++void print_stack_trace() {
++    _Unwind_Backtrace(trace_callback, nullptr);
++}
++#endif
++
++
+ CallStack::CallStack()
+ {
+ #ifdef _WIN32
+@@ -728,6 +751,8 @@ CallStack::CallStack()
+     }
+ 
+     free(symbol);
++#elif defined(ANDROID)
++     _Unwind_Backtrace(trace_callback, nullptr);
+ #else
+     auto trim = [](const char* in, std::string& out)
+         {
+diff --git a/src/osgEarthDrivers/sky_simple/eb_ogl.cpp b/src/osgEarthDrivers/sky_simple/eb_ogl.cpp
+index 3e2726611..5c4b73f02 100644
+--- a/src/osgEarthDrivers/sky_simple/eb_ogl.cpp
++++ b/src/osgEarthDrivers/sky_simple/eb_ogl.cpp
+@@ -29,6 +29,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ #include "eb_utility.h"
+ #include "eb_macros.h"
+ 
++#if defined(OSG_GLES3_AVAILABLE)
++    // force version numbers for gles
++    #if (defined(ANDROID) || defined(__ANDROID__)) 
++    #include <GLES3/gl32.h> 
++    #endif    
++#endif
++
+ using namespace dw;
+ 
+ #define DW_LOG_WARNING(X)
+@@ -237,7 +244,7 @@ void Texture::set_compare_func(GLenum func)
+ 
+ // -----------------------------------------------------------------------------------------------------------------------------------
+ 
+-#if !defined(__EMSCRIPTEN__)
++#if !defined(__EMSCRIPTEN__) && !defined(ANDROID)
+ Texture1D::Texture1D(uint32_t w, uint32_t array_size, int32_t mip_levels, GLenum internal_format, GLenum format, GLenum type) : Texture()
+ {
+     m_array_size = array_size;
+@@ -958,7 +965,7 @@ void Framebuffer::attach_render_target(uint32_t attachment, Texture* texture, ui
+         GL_CHECK_ERROR(ext()->glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + attachment, texture->target(), texture->id(), mip_level));
+     }
+ 
+-#if defined(__EMSCRIPTEN__)
++#if defined(__EMSCRIPTEN__) || defined(ANDROID)
+     if (draw)
+         m_attachments[m_render_target_count++] = GL_COLOR_ATTACHMENT0_EXT + attachment;
+ 
+@@ -1031,7 +1038,7 @@ void Framebuffer::attach_render_target(uint32_t attachment, TextureCube* texture
+         GL_CHECK_ERROR(ext()->glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texture->id(), mip_level));
+     }
+ 
+-#if defined(__EMSCRIPTEN__)
++#if defined(__EMSCRIPTEN__)  || defined(ANDROID)
+     if (draw)
+         m_attachments[m_render_target_count++] = GL_COLOR_ATTACHMENT0 + attachment;
+ 
+@@ -1108,7 +1115,7 @@ void Framebuffer::attach_depth_stencil_target(TextureCube* texture, uint32_t fac
+         GL_CHECK_ERROR(ext()->glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texture->id(), mip_level));
+     }
+ 
+-#if !defined(__EMSCRIPTEN__)
++#if !defined(__EMSCRIPTEN__)  && !defined(ANDROID)
+     GL_CHECK_ERROR(glDrawBuffer(GL_NONE));
+ #endif
+     GL_CHECK_ERROR(glReadBuffer(GL_NONE));
+diff --git a/src/osgEarthDrivers/sky_simple/eb_ogl.h b/src/osgEarthDrivers/sky_simple/eb_ogl.h
+index 4c87ab94b..37af17189 100644
+--- a/src/osgEarthDrivers/sky_simple/eb_ogl.h
++++ b/src/osgEarthDrivers/sky_simple/eb_ogl.h
+@@ -135,7 +135,7 @@ namespace dw
+ 		uint32_t m_array_size;
+     };
+  
+-#if !defined(__EMSCRIPTEN__)
++#if !defined(__EMSCRIPTEN__) && !defined(ANDROID)
+     class Texture1D : public Texture
+     {
+ 	public:

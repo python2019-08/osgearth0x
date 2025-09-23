@@ -1,0 +1,60 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e858f1b4c..b3d3704a1 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -307,7 +307,7 @@ ENDIF()
+ 
+ 
+ 
+-
++message(STATUS "osg...UNIX=${UNIX};;ANDROID=${ANDROID}")
+ 
+ IF(UNIX AND NOT ANDROID)
+     # Not sure what this will do on Cygwin and Msys
+@@ -771,6 +771,8 @@ IF(ANDROID AND OSG_FIND_3RD_PARTY_DEPS)
+ ELSE()
+ # Common to all platforms except android:
+     FIND_PACKAGE(Freetype)
++    message(STATUS "og...01.FREETYPE_FOUND=${FREETYPE_FOUND};;Freetype_FOUND=${Freetype_FOUND}")
++    set(FREETYPE_FOUND ${Freetype_FOUND})
+     FIND_PACKAGE(ilmbase)
+     FIND_PACKAGE(Inventor)
+     FIND_PACKAGE(Jasper)
+diff --git a/applications/present3D/present3D.cpp b/applications/present3D/present3D.cpp
+index 279d70db1..34efff90d 100644
+--- a/applications/present3D/present3D.cpp
++++ b/applications/present3D/present3D.cpp
+@@ -322,6 +322,8 @@ int main( int argc, char **argv )
+         return 1;
+     }
+ 
++    osgDB::readRefImageFile("/home/abner/abner2/zdev/nv/osgearth0x/data/osgdata340/Images/blueFlowers.png");
++
+     bool suppress_env_tags = false;
+     if (arguments.read("--suppressEnvTags"))
+         suppress_env_tags = true;
+diff --git a/packaging/cmake/OpenSceneGraphConfig.cmake.in b/packaging/cmake/OpenSceneGraphConfig.cmake.in
+index d82c6dc2c..71bb8276c 100644
+--- a/packaging/cmake/OpenSceneGraphConfig.cmake.in
++++ b/packaging/cmake/OpenSceneGraphConfig.cmake.in
+@@ -97,7 +97,7 @@ foreach(component OpenThreads osg ${OpenSceneGraph_FIND_COMPONENTS})
+         # This component has already been found, so we'll skip it
+         set(OpenSceneGraph_${component}_FOUND TRUE)
+         set(OPENSCENEGRAPH_${component}_FOUND TRUE)
+-        continue()
++        #continue()
+     endif()
+ 
+     string(TOUPPER ${component} UC_COMPONENT)
+diff --git a/src/osgPlugins/CMakeLists.txt b/src/osgPlugins/CMakeLists.txt
+index 277dbebd5..b89748018 100644
+--- a/src/osgPlugins/CMakeLists.txt
++++ b/src/osgPlugins/CMakeLists.txt
+@@ -247,6 +247,7 @@ ENDIF()
+ 
+ 
+ IF(FREETYPE_FOUND)
++    message(STATUS "og..FREETYPE_FOUND=${FREETYPE_FOUND}")
+     ADD_PLUGIN_DIRECTORY(freetype)
+ ENDIF()
+ 

@@ -1,0 +1,74 @@
+diff --git a/cmake/modules/packages/FindGEOS.cmake b/cmake/modules/packages/FindGEOS.cmake
+index 2f1dc94618..c341a8e6c9 100644
+--- a/cmake/modules/packages/FindGEOS.cmake
++++ b/cmake/modules/packages/FindGEOS.cmake
+@@ -27,11 +27,15 @@ find_path(GEOS_INCLUDE_DIR NAMES geos_c.h
+           HINTS ${GEOS_PREFIX}/include)
+ find_library(GEOS_LIBRARY NAMES geos_c
+              HINTS ${GEOS_PREFIX}/lib)
+-mark_as_advanced(GEOS_INCLUDE_DIR GEOS_LIBRARY)
++find_library(GEOS_CXX_LIBRARY NAMES geos HINTS ${GEOS_PREFIX}/lib)  # added             
++mark_as_advanced(GEOS_INCLUDE_DIR GEOS_LIBRARY 
++                GEOS_CXX_LIBRARY # added 
++                )
++
+ 
+ include(FindPackageHandleStandardArgs)
+ find_package_handle_standard_args(GEOS FOUND_VAR GEOS_FOUND
+-                                  REQUIRED_VARS GEOS_LIBRARY GEOS_INCLUDE_DIR
++                                  REQUIRED_VARS GEOS_LIBRARY GEOS_CXX_LIBRARY GEOS_INCLUDE_DIR
+                                   VERSION_VAR GEOS_VERSION)
+ 
+ if(GEOS_FOUND)
+@@ -44,6 +48,8 @@ if(GEOS_FOUND)
+         set_target_properties(${GEOS_TARGET} PROPERTIES
+                               INTERFACE_INCLUDE_DIRECTORIES "${GEOS_INCLUDE_DIR}"
+                               IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+-                              IMPORTED_LOCATION "${GEOS_LIBRARY}")
++                              IMPORTED_LOCATION "${GEOS_LIBRARY}"
++                              INTERFACE_LINK_LIBRARIES "${GEOS_CXX_LIBRARY}"  # key repair
++                              )
+     endif()
+ endif()
+diff --git a/cmake/template/GDALConfig.cmake.in b/cmake/template/GDALConfig.cmake.in
+index 0305899542..9cf89b9664 100644
+--- a/cmake/template/GDALConfig.cmake.in
++++ b/cmake/template/GDALConfig.cmake.in
+@@ -7,11 +7,24 @@ if(NOT "@BUILD_SHARED_LIBS@")
+     if(DEFINED CMAKE_MODULE_PATH)
+         set(_gdal_module_path_backup "${CMAKE_MODULE_PATH}")
+     endif()
++    ##--added start
++    if(DEFINED CMAKE_FIND_PACKAGE_PREFER_CONFIG)
++        set(CMAKE_FIND_PACKAGE_PREFER_CONFIG_bk "${CMAKE_FIND_PACKAGE_PREFER_CONFIG}")
++    endif()
++    set(CMAKE_FIND_PACKAGE_PREFER_CONFIG OFF)
++    ##--added end
++
+     @GDAL_IMPORT_DEPENDENCIES@
+     if(DEFINED _gdal_module_path_backup)
+         set(CMAKE_MODULE_PATH  "${_gdal_module_path_backup}")
+     else()
+         unset(CMAKE_MODULE_PATH)
+     endif()
++
++    ##--added start
++    if(DEFINED CMAKE_FIND_PACKAGE_PREFER_CONFIG_bk)
++        set(CMAKE_FIND_PACKAGE_PREFER_CONFIG  "${CMAKE_FIND_PACKAGE_PREFER_CONFIG_bk}")
++    endif()
++    ##--added end
+ endif()
+ include("${CMAKE_CURRENT_LIST_DIR}/GDAL-targets.cmake")
+diff --git a/gdal.cmake b/gdal.cmake
+index 54cfbe13af..26deccb7df 100644
+--- a/gdal.cmake
++++ b/gdal.cmake
+@@ -588,7 +588,7 @@ get_property(GDAL_PRIVATE_LINK_LIBRARIES GLOBAL PROPERTY gdal_private_link_libra
+ # GDAL_EXTRA_LINK_LIBRARIES may be set by the user if the various FindXXXX modules
+ # didn't capture all required dependencies (used for example by OSGeo4W)
+ target_link_libraries(${GDAL_LIB_TARGET_NAME} PRIVATE ${GDAL_PRIVATE_LINK_LIBRARIES} ${GDAL_EXTRA_LINK_LIBRARIES})
+-
++message(STATUS "gd..GDAL_PRIVATE_LINK_LIBRARIES=${GDAL_PRIVATE_LINK_LIBRARIES};;GDAL_EXTRA_LINK_LIBRARIES=${GDAL_EXTRA_LINK_LIBRARIES}")
+ # Document/Manuals
+ if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/doc" AND BUILD_DOCS)
+   add_subdirectory(doc)
