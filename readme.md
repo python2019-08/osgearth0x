@@ -1,8 +1,10 @@
 # 1. how to build on ubuntu 24.04
 <!-- 
-
+(1)
 3rd/osg/**/*.txt*,3rd/osg/**/*.cmake
 
+(2)gdal 的cmake脚本 需要改
+(3)osg、osgearth 的cmake脚本需要改
 --> 
 ```sh
 # ------安装编译工具
