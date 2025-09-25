@@ -5,12 +5,15 @@
             "name": "Debug osgearth_viewer",
             "type": "cppdbg",
             "request": "launch",
-            
+            // -----------${program} args...start
             // "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osg/bin/present3D",//osg
             // "args": ["${workspaceFolder}/data/osgdata340/cow_fixed.osg"],//osg            
-            "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_viewer/osgearth_viewer", //oearth
-            "args": ["/home/abner/abner2/zdev/nv/osgearth0x/3rd/osgearth/tests/boston.earth"],//oearth
- 
+            // --
+            // "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_viewer/osgearth_viewer", //oearth
+            // "args": ["/home/abner/abner2/zdev/nv/osgearth0x/3rd/osgearth/tests/boston.earth"],//oearth
+            
+            "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_city/osgearth_city",             
+            // -----------${program} args...end
             
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

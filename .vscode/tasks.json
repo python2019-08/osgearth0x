@@ -36,7 +36,7 @@
             "type": "shell",
             // ---- ​使用 --target只编译当前调试的目标（如 osgearth_map)
             // "command": "cd ${workspaceFolder}/build_by_sh/ubuntu/3rd/osg && cmake --build . --config debug --target application_present3D -j10",  //osg
-            "command": "cd ${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth && cmake --build . --config debug --target osgearth_viewer -j10",   //oearth
+            "command": "cd ${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth && cmake --build . --config debug --target osgearth_city -j10",   //oearth
 
             "problemMatcher": ["$gcc"],
             "group": {
