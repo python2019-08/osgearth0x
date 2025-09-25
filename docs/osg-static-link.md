@@ -1,4 +1,30 @@
- 
+# 0. 运行 osgearth_city的步骤
+
+## 0.1运行 静态链接版本的 osgearth_city的步骤
+```sh
+(1)  export OSG_FILE_PATH=/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/osgearth/data/:$OSG_FILE_PATH
+
+(2)  export OSGEARTH_NOTIFY_LEVEL=DEBUG
+
+(3) 禁用代理： 
+    unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
+
+(4) ./osgearth_city  >city.txt 2>&1
+```
+
+## 0.2运行 动态库链接版本的 osgearth_city的步骤
+
+```sh
+(1) 
+>>>$    export REPO_ROOT_DIR=/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install
+>>>$    export LD_LIBRARY_PATH=${REPO_ROOT_DIR}/osgearthdll/lib/osgPlugins-3.7.0:${REPO_ROOT_DIR}/osgearthdll/lib/:${REPO_ROOT_DIR}/osgdll/lib/osgPlugins-3.7.0/:${REPO_ROOT_DIR}/osgdll/lib/
+
+>>>$    echo $LD_LIBRARY_PATH 
+(2)
+>>>$    ./osgearth_city  >city.txt 2>&1
+``` 
+
+====================================================
 # 1.static build support for dotosg wrapper and serialization libraries
 <!-- osg静态库的编译支持 -->
 
@@ -371,3 +397,5 @@ target_link_libraries(exe -Wl,--whole-archive liba -Wl,--no-whole-archive)
 
 **关键点**：  
 静态库的链接是 **“懒加载”** 的，只有被引用的目标文件才会被包含。若需强制保留代码，需显式引用符号或修改链接选项。
+
+
