@@ -648,6 +648,9 @@ if [ "${isFinished_build_libtiff}" != "true" ] ; then
             -DCMAKE_CXX_FLAGS="-fPIC" \
             -DCMAKE_EXE_LINKER_FLAGS="-static" \
             -Djbig=OFF \
+            -Dlzma=OFF \
+            -Dwebp=OFF \
+            -Dzstd=OFF \
             -Dtiff-tools=OFF   
 
             # -DCMAKE_FIND_USE_SYSTEM_LIBS=ON \          
@@ -697,7 +700,7 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
  
 
     cmk_prefixPath="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_png}"
-    echo "ubt....for libtiff: cmk_prefixPath=${cmk_prefixPath}" 
+    echo "ubt....for freetype: cmk_prefixPath=${cmk_prefixPath}" 
 
     cmake -S${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find \
             "${cmakeCommonParams[@]}"  \
