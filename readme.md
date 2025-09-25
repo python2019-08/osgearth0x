@@ -7,11 +7,6 @@
 (3)osg、osgearth 的cmake脚本需要改
 --> 
 
-<!-- 
->>>$    export LD_LIBRARY_PATH=/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgearthdll/lib/osgPlugins-3.7.0:/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgearthdll/lib/:/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgdll/lib/osgPlugins-3.7.0/:/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgdll/lib/
-
->>>$    echo $LD_LIBRARY_PATH
- -->
 
 ```sh
 # ------安装编译工具
