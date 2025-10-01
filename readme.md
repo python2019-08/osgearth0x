@@ -39,6 +39,8 @@ $   ./mk4ubuntu.sh  >bu.txt 2>&1
 $   ./mk4android.sh  >ba.txt 2>&1
 ```
 
+=====================================================
+
 # 2. osg data url
 
 osg data download url:
@@ -46,6 +48,7 @@ https://openscenegraph.github.io/OpenSceneGraphDotComBackup/OpenSceneGraph/www.o
 
 [OpenSceneGraph-Data ](https://github.com/openscenegraph/OpenSceneGraph-Data.git)
 
+=====================================================
 
 # 3. about cmake/FindZLIB.cmake  
 cmake/FindZLIB.cmake is copy from  /usr/share/cmake-3.28/Modules/FindZLIB.cmake of  ubuntu 24.04
@@ -56,8 +59,39 @@ $ cp /usr/share/cmake-3.28/Modules/FindZLIB.cmake  ./cmake/
  
  <!-- /usr/share/cmake-3.28/Modules/FindSQLite3.cmake   -->
 
+=====================================================
 # 4. 如何处理 静态库的依赖顺序
 
 https://github.com/python2019-08/a-md01.git 
 
 "md_CMake/professional-cmake/20libraries-append.md"  /  "# 3.静态库的依赖顺序问题"
+
+=====================================================
+
+# 5.运行 osgearth_city的步骤
+
+## 5.1运行 静态链接版本的 osgearth_city的步骤
+```sh
+(1)  export OSG_FILE_PATH=/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/osgearth/data/:$OSG_FILE_PATH
+
+(2)  export OSGEARTH_NOTIFY_LEVEL=DEBUG
+
+(3) 禁用代理： 
+    unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
+
+(4) 
+  cd /home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgearth/bin
+  ./osgearth_city  >city.txt 2>&1
+```
+
+## 5.2运行 动态库链接版本的 osgearth_city的步骤
+
+```sh
+(1) 
+>>>$    export REPO_ROOT_DIR=/mnt/disk2/abner/zdev/nv/osgearth0x/build_by_sh/ubuntu/install
+>>>$    export LD_LIBRARY_PATH=${REPO_ROOT_DIR}/osgearthdll/lib/osgPlugins-3.7.0:${REPO_ROOT_DIR}/osgearthdll/lib/:${REPO_ROOT_DIR}/osgdll/lib/osgPlugins-3.7.0/:${REPO_ROOT_DIR}/osgdll/lib/
+
+>>>$    echo $LD_LIBRARY_PATH 
+(2)
+>>>$    ./osgearth_city  >city.txt 2>&1
+``` 
