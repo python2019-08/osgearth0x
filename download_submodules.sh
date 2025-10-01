@@ -13,7 +13,7 @@ echo "Repo_ROOT=${Repo_ROOT}"
 # abseil-cpp  CMakeLists.txt  curl  freetype  gdal  geos  
 # json-c  libexpat libjpeg-turbo  libpng  libpsl  libtiff 
 # libzip  openssl  osgdraco  proj protobuf  sqlite  xz  zlib  zstd
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/zlib/CMakeLists.txt" ]; then
     # git submodule add -f -b v1.3.1 https://github.com/madler/zlib.git    3rd/zlib   
     git clone  https://github.com/madler/zlib.git    3rd/zlib   
@@ -22,7 +22,7 @@ if [ ! -f "${Repo_ROOT}/3rd/zlib/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}  
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/zstd/build/cmake/CMakeLists.txt" ]; then
     git clone https://github.com/facebook/zstd.git  3rd/zstd  
     cd ${Repo_ROOT}/3rd/zstd 
@@ -30,7 +30,7 @@ if [ ! -f "${Repo_ROOT}/3rd/zstd/build/cmake/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}   
 fi
   
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/openssl/Configure" ]; then  
     #  git clone --recursive https://github.com/openssl/openssl.git  3rd/openssl   
     git clone https://github.com/openssl/openssl.git   3rd/openssl   
@@ -40,12 +40,13 @@ if [ ! -f "${Repo_ROOT}/3rd/openssl/Configure" ]; then
     cd ${Repo_ROOT}   
 fi
 
-
+echo "----------------------------------------------------"
 # git clone  https://github.com/unicode-org/icu.git  3rd/icu  
 
+echo "----------------------------------------------------"
 # git clone  https://github.com/libidn/libidn2.git  3rd/libidn2  
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libpsl/configure" ]; then  
     git clone  https://github.com/rockdaboot/libpsl.git  3rd/libpsl  
     cd ${Repo_ROOT}/3rd/libpsl 
@@ -53,7 +54,7 @@ if [ ! -f "${Repo_ROOT}/3rd/libpsl/configure" ]; then
     cd ${Repo_ROOT}    
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/curl/CMakeLists.txt" ]; then  
     git clone  https://github.com/curl/curl.git    3rd/curl   
     cd ${Repo_ROOT}/3rd/curl 
@@ -61,7 +62,7 @@ if [ ! -f "${Repo_ROOT}/3rd/curl/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}    
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libjpeg-turbo/CMakeLists.txt" ]; then  
     git clone  https://github.com/libjpeg-turbo/libjpeg-turbo.git  3rd/libjpeg-turbo  
     cd ${Repo_ROOT}/3rd/libjpeg-turbo  
@@ -69,7 +70,7 @@ if [ ! -f "${Repo_ROOT}/3rd/libjpeg-turbo/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}    
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libpng/CMakeLists.txt" ]; then  
     git clone  https://github.com/glennrp/libpng.git  3rd/libpng
     cd ${Repo_ROOT}/3rd/libpng 
@@ -77,7 +78,7 @@ if [ ! -f "${Repo_ROOT}/3rd/libpng/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}    
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/xz/CMakeLists.txt" ]; then  
     git clone  https://github.com/tukaani-project/xz.git  3rd/xz
     cd ${Repo_ROOT}/3rd/xz 
@@ -85,7 +86,7 @@ if [ ! -f "${Repo_ROOT}/3rd/xz/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}    
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libtiff/CMakeLists.txt" ]; then  
     git clone  https://github.com/vadz/libtiff.git   3rd/libtiff
     cd ${Repo_ROOT}/3rd/libtiff 
@@ -93,7 +94,7 @@ if [ ! -f "${Repo_ROOT}/3rd/libtiff/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}    
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/freetype/CMakeLists.txt" ]; then  
     git clone  https://github.com/freetype/freetype.git   3rd/freetype
     cd ${Repo_ROOT}/3rd/freetype 
@@ -101,14 +102,15 @@ if [ ! -f "${Repo_ROOT}/3rd/freetype/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}    
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/geos/CMakeLists.txt" ]; then  
     git clone  https://github.com/libgeos/geos.git   3rd/geos
     cd ${Repo_ROOT}/3rd/geos 
     git checkout -b my-3.13.1 tags/3.13.1
     cd ${Repo_ROOT}    
 fi
-# --------------------------------------------------------------
+
+echo "----------------------------------------------------" 
 # git clone  https://github.com/sqlite/sqlite.git    3rd/sqlite
 # cd ${Repo_ROOT}/3rd/sqlite 
 # git checkout -b my-version-3.50.4 tags/version-3.50.4
@@ -119,6 +121,7 @@ fi
 # cd ${Repo_ROOT}   
 
 
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/proj/CMakeLists.txt" ]; then  
     git clone  https://github.com/OSGeo/PROJ.git    3rd/proj
     cd ${Repo_ROOT}/3rd/proj 
@@ -126,9 +129,11 @@ if [ ! -f "${Repo_ROOT}/3rd/proj/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}    
 fi
 
+echo "----------------------------------------------------"
 # git clone  https://github.com/libexpat/libexpat.git    3rd/libexpat
 
 
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/abseil-cpp/CMakeLists.txt" ]; then  
     git clone  https://github.com/abseil/abseil-cpp.git   3rd/abseil-cpp
     cd ${Repo_ROOT}/3rd/abseil-cpp
@@ -136,6 +141,7 @@ if [ ! -f "${Repo_ROOT}/3rd/abseil-cpp/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}
 fi
 
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/protobuf/CMakeLists.txt" ]; then  
     git clone  https://github.com/protocolbuffers/protobuf.git   3rd/protobuf
     cd ${Repo_ROOT}/3rd/protobuf 
@@ -144,11 +150,12 @@ if [ ! -f "${Repo_ROOT}/3rd/protobuf/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}
 fi
 
-
+echo "----------------------------------------------------"
 if false; then  
 # git clone  https://github.com/json-c/json-c.git  3rd/json-c
 fi
 
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/gdal/CMakeLists.txt" ]; then  
     git clone  https://github.com/OSGeo/gdal.git   3rd/gdal
     cd ${Repo_ROOT}/3rd/gdal  
@@ -156,11 +163,12 @@ if [ ! -f "${Repo_ROOT}/3rd/gdal/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}
 fi
 
-
+echo "----------------------------------------------------"
 if false; then  
 # git clone  https://github.com/google/draco.git  3rd/osgdraco
 fi
 
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/boost/bootstrap.sh" ]; then  
     # #---- boost github:
     # git clone  https://github.com/boostorg/boost.git 3rd/boost
@@ -177,6 +185,7 @@ if [ ! -f "${Repo_ROOT}/3rd/boost/bootstrap.sh" ]; then
 fi
 
 
+echo "----------------------------------------------------"
 if false; then  
     git clone https://github.com/chriskohlhoff/asio.git   3rd/asio
     cd ${Repo_ROOT}/3rd/asio 
@@ -184,7 +193,7 @@ if false; then
     cd ${Repo_ROOT}
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/osg/CMakeLists.txt" ]; then  
     git clone https://github.com/openscenegraph/OpenSceneGraph.git  3rd/osg
     cd ${Repo_ROOT}/3rd/osg 
@@ -200,7 +209,7 @@ if [ ! -f "${Repo_ROOT}/3rd/osg/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libzip/CMakeLists.txt" ]; then  
     git clone https://github.com/nih-at/libzip.git 3rd/libzip
     cd ${Repo_ROOT}/3rd/libzip 
@@ -208,7 +217,7 @@ if [ ! -f "${Repo_ROOT}/3rd/libzip/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}
 fi
 
-
+echo "----------------------------------------------------"
 if false; then  
     git clone https://github.com/gabime/spdlog.git  3rd/spdlog
     cd 3rd/spdlog
@@ -220,7 +229,7 @@ if false; then
     # sudo make install
 fi
 
-
+echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/osgearth/CMakeLists.txt" ]; then  
     git clone https://github.com/gwaldron/osgearth.git   3rd/osgearth
     cd ${Repo_ROOT}/3rd/osgearth 
