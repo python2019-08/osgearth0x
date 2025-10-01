@@ -152,7 +152,7 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-# git clone  https://github.com/json-c/json-c.git  3rd/json-c
+git clone  https://github.com/json-c/json-c.git  3rd/json-c
 fi
 
 echo "----------------------------------------------------"
@@ -165,7 +165,7 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-# git clone  https://github.com/google/draco.git  3rd/osgdraco
+git clone  https://github.com/google/draco.git  3rd/osgdraco
 fi
 
 echo "----------------------------------------------------"
