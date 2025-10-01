@@ -1,2 +1,2 @@
-message(STATUS "in....src/CMakeLists.txt...")
+message(STATUS "....src/CMakeLists.txt...start")
 
