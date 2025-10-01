@@ -165,12 +165,17 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-git clone  https://github.com/json-c/json-c.git  3rd/json-c  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/json-c/json-c.git  3rd/json-c  || { 
+        echo " 克隆失败！"; exit 1; 
+    }
 fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/gdal/CMakeLists.txt" ]; then  
-    git clone  https://github.com/OSGeo/gdal.git   3rd/gdal  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/OSGeo/gdal.git   3rd/gdal  || { 
+        echo " 克隆失败！"; exit 1; 
+    }
+    
     cd ${Repo_ROOT}/3rd/gdal  
     git checkout -b my-v3.9.3  tags/v3.9.3
     cd ${Repo_ROOT}
@@ -181,6 +186,7 @@ if false; then
 git clone  https://github.com/google/draco.git  3rd/osgdraco  || { echo " 克隆失败！"; exit 1; }
 fi
 
+
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/boost/bootstrap.sh" ]; then  
     # #---- boost github:
@@ -190,13 +196,39 @@ if [ ! -f "${Repo_ROOT}/3rd/boost/bootstrap.sh" ]; then
     # git checkout -b my-boost_1_88_0    tags/boost_1_88_0
     # cd ${Repo_ROOT}
     cd ${Repo_ROOT}/3rd 
-    # wget https://github.com/boostorg/boost/archive/refs/tags/boost-1.88.0.zip
-    wget https://sourceforge.net/projects/boost/files/boost/1.88.0/boost_1_88_0.zip
-    unzip boost_1_88_0.zip
-    mv boost_1_88_0  boost
-    cd ..
-fi
+    # curl -L -f -o boost_1_88_0.zip -C - https://github.com/boostorg/boost/archive/refs/tags/boost-1.88.0.zip
+    # wget https://sourceforge.net/projects/boost/files/boost/1.88.0/boost_1_88_0.zip
+    # unzip boost_1_88_0.zip
+    # mv boost_1_88_0  boost
+    # 1. 下载 Boost（带重定向和错误处理）
+    rm -f boost_1_88_0.zip  # 清除旧文件
+    echo "正在下载 Boost 1.88.0..."
+    curl -L -f -o boost_1_88_0.zip -C - https://github.com/boostorg/boost/archive/refs/tags/boost-1.88.0.zip || {
+        echo "Boost 下载失败！请检查网络或代理。"
+        exit 1  # 下载失败则退出脚本，避免后续错误
+    }
 
+    # 2. 解压（先检查文件是否为有效 zip）
+    echo "正在解压 Boost 1.88.0..."
+    unzip boost_1_88_0.zip || {
+        echo "Boost 解压失败！文件可能损坏，请重新下载。"
+        exit 1
+    }
+
+    # 3. 重命名（先确认解压后的文件夹名，再移动）
+    # 注意：GitHub 标签压缩包解压后，文件夹名是 "boost-1.88.0"（与标签名一致）
+    UNZIPPED_FOLDER="boost-1.88.0"  # 解压后的真实文件夹名
+    if [ -d "$UNZIPPED_FOLDER" ]; then
+        mv "$UNZIPPED_FOLDER" boost  # 重命名为脚本需要的 "boost"
+        echo "Boost 文件夹重命名完成（$UNZIPPED_FOLDER → boost）"
+    else
+        echo "解压后未找到文件夹 $UNZIPPED_FOLDER！请检查解压结果。"
+        exit 1
+    fi
+
+
+    cd ${Repo_ROOT}
+fi
 
 echo "----------------------------------------------------"
 if false; then  
