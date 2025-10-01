@@ -472,7 +472,12 @@
         "capabilities": "cpp",
         "eventvisitor": "cpp",
         "updatevisitor": "cpp",
-        "device": "cpp"
+        "device": "cpp",
+        "filesystem": "cpp",
+        "pluginloader": "cpp",
+        "viewpoint": "cpp",
+        "revisioning": "cpp",
+        "logarithmicdepthbuffer": "cpp"
     }
 }
 

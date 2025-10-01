@@ -37,7 +37,7 @@ isFinished_build_boost=true
 isFinished_build_gdal=true # v
 isFinished_build_osg=true
 isFinished_build_zip=true
-isFinished_build_osgearth=false
+isFinished_build_oearth=false
     
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
 export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006    
@@ -80,7 +80,7 @@ mkdir -p ${INSTALL_PREFIX_andro}
 # 定义需要编译的 Android ABI 列表
 # ABIS=("arm64-v8a"  "armeabi-v7a"  "x86_64"  "x86" )
 # CMAKE_ANDROID_ARCH_ABI="x86_64" 
-ABIS=("arm64-v8a" "armeabi-v7a"  "x86_64")  
+ABIS=(  "armeabi-v7a"  "x86_64")  
 ABI_LEVEL=24
  
 cmakeCommonParams=(
@@ -1360,7 +1360,7 @@ fi
 # -------------------------------------------------
 # osgearth 
 # -------------------------------------------------
-if [ "${isFinished_build_osgearth}" != "true" ] ; then 
+if [ "${isFinished_build_oearth}" != "true" ] ; then 
     echo "========== building osgearth 4 Android========== " &&  sleep 1 # && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/osgearth
