@@ -13,10 +13,22 @@ echo "Repo_ROOT=${Repo_ROOT}"
 # abseil-cpp  CMakeLists.txt  curl  freetype  gdal  geos  
 # json-c  libexpat libjpeg-turbo  libpng  libpsl  libtiff 
 # libzip  openssl  osgdraco  proj protobuf  sqlite  xz  zlib  zstd
+
+
+# 脚本开头添加代理配置开关（1=启用，0=禁用）
+USE_PROXY=0
+if [ $USE_PROXY -eq 1 ]; then
+    export http_proxy=socks5://127.0.0.1:7890
+    export https_proxy=socks5://127.0.0.1:7890
+else
+    unset http_proxy https_proxy
+fi
+
+
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/zlib/CMakeLists.txt" ]; then
     # git submodule add -f -b v1.3.1 https://github.com/madler/zlib.git    3rd/zlib   
-    git clone  https://github.com/madler/zlib.git    3rd/zlib   
+    git clone  https://github.com/madler/zlib.git    3rd/zlib  || { echo "zlib 克隆失败！"; exit 1; }  
     cd ${Repo_ROOT}/3rd/zlib 
     git checkout -b my-v1.3.1 tags/v1.3.1 
     cd ${Repo_ROOT}  
@@ -24,7 +36,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/zstd/build/cmake/CMakeLists.txt" ]; then
-    git clone https://github.com/facebook/zstd.git  3rd/zstd  
+    git clone https://github.com/facebook/zstd.git  3rd/zstd   || { echo "zstd 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/zstd 
     git checkout -b my-v1.5.7 tags/v1.5.7
     cd ${Repo_ROOT}   
@@ -33,7 +45,7 @@ fi
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/openssl/Configure" ]; then  
     #  git clone --recursive https://github.com/openssl/openssl.git  3rd/openssl   
-    git clone https://github.com/openssl/openssl.git   3rd/openssl   
+    git clone https://github.com/openssl/openssl.git   3rd/openssl    || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/openssl 
     #  git submodule update --init --recursive --progress -v
     git checkout -b my-openssl-3.5.2  tags/openssl-3.5.2
@@ -48,7 +60,7 @@ echo "----------------------------------------------------"
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libpsl/configure" ]; then  
-    git clone  https://github.com/rockdaboot/libpsl.git  3rd/libpsl  
+    git clone  https://github.com/rockdaboot/libpsl.git  3rd/libpsl   || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libpsl 
     git checkout -b my-libpsl-0.21.0  tags/libpsl-0.21.0
     cd ${Repo_ROOT}    
@@ -56,7 +68,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/curl/CMakeLists.txt" ]; then  
-    git clone  https://github.com/curl/curl.git    3rd/curl   
+    git clone  https://github.com/curl/curl.git    3rd/curl    || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/curl 
     git checkout -b my-curl-8_15_0  tags/curl-8_15_0
     cd ${Repo_ROOT}    
@@ -64,15 +76,16 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libjpeg-turbo/CMakeLists.txt" ]; then  
-    git clone  https://github.com/libjpeg-turbo/libjpeg-turbo.git  3rd/libjpeg-turbo  
+    git clone  https://github.com/libjpeg-turbo/libjpeg-turbo.git  3rd/libjpeg-turbo   || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libjpeg-turbo  
-    git checkout -b my-jpeg-9f tags/jpeg-9f
+    # git checkout -b my-jpeg-9f tags/jpeg-9f
+    git checkout -b my-3.1.2   tags/3.1.2
     cd ${Repo_ROOT}    
 fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libpng/CMakeLists.txt" ]; then  
-    git clone  https://github.com/glennrp/libpng.git  3rd/libpng
+    git clone  https://github.com/glennrp/libpng.git  3rd/libpng  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libpng 
     git checkout -b my-libpng-1.6.31-signed tags/libpng-1.6.31-signed
     cd ${Repo_ROOT}    
@@ -80,7 +93,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/xz/CMakeLists.txt" ]; then  
-    git clone  https://github.com/tukaani-project/xz.git  3rd/xz
+    git clone  https://github.com/tukaani-project/xz.git  3rd/xz  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/xz 
     git checkout -b my-v5.8.1 tags/v5.8.1
     cd ${Repo_ROOT}    
@@ -88,7 +101,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libtiff/CMakeLists.txt" ]; then  
-    git clone  https://github.com/vadz/libtiff.git   3rd/libtiff
+    git clone  https://github.com/vadz/libtiff.git   3rd/libtiff  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libtiff 
     git checkout -b my-Release-v4-0-9  tags/Release-v4-0-9
     cd ${Repo_ROOT}    
@@ -96,7 +109,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/freetype/CMakeLists.txt" ]; then  
-    git clone  https://github.com/freetype/freetype.git   3rd/freetype
+    git clone  https://github.com/freetype/freetype.git   3rd/freetype  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/freetype 
     git checkout -b my-VER-2-13-3  tags/VER-2-13-3
     cd ${Repo_ROOT}    
@@ -104,7 +117,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/geos/CMakeLists.txt" ]; then  
-    git clone  https://github.com/libgeos/geos.git   3rd/geos
+    git clone  https://github.com/libgeos/geos.git   3rd/geos  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/geos 
     git checkout -b my-3.13.1 tags/3.13.1
     cd ${Repo_ROOT}    
@@ -123,19 +136,19 @@ echo "----------------------------------------------------"
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/proj/CMakeLists.txt" ]; then  
-    git clone  https://github.com/OSGeo/PROJ.git    3rd/proj
+    git clone  https://github.com/OSGeo/PROJ.git    3rd/proj  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/proj 
     git checkout -b my-9.6.2 tags/9.6.2
     cd ${Repo_ROOT}    
 fi
 
 echo "----------------------------------------------------"
-# git clone  https://github.com/libexpat/libexpat.git    3rd/libexpat
+# git clone  https://github.com/libexpat/libexpat.git    3rd/libexpat  || { echo " 克隆失败！"; exit 1; }
 
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/abseil-cpp/CMakeLists.txt" ]; then  
-    git clone  https://github.com/abseil/abseil-cpp.git   3rd/abseil-cpp
+    git clone  https://github.com/abseil/abseil-cpp.git   3rd/abseil-cpp  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/abseil-cpp
     git checkout -b my-20250512.1   tags/20250512.1  
     cd ${Repo_ROOT}
@@ -143,7 +156,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/protobuf/CMakeLists.txt" ]; then  
-    git clone  https://github.com/protocolbuffers/protobuf.git   3rd/protobuf
+    git clone  https://github.com/protocolbuffers/protobuf.git   3rd/protobuf  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/protobuf 
     # git checkout  v32.0
     git checkout -b my-v32.0 tags/v32.0
@@ -152,12 +165,12 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-git clone  https://github.com/json-c/json-c.git  3rd/json-c
+git clone  https://github.com/json-c/json-c.git  3rd/json-c  || { echo " 克隆失败！"; exit 1; }
 fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/gdal/CMakeLists.txt" ]; then  
-    git clone  https://github.com/OSGeo/gdal.git   3rd/gdal
+    git clone  https://github.com/OSGeo/gdal.git   3rd/gdal  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/gdal  
     git checkout -b my-v3.9.3  tags/v3.9.3
     cd ${Repo_ROOT}
@@ -165,7 +178,7 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-git clone  https://github.com/google/draco.git  3rd/osgdraco
+git clone  https://github.com/google/draco.git  3rd/osgdraco  || { echo " 克隆失败！"; exit 1; }
 fi
 
 echo "----------------------------------------------------"
@@ -187,7 +200,7 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-    git clone https://github.com/chriskohlhoff/asio.git   3rd/asio
+    git clone https://github.com/chriskohlhoff/asio.git   3rd/asio  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/asio 
     # git checkout -b my-boost_1_88_0    tags/boost_1_88_0
     cd ${Repo_ROOT}
@@ -195,7 +208,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/osg/CMakeLists.txt" ]; then  
-    git clone https://github.com/openscenegraph/OpenSceneGraph.git  3rd/osg
+    git clone https://github.com/openscenegraph/OpenSceneGraph.git  3rd/osg  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/osg 
     # git checkout -b my-OpenSceneGraph-3.6.5 tags/OpenSceneGraph-3.6.5
     # 
@@ -211,7 +224,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libzip/CMakeLists.txt" ]; then  
-    git clone https://github.com/nih-at/libzip.git 3rd/libzip
+    git clone https://github.com/nih-at/libzip.git 3rd/libzip  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libzip 
     git checkout  v1.11.4
     cd ${Repo_ROOT}
@@ -219,7 +232,7 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-    git clone https://github.com/gabime/spdlog.git  3rd/spdlog
+    git clone https://github.com/gabime/spdlog.git  3rd/spdlog  || { echo " 克隆失败！"; exit 1; }
     cd 3rd/spdlog
     git checkout  v1.11.4
     cd ${Repo_ROOT}
@@ -231,7 +244,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/osgearth/CMakeLists.txt" ]; then  
-    git clone https://github.com/gwaldron/osgearth.git   3rd/osgearth
+    git clone https://github.com/gwaldron/osgearth.git   3rd/osgearth  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/osgearth 
     git submodule update --init --recursive
     # git checkout -b my-osgearth-3.7.2   tags/osgearth-3.7.2
