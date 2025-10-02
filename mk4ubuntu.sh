@@ -16,33 +16,32 @@ echo "Repo_ROOT=${Repo_ROOT}"
 echo "============================================================="
 # **************************************************************************
 isRebuild=false
-
 # ------
-isFinished_build_zlib=true
-isFinished_build_zstd=true
-isFinished_build_openssl=true  
+isFinished_build_zlib=false
+isFinished_build_zstd=false
+isFinished_build_openssl=false  
 # isFinished_build_icu=true  
 # isFinished_build_libidn2=true 
 isFinished_build_libpsl=true  
 isFinished_build_curl=true   # false #big code
 # isFinished_build_jpeg9f=true  
-isFinished_build_libjpegTurbo=false  
-isFinished_build_libpng=false 
-isFinished_build_xz=false  
-isFinished_build_libtiff=false 
-isFinished_build_freetype=false  
-isFinished_build_geos=false     
-isFinished_build_sqlite=false  
-isFinished_build_proj=false     #-- false #big code
-isFinished_build_libexpat=false  
-isFinished_build_absl=false
-isFinished_build_protobuf=false
-isFinished_build_boost=false
-isFinished_build_gdal=false   #-- false #big code
-isFinished_build_osg=false    # osg-a ..false  
-isFinished_build_osgdll=false # osg-dll..false
-isFinished_build_zip=false
-isFinished_build_osgearth=false  # osgearth-a
+isFinished_build_libjpegTurbo=true  
+isFinished_build_libpng=true 
+isFinished_build_xz=true  
+isFinished_build_libtiff=true 
+isFinished_build_freetype=true  
+isFinished_build_geos=true     
+isFinished_build_sqlite=true  
+isFinished_build_proj=true     #-- false #big code
+isFinished_build_libexpat=true  
+isFinished_build_absl=true
+isFinished_build_protobuf=true
+isFinished_build_boost=true
+isFinished_build_gdal=true   #-- false #big code
+isFinished_build_osg=true    # osg-a ..false  
+isFinished_build_osgdll=true # osg-dll..false
+isFinished_build_zip=true
+isFinished_build_osgearth=true  # osgearth-a
 isFinished_build_oearthdll=true  # osgearth-dll
 # ------
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
@@ -90,29 +89,53 @@ prepareBuilding()
     local aSubBuildDir="$2"
     local aSubInstallDir="$3"
     local aIsRebuild="$4"
-    # echo "aSubSrcDir= $aSubSrcDir"
-    # echo "aSubBuildDir=$aSubBuildDir"
-    # echo "aSubInstallDir=$aSubInstallDir" 
-    # echo "aIsRebuild=$aIsRebuild" 
-    if [ ! -d "${aSubSrcDir}" ]; then
-        echo "Folder ${aSubSrcDir}  NOT exist!"
+    # ---- check params
+    echo "aSubSrcDir=$aSubSrcDir"
+    echo "aSubBuildDir=$aSubBuildDir"
+    echo "aSubInstallDir=$aSubInstallDir;;aIsRebuild=$aIsRebuild" 
+    if  [ -z "$aSubSrcDir" ] || [ ! -d "${aSubSrcDir}" ]; then
+        echo "aSubSrcDir=${aSubSrcDir}  NOT exist!"
         exit 1001
     fi    
  
+    if  [ -z "$aSubBuildDir" ]; then
+        echo "aSubBuildDir=${aSubBuildDir}  is empty string!"
+        exit 1002
+    fi   
 
+    if  [ -z "$aSubInstallDir" ]; then
+        echo "aSubInstallDir=${aSubInstallDir}  is empty string!"
+        exit 1002
+    fi     
+
+    # ----  if aIsRebuild is true,del old folders
     if [ "${aIsRebuild}" = "true" ]; then 
         # echo "${aSubSrcDir} aIsRebuild ==true..1"          
-        rm -fr ${aSubBuildDir}
-        # 即使此处不创建${aSubBuildDir}，cmake -S -B命令也会创建 
-        mkdir -p ${aSubBuildDir}
-        
+        rm -fr ${aSubBuildDir}          
         rm -fr ${aSubInstallDir}
-        mkdir -p ${aSubInstallDir}
-        # cmake --build 命令会创建 ${aSubInstallDir} 
         echo "${aSubSrcDir} aIsRebuild ==true..2"       
     else
+        rm -fr ${aSubInstallDir}
         echo "${aSubSrcDir} aIsRebuild ==false"      
     fi   
+
+    # ---- 不管是否 Rebuild，都创建 aSubBuildDir 和 aSubInstallDir，
+    #      因为configure 不会创建 aSubBuildDir 
+    if [ ! -d "${aSubBuildDir}" ]; then
+        mkdir -p ${aSubBuildDir} || { 
+            echo "mkdir -p ${aSubBuildDir}失败！"
+            exit 1002
+        } 
+    fi    
+
+     
+    if  [ ! -d "${aSubInstallDir}" ]; then
+        mkdir -p ${aSubInstallDir} || { 
+            echo "mkdir -p ${aSubInstallDir}失败！"
+            exit 1002
+        } 
+    fi    
+
 
     return 0
 }
@@ -274,6 +297,8 @@ if [ "${isFinished_build_openssl}" != "true" ]; then
  
 
     cd ${BuildDIR_openssl}
+    echo "ssl....BuildDIR_openssl=${BuildDIR_openssl}"
+ 
     # (1) 如需调试支持，改用 enable-asan或 -d​​
     # # 方案1：使用 OpenSSL 的调试模式（生成调试符号）
     #     ./Configure linux-x86_64 -d --prefix=...
@@ -293,7 +318,7 @@ if [ "${isFinished_build_openssl}" != "true" ]; then
     make build_sw -j$(nproc)  V=1
 
     make install_sw  
-    echo "========== finished building openssl 4 ubuntu ========== " &&  sleep 2
+    echo "========== finished building openssl 4 ubuntu ========== "
 fi
 
 
@@ -570,10 +595,11 @@ if [ "${isFinished_build_libpng}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_png} \
             -DZLIB_ROOT="${INSTALL_PREFIX_zlib}" \
+            -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
+            -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DPNG_SHARED=OFF  -DPNG_STATIC=ON   
             
-            # -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
-            # -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
+
     cmake --build ${BuildDIR_lib} -j$(nproc)
 
     cmake --build ${BuildDIR_lib} --target install
@@ -641,7 +667,7 @@ if [ "${isFinished_build_libtiff}" != "true" ] ; then
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \
-            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg \
+            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include \
             -DLIBLZMA_LIBRARY=${INSTALL_PREFIX_xz}/lib/liblzma.a \
             -DLIBLZMA_INCLUDE_DIR=${INSTALL_PREFIX_xz}/include \
             -DCMAKE_C_FLAGS="-fPIC" \
@@ -1130,7 +1156,7 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
             -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
             -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include \
             -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
-            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg \
+            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include \
             -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a        \
             -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL/"   \
             -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}                  \
@@ -1270,7 +1296,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a    \
         -DZLIB_LIBRARIES="${INSTALL_PREFIX_zlib}/lib/libz.a" \
         -DJPEG_DIR=${INSTALL_PREFIX_jpegTurbo}/lib/cmake/libjpeg-turbo \
-        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg  \
+        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include  \
         -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a         \
         -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a        \
         -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
@@ -1455,7 +1481,7 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
         -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a    \
         -DZLIB_LIBRARIES="${INSTALL_PREFIX_zlib}/lib/libz.a" \
         -DJPEG_DIR=${INSTALL_PREFIX_jpegTurbo}/lib/cmake/libjpeg-turbo \
-        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include/libjpeg  \
+        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include  \
         -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a         \
         -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a        \
         -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
