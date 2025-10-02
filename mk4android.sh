@@ -115,32 +115,57 @@ prepareBuilding()
     local aSubBuildDir="$2"
     local aSubInstallDir="$3"
     local aIsRebuild="$4"
-    echo "aSubSrcDir= $aSubSrcDir"
+    # ---- check params
+    echo "aSubSrcDir=$aSubSrcDir"
     echo "aSubBuildDir=$aSubBuildDir"
-    echo "aSubInstallDir=$aSubInstallDir" 
-    echo "aIsRebuild=$aIsRebuild" 
-    if [ ! -d "${aSubSrcDir}" ]; then
-        echo "Folder ${aSubSrcDir}  NOT exist!"
+    echo "aSubInstallDir=$aSubInstallDir;;aIsRebuild=$aIsRebuild" 
+    if  [ -z "$aSubSrcDir" ] || [ ! -d "${aSubSrcDir}" ]; then
+        echo "aSubSrcDir=${aSubSrcDir}  NOT exist!"
         exit 1001
     fi    
  
+    if  [ -z "$aSubBuildDir" ]; then
+        echo "aSubBuildDir=${aSubBuildDir}  is empty string!"
+        exit 1002
+    fi   
 
+    if  [ -z "$aSubInstallDir" ]; then
+        echo "aSubInstallDir=${aSubInstallDir}  is empty string!"
+        exit 1002
+    fi     
+
+    # ----  if aIsRebuild is true,del old folders
     if [ "${aIsRebuild}" = "true" ]; then 
         # echo "${aSubSrcDir} aIsRebuild ==true..1"          
-        rm -fr ${aSubBuildDir}
-        # 即使此处不创建${aSubBuildDir}，cmake -S -B命令也会创建 
-        mkdir -p ${aSubBuildDir}
-        
+        rm -fr ${aSubBuildDir}          
         rm -fr ${aSubInstallDir}
-        mkdir -p ${aSubInstallDir}
-        # cmake --build 命令会创建 ${aSubInstallDir} 
         echo "${aSubSrcDir} aIsRebuild ==true..2"       
     else
+        rm -fr ${aSubInstallDir}
         echo "${aSubSrcDir} aIsRebuild ==false"      
     fi   
 
+    # ---- 不管是否 Rebuild，都创建 aSubBuildDir 和 aSubInstallDir，
+    #      因为configure 不会创建 aSubBuildDir 
+    if [ ! -d "${aSubBuildDir}" ]; then
+        mkdir -p ${aSubBuildDir} || { 
+            echo "mkdir -p ${aSubBuildDir}失败！"
+            exit 1002
+        } 
+    fi    
+
+     
+    if  [ ! -d "${aSubInstallDir}" ]; then
+        mkdir -p ${aSubInstallDir} || { 
+            echo "mkdir -p ${aSubInstallDir}失败！"
+            exit 1002
+        } 
+    fi    
+
+
     return 0
 }
+
 
 get_targetHost_byABILvl()
 {
