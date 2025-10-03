@@ -3,15 +3,28 @@
 # false  ;;;   ./mk4android.sh  >ba.txt 2>&1
 startTm=$(date +%Y/%m/%d--%H:%M:%S) 
 
+# 输出脚本名称
 echo "mk4ubuntu.sh: param 0=$0"
-# Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
-# 获取脚本的绝对路径（处理符号链接）
-SCRIPT_PATH=$(readlink -f "$0")
-echo "sh-path: $SCRIPT_PATH"
 
-# 额外：获取脚本所在目录的绝对路径
-Repo_ROOT=$(dirname "$SCRIPT_PATH")
+# 获取脚本的物理绝对路径（解析软链接）
+SCRIPT_PHYSICAL_PATH=$(readlink -f "$0")
+echo "Physical path: $SCRIPT_PHYSICAL_PATH"
+
+#--额外：获取脚本所在目录的绝对路径
+# Repo_ROOT=$(dirname "$SCRIPT_PHYSICAL_PATH") 
+
+#--当/home/abner/abner2 是 实际路径/mnt/disk2/abner/ 的软链接时，Repo_ROOT应该是 软链接目录下的路径，
+#--否则，cmake 在使用CMAKE_PREFIX_PATH查找 xxxConfig.cmake 时有歧义、混淆，从而编译失败。
+#--所以这里强制指定为：
+Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 echo "Repo_ROOT=${Repo_ROOT}"
+
+# 验证路径是否存在
+if [ ! -d "$Repo_ROOT" ]; then
+    echo "Error: Repo_ROOT does not exist: $Repo_ROOT"
+    exit 1
+fi
+ 
 echo "============================================================="
 isRebuild=true
 # ------------
@@ -27,18 +40,18 @@ isFinished_build_libjpegTurbo=true
 isFinished_build_libpng=true    
 # isFinished_build_xz=true  
 isFinished_build_libtiff=true  
-isFinished_build_freetype=false
-isFinished_build_geos=false     # false
-isFinished_build_sqlite=false
+isFinished_build_freetype=true
+isFinished_build_geos=true     # false
+isFinished_build_sqlite=true
 isFinished_build_proj=true   
 # isFinished_build_libexpat=true  
 isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true  
 isFinished_build_gdal=true # v
-isFinished_build_osg=true
-isFinished_build_zip=true
-isFinished_build_oearth=true
+isFinished_build_osg=false
+isFinished_build_zip=false
+isFinished_build_oearth=false
 # ------------    
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
 export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006    
@@ -407,8 +420,8 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
                 -DOPENSSL_USE_STATIC_LIBS=ON                        \
                 -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}         \
                 -DOPENSSL_LIBRARIES=${INSTALL_PREFIX_openssl}/lib     \
-                -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a     \
-                -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+                -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a     \
+                -DPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libcrypto.a \
                 -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include  
 
 
@@ -816,7 +829,7 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
             )
         # 使用;号连接数组元素.
         cmkPrefixPath=$(IFS=";"; echo "${cmkPrefixPath_Arr[*]}")
-        echo "For building curl: cmkPrefixPath=${cmkPrefixPath}" 
+        echo "For building proj: cmkPrefixPath=${cmkPrefixPath}" 
 
         # 在 proj/data/generate_proj_db.cmake中, 有execute_process(COMMAND "${EXE_SQLITE3}" "${PROJ_DB}"...)
         # 用 sqlite3 的二进制程序来生成 proj.db。 但是在x86_64的ubuntu系统里， arm64-v8a/bin/sqlite3 和
@@ -846,7 +859,12 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
                 -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include       \
                 -DCURL_ROOT=${INSTALL_PREFIX_curl}                   \
                 -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
-                -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include      \                
+                -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include      \
+                -DOPENSSL_DIR=${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL/ \
+                -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl} \
+                -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include \
+                -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a \
+                -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libcrypto.a \                              
 
                 # (1)proj源码中，只有find_package(SQLite3 REQUIRED)  find_package(TIFF REQUIRED)
                 # find_package(CURL REQUIRED);
@@ -1118,7 +1136,7 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 -DSQLite3_HAS_MUTEX_ALLOC=ON      \
                 -DSQLite3_HAS_RTREE=ON             \
                 -DSQLITE3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
-                -DOPENSSL_DIR=${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL/ \
+                -DOPENSSL_DIR=${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL/ \
                 -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl} \
                 -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include \
                 -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a \
@@ -1538,9 +1556,9 @@ if [ "${isFinished_build_oearth}" != "true" ] ; then
             -DGDAL_ROOT=${INSTALL_PREFIX_gdal}                \
             -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include  \
             -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a \
-            -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a     \
-            -DSSL_EAY_RELEASE=${INSTALL_PREFIX_openssl}/lib64/libssl.a          \
-            -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libcrypto.a \
+            -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a     \
+            -DSSL_EAY_RELEASE=${INSTALL_PREFIX_openssl}/lib/libssl.a          \
+            -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libcrypto.a \
             -DLIB_EAY_RELEASE=""  \
             -DCMAKE_EXE_LINKER_FLAGS="-llog -landroid" 
 

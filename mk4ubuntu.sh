@@ -4,15 +4,23 @@
 echo "mk4ubuntu.sh: param 0=$0"
 startTm=$(date +%Y/%m/%d--%H:%M:%S) 
 
-# 获取脚本的绝对路径（处理符号链接）
+# 获取脚本的物理绝对路径（解析软链接）
 SCRIPT_PATH=$(readlink -f "$0")
 echo "sh-path: $SCRIPT_PATH"
 
 # 额外：获取脚本所在目录的绝对路径
 # Repo_ROOT=$(dirname "$SCRIPT_PATH")
+#--当/home/abner/abner2 是 实际路径/mnt/disk2/abner/ 的软链接时，Repo_ROOT应该是 软链接目录下的路径，
+#--否则，cmake 在使用CMAKE_PREFIX_PATH查找 xxxConfig.cmake 时有歧义、混淆，从而编译失败。
+#--所以这里强制指定为：
 Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 echo "Repo_ROOT=${Repo_ROOT}"
-
+# 验证路径是否存在
+if [ ! -d "$Repo_ROOT" ]; then
+    echo "Error: Repo_ROOT does not exist: $Repo_ROOT"
+    exit 1
+fi
+ 
 echo "============================================================="
 isRebuild=true
 # ------
