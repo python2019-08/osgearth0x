@@ -14,7 +14,7 @@ Repo_ROOT=$(dirname "$SCRIPT_PATH")
 echo "Repo_ROOT=${Repo_ROOT}"
 echo "============================================================="
 isRebuild=true
-
+# ------------
 isFinished_build_zlib=true  
 # isFinished_build_zstd=true
 isFinished_build_openssl=true  
@@ -27,9 +27,9 @@ isFinished_build_libjpegTurbo=true
 isFinished_build_libpng=true    
 # isFinished_build_xz=true  
 isFinished_build_libtiff=true  
-isFinished_build_freetype=true
-isFinished_build_geos=true     # false
-isFinished_build_sqlite=true
+isFinished_build_freetype=false
+isFinished_build_geos=false     # false
+isFinished_build_sqlite=false
 isFinished_build_proj=true   
 # isFinished_build_libexpat=true  
 isFinished_build_absl=true
@@ -38,8 +38,8 @@ isFinished_build_boost=true
 isFinished_build_gdal=true # v
 isFinished_build_osg=true
 isFinished_build_zip=true
-isFinished_build_oearth=false
-    
+isFinished_build_oearth=true
+# ------------    
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
 export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006    
 # ANDROID_NDK_HOME​ ​:后来 Android Studio 和 Gradle 更倾向于使用此变量。    
@@ -285,12 +285,13 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
         #       所以作为workaround，这里使用/usr/share/cmake-3.28/Modules/FindZLIB.cmake        
         #--
         #----备份 zlib源码编译后产生的ZLIBConfig.cmake
-        INSTALL_zlib_cmakeDir=${INSTALL_PREFIX_zlib}/lib/cmake/zlib
-        mv  ${INSTALL_zlib_cmakeDir}/ZLIBConfig.cmake  ${INSTALL_zlib_cmakeDir}/ZLIBConfig.cmake-bk
-        mv  ${INSTALL_zlib_cmakeDir}/pkgconfig         ${INSTALL_zlib_cmakeDir}/pkgconfig-bk
+        INSTALL_cmakeDir_zlib=${INSTALL_PREFIX_zlib}/lib/cmake/zlib/
+        mv  ${INSTALL_cmakeDir_zlib}/ZLIB-static.cmake         ${INSTALL_cmakeDir_zlib}/ZLIB-static_bk.cmake
+        mv  ${INSTALL_cmakeDir_zlib}/ZLIBConfig.cmake          ${INSTALL_cmakeDir_zlib}/ZLIBConfig_bk.cmake
+        mv  ${INSTALL_cmakeDir_zlib}/ZLIBConfigVersion.cmake   ${INSTALL_cmakeDir_zlib}/ZLIBConfigVersion_bk.cmake
         #---- 把 FindZLIB.cmake 放到 ${INSTALL_PREFIX_zlib}/lib/cmake/
-        # mkdir -p ${INSTALL_zlib_cmakeDir}
-        # cp ${Repo_ROOT}/cmake/FindZLIB.cmake  ${INSTALL_zlib_cmakeDir}
+        # mkdir -p ${INSTALL_cmakeDir_zlib}
+        # cp ${Repo_ROOT}/cmake/FindZLIB.cmake  ${INSTALL_cmakeDir_zlib}
         echo "++++++++++++Finished building zlib for ${ABI} ++++++++++++"
         echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     done   
@@ -593,7 +594,7 @@ if [ "${isFinished_build_libtiff}" != "true" ] ; then
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
-            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include/libjpeg \
+            -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include \
             -DCMAKE_EXE_LINKER_FLAGS="-static" \
             -Djbig=OFF \
             -Dlzma=OFF \
@@ -662,10 +663,11 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
                 -DZLIB_ROOT=${INSTALL_PREFIX_zlib}  \
                 -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
                 -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
-                -DPNG_LIBRARY="${INSTALL_PREFIX_png}/lib/libpng.a" \
-                -DPNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
-                -DPNG_INCLUDE_DIRS="${INSTALL_PREFIX_png}/include" \
-                -DPNG_LIBRARIES="${INSTALL_PREFIX_png}/lib/libpng.a" \
+                -DPNG_LIBRARY="${INSTALL_PREFIX_png}/lib/libpng.a"  \
+                -DPNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include"    \
+                -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
+                -DPNG_INCLUDE_DIRS="${INSTALL_PREFIX_png}/include"     \
+                -DPNG_LIBRARIES="${INSTALL_PREFIX_png}/lib/libpng.a"    \
                 -DFT_REQUIRE_ZLIB=ON \
                 -DFT_REQUIRE_PNG=ON  \
                 -DCMAKE_EXE_LINKER_FLAGS="-static"  
@@ -1107,9 +1109,10 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 -DPROJ_INCLUDE_DIR=${INSTALL_PREFIX_proj}/include \
                 -DPROJ_LIBRARY=${INSTALL_PREFIX_proj}/lib/libproj.a \
                 -DSQLITE3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include \
-                -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include \
-                -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
-                -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include/libjpeg \
+                -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include      \
+                -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
+                -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a       \
+                -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include \
                 -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
                 -DSQLite3_HAS_COLUMN_METADATA=ON \
                 -DSQLite3_HAS_MUTEX_ALLOC=ON      \
@@ -1248,21 +1251,22 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
         -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
         -DZLIB_LIBRARIES="${INSTALL_PREFIX_zlib}/lib/libz.a" \
-        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include/libjpeg \
+        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include \
         -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
         -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
-        -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
-        -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
-        -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a \
+        -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include      \
+        -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
+        -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a       \
+        -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a      \
         -DOpenSSL_ROOT="${INSTALL_PREFIX_openssl}" \
-        -DOpenSSL_USE_STATIC_LIBS=ON \
-        -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include \
-        -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
+        -DOpenSSL_USE_STATIC_LIBS=ON                \
+        -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include   \
+        -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a  \
         -DTIFF_LIBRARIES=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
-        -DFREETYPE_DIR=${INSTALL_PREFIX_freetype}/lib/freetype \
+        -DFREETYPE_DIR=${INSTALL_PREFIX_freetype}/lib/freetype              \
         -DFREETYPE_INCLUDE_DIRS=${INSTALL_PREFIX_freetype}/include/freetype2 \
-        -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
-        -DFREETYPE_LIBRARIES=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a \
+        -DFREETYPE_LIBRARY=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a      \
+        -DFREETYPE_LIBRARIES=${INSTALL_PREFIX_freetype}/lib/libfreetyped.a     \
         -DCURL_DIR="${INSTALL_PREFIX_curl}/lib/cmake/CURL" \
         -DCURL_LIBRARY=CURL::libcurl   \
         -DCURL_LIBRARIES="${_curlLibs}" \
@@ -1509,8 +1513,9 @@ if [ "${isFinished_build_oearth}" != "true" ] ; then
             -DZLIB_ROOT_DIR="${INSTALL_PREFIX_zlib}"         \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   \
-            -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/   \
-            -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a    \
+            -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/     \
+            -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
+            -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a       \
             -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include  \
             -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
             -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include  \

@@ -233,11 +233,11 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
     #       所以作为workaround，这里使用/usr/share/cmake-3.28/Modules/FindZLIB.cmake
     # 
     # --备份 zlib源码编译后产生的ZLIBConfig.cmake
-    cmakeZlib_dir=${INSTALL_PREFIX_zlib}/lib/cmake/zlib/
-    mv    ${cmakeZlib_dir}/ZLIB-static-debug.cmake   ${cmakeZlib_dir}/ZLIB-static-debug---bk.cmake
-    mv    ${cmakeZlib_dir}/ZLIB-static.cmake         ${cmakeZlib_dir}/ZLIB-static---bk.cmake
-    mv    ${cmakeZlib_dir}/ZLIBConfig.cmake          ${cmakeZlib_dir}/ZLIBConfig---bk.cmake
-    mv    ${cmakeZlib_dir}/ZLIBConfigVersion.cmake   ${cmakeZlib_dir}/ZLIBConfigVersion---bk.cmake
+    INSTALL_zlib_cmakeDir=${INSTALL_PREFIX_zlib}/lib/cmake/zlib/
+    mv    ${INSTALL_zlib_cmakeDir}/ZLIB-static-debug.cmake   ${INSTALL_zlib_cmakeDir}/ZLIB-static-debug---bk.cmake
+    mv    ${INSTALL_zlib_cmakeDir}/ZLIB-static.cmake         ${INSTALL_zlib_cmakeDir}/ZLIB-static---bk.cmake
+    mv    ${INSTALL_zlib_cmakeDir}/ZLIBConfig.cmake          ${INSTALL_zlib_cmakeDir}/ZLIBConfig---bk.cmake
+    mv    ${INSTALL_zlib_cmakeDir}/ZLIBConfigVersion.cmake   ${INSTALL_zlib_cmakeDir}/ZLIBConfigVersion---bk.cmake
 
     # mv    ${INSTALL_PREFIX_zlib}/lib/pkgconfig/zlib.pc  ${INSTALL_PREFIX_zlib}/lib/pkgconfig/zlib.pc-bk
     # -- 把 FindZLIB.cmake 放到 ${INSTALL_PREFIX_zlib}/lib/cmake/
@@ -745,7 +745,8 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a  \
-            -DPNG_INCLUDE_DIRS="${INSTALL_PREFIX_png}/include"    \
+            -DPNG_INCLUDE_DIRS="${INSTALL_PREFIX_png}/include"   \
+            -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
             -DFT_REQUIRE_ZLIB=ON \
             -DFT_REQUIRE_PNG=ON  \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
@@ -1159,8 +1160,9 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
             -DSQLite3_HAS_RTREE=ON             \
             -DSQLite3_INCLUDE_DIR=${INSTALL_PREFIX_sqlite}/include     \
             -DSQLite3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
-            -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include \
-            -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a \
+            -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include      \
+            -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
+            -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a       \
             -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include \
             -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a        \
             -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL/"   \
