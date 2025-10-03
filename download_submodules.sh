@@ -18,12 +18,17 @@ echo "Repo_ROOT=${Repo_ROOT}"
 # 脚本开头添加代理配置开关（1=启用，0=禁用）
 USE_PROXY=0
 if [ $USE_PROXY -eq 1 ]; then
-    export http_proxy=socks5://127.0.0.1:7890
-    export https_proxy=socks5://127.0.0.1:7890
+    # export http_proxy=socks5://127.0.0.1:1080
+    # export https_proxy=socks5://127.0.0.1:1080
+    # export HTTP_PROXY=socks5://127.0.0.1:1080
+    # export HTTPS_PROXY=socks5://127.0.0.1:1080    
+    export http_proxy=http://127.0.0.1:1081
+    export https_proxy=http://127.0.0.1:1081
+    export HTTP_PROXY=http://127.0.0.1:1081
+    export HTTPS_PROXY=http://127.0.0.1:1081      
 else
     unset http_proxy https_proxy
 fi
-
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/zlib/CMakeLists.txt" ]; then
