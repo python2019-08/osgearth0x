@@ -13,9 +13,9 @@ Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 echo "Repo_ROOT=${Repo_ROOT}"
 
 echo "============================================================="
-isRebuild=false
+isRebuild=true
 # ------
-isFinished_build_zlib=true
+isFinished_build_zlib=false
 isFinished_build_zstd=true
 isFinished_build_openssl=true  
 # isFinished_build_icu=true  
@@ -39,7 +39,7 @@ isFinished_build_gdal=true   #-- false #big code
 isFinished_build_osg=true    # osg-a ..false  
 isFinished_build_osgdll=true # osg-dll..false
 isFinished_build_zip=true
-isFinished_build_osgearth=false  # osgearth-a
+isFinished_build_osgearth=true  # osgearth-a
 isFinished_build_oearthdll=true  # osgearth-dll
 # ------
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo

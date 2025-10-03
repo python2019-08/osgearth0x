@@ -30,7 +30,8 @@ if [ ! -f "${Repo_ROOT}/3rd/zlib/CMakeLists.txt" ]; then
     # git submodule add -f -b v1.3.1 https://github.com/madler/zlib.git    3rd/zlib   
     git clone  https://github.com/madler/zlib.git    3rd/zlib  || { echo "zlib 克隆失败！"; exit 1; }  
     cd ${Repo_ROOT}/3rd/zlib 
-    git checkout -b my-v1.3.1 tags/v1.3.1 
+    # git checkout -b my-v1.3.1 tags/v1.3.1 
+    git checkout  -b my-2025Feb18-084758   5a82f71ed1dfc0bec044d9702463dbdf84ea3b71
     cd ${Repo_ROOT}  
 fi
 
