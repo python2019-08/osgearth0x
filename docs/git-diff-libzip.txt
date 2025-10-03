@@ -1,0 +1,57 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index aca57be9..8fde5b25 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -198,6 +198,20 @@ int main(int argc, char *argv[]) { unsigned long x = FICLONERANGE; }" HAVE_FICLO
+ test_big_endian(WORDS_BIGENDIAN)
+ 
+ find_package(ZLIB 1.1.2 REQUIRED)
++# 检查是否找到 ZLIB
++message(STATUS "gg======ZLIB_FOUND = ${ZLIB_FOUND}")
++message(STATUS "gg======ZLIB_INCLUDE_DIRS = ${ZLIB_INCLUDE_DIRS}")
++message(STATUS "gg======ZLIB_LIBRARIES = ${ZLIB_LIBRARIES}")
++# 检查目标是否存在
++if(TARGET ZLIB::ZLIB)
++  message(STATUS "gg======ZLIB::ZLIB target is available")
++  get_target_property(ZLIB_TYPE ZLIB::ZLIB TYPE)
++  get_target_property(ZLIB_LOC ZLIB::ZLIB IMPORTED_LOCATION)
++  message(STATUS "gg======ZLIB target type: ${ZLIB_TYPE}")
++  message(STATUS "gg======ZLIB location: ${ZLIB_LOC}")
++else()
++  message(WARNING "gg======ZLIB::ZLIB target NOT found!")
++endif()    
+ # so developers on systems where zlib is named differently (Windows, sometimes)
+ # can override the name used in the pkg-config file
+ if (NOT ZLIB_LINK_LIBRARY_NAME)
+@@ -238,6 +252,7 @@ endif(ENABLE_BZIP2)
+ 
+ if(ENABLE_LZMA)
+   find_package(LibLZMA 5.2)
++  message(STATUS "gg======LIBLZMA_FOUND = ${LIBLZMA_FOUND};LibLZMA_FOUND=${LibLZMA_FOUND}")
+   if(LIBLZMA_FOUND)
+     set(HAVE_LIBLZMA 1)
+   else()
+@@ -247,13 +262,23 @@ endif(ENABLE_LZMA)
+ 
+ if(ENABLE_ZSTD)
+   find_package(zstd 1.4.0)
++  message(STATUS "gg======zstd_FOUND = ${zstd_FOUND};;ZSTD_FOUND = ${ZSTD_FOUND}")
+   if(zstd_FOUND)
+     set(HAVE_LIBZSTD 1)
+     if(TARGET zstd::libzstd_shared AND BUILD_SHARED_LIBS)
++      message(STATUS "gg======zstd::libzstd_shared ")
+       set(zstd_TARGET zstd::libzstd_shared)
+     else()
+       set(zstd_TARGET zstd::libzstd_static)
++      message(STATUS "gg=====zstd::libzstd_static ")
+     endif()
++ 
++    message(STATUS "gg====== ${zstd_TARGET}   is available")
++    get_target_property(zstd_TYPE ${zstd_TARGET} TYPE)
++    get_target_property(zstd_LOC ${zstd_TARGET} IMPORTED_LOCATION)
++    message(STATUS "gg====== ${zstd_TARGET} target type: ${zstd_TYPE}")
++    message(STATUS "gg====== ${zstd_TARGET} location: ${zstd_LOC}")
++    
+   else()
+     message(WARNING "-- zstd library not found; zstandard support disabled")
+   endif(zstd_FOUND)

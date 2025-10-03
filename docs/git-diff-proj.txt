@@ -1,0 +1,14 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 20826ba3..d4b60ae6 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -258,6 +258,9 @@ option(ENABLE_CURL "Enable Curl support" ON)
+ set(CURL_ENABLED FALSE)
+ if(ENABLE_CURL)
+   find_package(CURL REQUIRED)
++  # 在CMakeLists.txt中添加调试语句
++message(STATUS "in curl...CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH};;CURL_FOUND=${CURL_FOUND}")
++message(STATUS "in curl...CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH};;CURL_FOUND=${CURL_FOUND}")
+   if(CURL_FOUND)
+     set(CURL_ENABLED TRUE)
+ 

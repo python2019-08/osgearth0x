@@ -1,0 +1,22 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c0cc0c57b..15564eb19 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -25,7 +25,7 @@
+ 
+ cmake_minimum_required(VERSION 3.7...3.16 FATAL_ERROR)
+ message(STATUS "Using CMake version ${CMAKE_VERSION}")
+-
++message(STATUS "mm...CMAKE_SYSROOT=${CMAKE_SYSROOT}")
+ # Collect command-line arguments for buildinfo.txt.
+ # Must reside at the top of the script to work as expected.
+ set(_cmake_args "")
+@@ -65,7 +65,7 @@ string(REGEX REPLACE "([0-9]+\.[0-9]+\.[0-9]+).+" "\\1" _curl_version_sem "${_cu
+ project(CURL
+   VERSION "${_curl_version_sem}"
+   LANGUAGES C)
+-
++message(STATUS "mm....CMAKE_SYSROOT=${CMAKE_SYSROOT}") ## added-by-Abner
+ # CMake does not recognize some targets accurately. Touch up configuration manually as a workaround.
+ if(WINDOWS_STORE AND MINGW)  # mingw UWP build
+   # CMake (as of v3.31.2) gets confused and applies the MSVC rc.exe command-line
