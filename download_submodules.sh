@@ -1,5 +1,5 @@
 #!/bin/bash
- 
+startTm=$(date +%Y/%m/%d--%H:%M:%S) 
 echo "download_submodules.sh: param 0=$0"
 # Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 # 获取脚本的绝对路径（处理符号链接）
@@ -285,3 +285,6 @@ if [ ! -f "${Repo_ROOT}/3rd/osgearth/CMakeLists.txt" ]; then
     git checkout  -b my-2025Sep12-093115    928195eb74d85eac21c0c727af0fafc6d01be87c  # master
     cd ${Repo_ROOT}
 fi
+
+endTm=$(date +%Y/%m/%d--%H:%M:%S)
+printf "${startTm}----${endTm}\n"  
