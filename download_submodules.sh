@@ -39,7 +39,8 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/zstd/build/cmake/CMakeLists.txt" ]; then
     git clone https://github.com/facebook/zstd.git  3rd/zstd   || { echo "zstd 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/zstd 
-    git checkout -b my-v1.5.7 tags/v1.5.7
+    # git checkout -b my-v1.5.7 tags/v1.5.7
+    git checkout -b my-2025Aug18-091013 cfeb29e39713dadcb5f6735a129289ac06b3de73
     cd ${Repo_ROOT}   
 fi
   
