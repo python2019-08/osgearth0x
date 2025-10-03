@@ -24,10 +24,11 @@ if [ $USE_PROXY -eq 1 ]; then
     # export HTTPS_PROXY=socks5://127.0.0.1:1080    
     export http_proxy=http://127.0.0.1:1081
     export https_proxy=http://127.0.0.1:1081
-    export HTTP_PROXY=http://127.0.0.1:1081
-    export HTTPS_PROXY=http://127.0.0.1:1081      
+    # export HTTP_PROXY=http://127.0.0.1:1081
+    # export HTTPS_PROXY=http://127.0.0.1:1081      
 else
-    unset http_proxy https_proxy
+    # should only use  http_proxy https_proxy 
+    unset http_proxy https_proxy # HTTP_PROXY  HTTPS_PROXY
 fi
 
 echo "----------------------------------------------------"
