@@ -477,7 +477,14 @@
         "pluginloader": "cpp",
         "viewpoint": "cpp",
         "revisioning": "cpp",
-        "logarithmicdepthbuffer": "cpp"
+        "logarithmicdepthbuffer": "cpp",
+        "locator": "cpp",
+        "eventinterface": "cpp",
+        "annotationsgui": "cpp",
+        "imagelayer": "cpp",
+        "cullvisitor": "cpp",
+        "annotationdata": "cpp",
+        "viewerbase": "cpp"
     }
 }
 

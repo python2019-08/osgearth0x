@@ -18,6 +18,10 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [
+                {
+                    "name": "OSGEARTH_NOTIFY_LEVEL",
+                    "value": "DEBUG"
+                },
                 // { //---- for osgEarthDll 
                 //     "name": "OSG_LIBRARY_PATH", 
                 //     "value": "/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgdll/lib/osgPlugins-3.7.0" 
