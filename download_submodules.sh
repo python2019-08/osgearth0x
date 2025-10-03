@@ -36,8 +36,8 @@ if [ ! -f "${Repo_ROOT}/3rd/zlib/CMakeLists.txt" ]; then
     # git submodule add -f -b v1.3.1 https://github.com/madler/zlib.git    3rd/zlib   
     git clone  https://github.com/madler/zlib.git    3rd/zlib  || { echo "zlib 克隆失败！"; exit 1; }  
     cd ${Repo_ROOT}/3rd/zlib 
-    # git checkout -b my-v1.3.1 tags/v1.3.1 
-    git checkout  -b my-2025Feb18-084758   5a82f71ed1dfc0bec044d9702463dbdf84ea3b71
+    # git checkout -b my-v1.3.1 tags/v1.3.1   # 2024Jan22-10:49:07
+    git checkout  -b myzlib-2025Feb18-084758   5a82f71ed1dfc0bec044d9702463dbdf84ea3b71
     cd ${Repo_ROOT}  
 fi
 
@@ -45,8 +45,8 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/zstd/build/cmake/CMakeLists.txt" ]; then
     git clone https://github.com/facebook/zstd.git  3rd/zstd   || { echo "zstd 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/zstd 
-    # git checkout -b my-v1.5.7 tags/v1.5.7
-    git checkout -b my-2025Aug18-091013 cfeb29e39713dadcb5f6735a129289ac06b3de73
+    # git checkout -b my-v1.5.7 tags/v1.5.7 # 2025Feb19-11:54:37 
+    git checkout -b myzstd-2025Aug18-091013 cfeb29e39713dadcb5f6735a129289ac06b3de73
     cd ${Repo_ROOT}   
 fi
   
@@ -56,8 +56,8 @@ if [ ! -f "${Repo_ROOT}/3rd/openssl/Configure" ]; then
     git clone https://github.com/openssl/openssl.git   3rd/openssl    || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/openssl 
     #  git submodule update --init --recursive --progress -v
-    # git checkout -b my-openssl-3.5.2  tags/openssl-3.5.2
-    git checkout -b my-2025Aug5-120926  0893a62353583343eb712adef6debdfbe597c227
+
+    git checkout -b my-openssl-3.5.2  tags/openssl-3.5.2 # 2025Aug5-12:09:27  
     cd ${Repo_ROOT}   
 fi
 
@@ -71,7 +71,8 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libpsl/configure" ]; then  
     git clone  https://github.com/rockdaboot/libpsl.git  3rd/libpsl   || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libpsl 
-    git checkout -b my-libpsl-0.21.0  tags/libpsl-0.21.0
+    # git checkout -b my-libpsl-0.21.0  tags/libpsl-0.21.0 #Tue Apr 16 15:10:51 2019 +0200
+    git checkout -b my-psl-2024May6-153437  490bd6f98a2addcade55028ea60c36cce07e21e4  
     cd ${Repo_ROOT}    
 fi
 
@@ -79,7 +80,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/curl/CMakeLists.txt" ]; then  
     git clone  https://github.com/curl/curl.git    3rd/curl    || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/curl 
-    git checkout -b my-curl-8_15_0  tags/curl-8_15_0
+    git checkout -b my-curl-8_15_0  tags/curl-8_15_0 #Wed Jul 16 08:21:52 2025 +0200
     cd ${Repo_ROOT}    
 fi
 
@@ -87,8 +88,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libjpeg-turbo/CMakeLists.txt" ]; then  
     git clone  https://github.com/libjpeg-turbo/libjpeg-turbo.git  3rd/libjpeg-turbo   || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libjpeg-turbo  
-    # git checkout -b my-jpeg-9f tags/jpeg-9f
-    git checkout -b my-3.1.2   tags/3.1.2
+    git checkout -b myjpeg-3.1.2   tags/3.1.2 #Tue Aug 26 21:11:07 2025 -0400
     cd ${Repo_ROOT}    
 fi
 
@@ -96,7 +96,8 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libpng/CMakeLists.txt" ]; then  
     git clone  https://github.com/glennrp/libpng.git  3rd/libpng  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libpng 
-    git checkout -b my-libpng-1.6.31-signed tags/libpng-1.6.31-signed
+    # git checkout -b my-libpng-1.6.31-signed tags/libpng-1.6.31-signed  ## too old?? Thu Jul 27 06:36:02 2017 -0400
+    git checkout -b mypng-2025Sep29-220604 bd41aa64d34609a9f39944fd241c24f38bb7c3d6 
     cd ${Repo_ROOT}    
 fi
 
@@ -104,7 +105,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/xz/CMakeLists.txt" ]; then  
     git clone  https://github.com/tukaani-project/xz.git  3rd/xz  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/xz 
-    git checkout -b my-v5.8.1 tags/v5.8.1
+    git checkout -b myxz-v5.8.1 tags/v5.8.1 # Apr 3 14:34:46 2025 +0300
     cd ${Repo_ROOT}    
 fi
 
@@ -112,7 +113,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libtiff/CMakeLists.txt" ]; then  
     git clone  https://github.com/vadz/libtiff.git   3rd/libtiff  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libtiff 
-    git checkout -b my-Release-v4-0-9  tags/Release-v4-0-9
+    git checkout -b mytiff-Release-v4-0-9  tags/Release-v4-0-9 # Nov 18 20:00:43 2017 +0000
     cd ${Repo_ROOT}    
 fi
 
@@ -120,7 +121,8 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/freetype/CMakeLists.txt" ]; then  
     git clone  https://github.com/freetype/freetype.git   3rd/freetype  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/freetype 
-    git checkout -b my-VER-2-13-3  tags/VER-2-13-3
+    # git checkout -b my-VER-2-13-3  tags/VER-2-13-3  # Mon Aug 12 12:59:39 2024 +0200
+    git checkout -b myft-2025Aug31-223911  c6cf32de3b3582d0eea9f6372121f0f07d22ae68
     cd ${Repo_ROOT}    
 fi
 
@@ -128,7 +130,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/geos/CMakeLists.txt" ]; then  
     git clone  https://github.com/libgeos/geos.git   3rd/geos  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/geos 
-    git checkout -b my-3.13.1 tags/3.13.1
+    git checkout -b mygeos-3.13.1 tags/3.13.1 #Mar 3 09:51:17 2025 -0800
     cd ${Repo_ROOT}    
 fi
 
@@ -147,7 +149,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/proj/CMakeLists.txt" ]; then  
     git clone  https://github.com/OSGeo/PROJ.git    3rd/proj  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/proj 
-    git checkout -b my-9.6.2 tags/9.6.2
+    git checkout -b myproj-9.6.2 tags/9.6.2 #Jun 4 13:28:23 2025 +0200
     cd ${Repo_ROOT}    
 fi
 
@@ -159,7 +161,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/abseil-cpp/CMakeLists.txt" ]; then  
     git clone  https://github.com/abseil/abseil-cpp.git   3rd/abseil-cpp  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/abseil-cpp
-    git checkout -b my-20250512.1   tags/20250512.1  
+    git checkout -b myAbsl-20250512.1   tags/20250512.1  
     cd ${Repo_ROOT}
 fi
 
@@ -167,8 +169,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/protobuf/CMakeLists.txt" ]; then  
     git clone  https://github.com/protocolbuffers/protobuf.git   3rd/protobuf  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/protobuf 
-    # git checkout  v32.0
-    git checkout -b my-v32.0 tags/v32.0
+    git checkout -b myPbf-v32.0 tags/v32.0 #Aug 14 09:20:26 2025 -0700
     cd ${Repo_ROOT}
 fi
 
@@ -186,7 +187,7 @@ if [ ! -f "${Repo_ROOT}/3rd/gdal/CMakeLists.txt" ]; then
     }
     
     cd ${Repo_ROOT}/3rd/gdal  
-    git checkout -b my-v3.9.3  tags/v3.9.3
+    git checkout -b mygdal-v3.9.3  tags/v3.9.3
     cd ${Repo_ROOT}
 fi
 
@@ -259,7 +260,7 @@ if [ ! -f "${Repo_ROOT}/3rd/osg/CMakeLists.txt" ]; then
     # Date:   Thu Dec 1 18:17:31 2022 +0000
     #     Removed indentation to avoid github MD mark up from loosing link.
     # 
-    git checkout -b  my-2022-dec01-181731  2e4ae2ea94595995c1fc56860051410b0c0be605
+    git checkout -b  myosg-2022dec01-181731  2e4ae2ea94595995c1fc56860051410b0c0be605
     cd ${Repo_ROOT}
 fi
 
@@ -267,7 +268,7 @@ echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libzip/CMakeLists.txt" ]; then  
     git clone https://github.com/nih-at/libzip.git 3rd/libzip  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libzip 
-    git checkout  v1.11.4
+    git checkout -b myzip2025Aug14-204435  92035140dfd80f4d31dd33590acb018da21cdfb0
     cd ${Repo_ROOT}
 fi
 
@@ -275,7 +276,7 @@ echo "----------------------------------------------------"
 if false; then  
     git clone https://github.com/gabime/spdlog.git  3rd/spdlog  || { echo " 克隆失败！"; exit 1; }
     cd 3rd/spdlog
-    git checkout  v1.11.4
+    git checkout  -b  myspdlog2025Aug7-204711 f1d748e5e3edfa4b1778edea003bac94781bc7b7 
     cd ${Repo_ROOT}
     # # 编译并安装
     # cmake .. -DSPDLOG_BUILD_EXAMPLE=OFF  # 禁用示例程序
@@ -289,7 +290,7 @@ if [ ! -f "${Repo_ROOT}/3rd/osgearth/CMakeLists.txt" ]; then
     cd ${Repo_ROOT}/3rd/osgearth 
     git submodule update --init --recursive
     # git checkout -b my-osgearth-3.7.2   tags/osgearth-3.7.2
-    git checkout  -b my-2025Sep12-093115    928195eb74d85eac21c0c727af0fafc6d01be87c  # master
+    git checkout  -b myoe-2025Sep12-093115    928195eb74d85eac21c0c727af0fafc6d01be87c  # master
     cd ${Repo_ROOT}
 fi
 

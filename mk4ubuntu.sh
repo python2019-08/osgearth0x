@@ -16,7 +16,7 @@ echo "Repo_ROOT=${Repo_ROOT}"
 echo "============================================================="
 isRebuild=true
 # ------
-isFinished_build_zlib=false
+isFinished_build_zlib=true
 isFinished_build_zstd=true
 isFinished_build_openssl=true  
 # isFinished_build_icu=true  
@@ -36,12 +36,12 @@ isFinished_build_libexpat=true
 isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true
-isFinished_build_gdal=true   #-- false #big code
-isFinished_build_osg=true    # osg-a ..false  
-isFinished_build_osgdll=true # osg-dll..false
-isFinished_build_zip=true
-isFinished_build_osgearth=true  # osgearth-a
-isFinished_build_oearthdll=true  # osgearth-dll
+isFinished_build_gdal=false   #-- false #big code
+isFinished_build_osg=false    # osg-a ..false  
+isFinished_build_osgdll=false # osg-dll..false
+isFinished_build_zip=false
+isFinished_build_osgearth=false  # osgearth-a
+isFinished_build_oearthdll=false  # osgearth-dll
 # ------
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
