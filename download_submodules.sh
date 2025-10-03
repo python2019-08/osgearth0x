@@ -56,7 +56,8 @@ if [ ! -f "${Repo_ROOT}/3rd/openssl/Configure" ]; then
     git clone https://github.com/openssl/openssl.git   3rd/openssl    || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/openssl 
     #  git submodule update --init --recursive --progress -v
-    git checkout -b my-openssl-3.5.2  tags/openssl-3.5.2
+    # git checkout -b my-openssl-3.5.2  tags/openssl-3.5.2
+    git checkout -b my-2025Aug5-120926  0893a62353583343eb712adef6debdfbe597c227
     cd ${Repo_ROOT}   
 fi
 
