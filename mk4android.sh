@@ -1,6 +1,7 @@
 #!/bin/bash
 # **************************************************************************
 # false  ;;;   ./mk4android.sh  >ba.txt 2>&1
+startTm=$(date +%Y/%m/%d--%H:%M:%S) 
 
 echo "mk4ubuntu.sh: param 0=$0"
 # Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
@@ -1597,3 +1598,7 @@ fi
 # ************************************************************************** 
 SrcDIR_src=${Repo_ROOT}/src
   
+
+# **************************************************************************
+endTm=$(date +%Y/%m/%d--%H:%M:%S)
+printf "${startTm}----${endTm}\n"    

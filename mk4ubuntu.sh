@@ -2,6 +2,7 @@
 # **************************************************************************
 # false  ;;;   ./mk4ubuntu.sh  >bu.txt 2>&1
 echo "mk4ubuntu.sh: param 0=$0"
+startTm=$(date +%Y/%m/%d--%H:%M:%S) 
 
 # 获取脚本的绝对路径（处理符号链接）
 SCRIPT_PATH=$(readlink -f "$0")
@@ -1923,4 +1924,9 @@ fi
 # ************************************************************************** 
 SrcDIR_src=${Repo_ROOT}/src 
 echo "in mk4ubuntu.sh....SrcDIR_src=${SrcDIR_src}"
- 
+
+
+
+# **************************************************************************
+endTm=$(date +%Y/%m/%d--%H:%M:%S)
+printf "${startTm}----${endTm}\n"  
