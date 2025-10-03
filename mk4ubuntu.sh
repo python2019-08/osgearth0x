@@ -12,14 +12,12 @@ echo "sh-path: $SCRIPT_PATH"
 Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 echo "Repo_ROOT=${Repo_ROOT}"
 
- 
 echo "============================================================="
-# **************************************************************************
 isRebuild=false
 # ------
-isFinished_build_zlib=false
-isFinished_build_zstd=false
-isFinished_build_openssl=false  
+isFinished_build_zlib=true
+isFinished_build_zstd=true
+isFinished_build_openssl=true  
 # isFinished_build_icu=true  
 # isFinished_build_libidn2=true 
 isFinished_build_libpsl=true  
@@ -41,7 +39,7 @@ isFinished_build_gdal=true   #-- false #big code
 isFinished_build_osg=true    # osg-a ..false  
 isFinished_build_osgdll=true # osg-dll..false
 isFinished_build_zip=true
-isFinished_build_osgearth=true  # osgearth-a
+isFinished_build_osgearth=false  # osgearth-a
 isFinished_build_oearthdll=true  # osgearth-dll
 # ------
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
@@ -49,7 +47,7 @@ CMAKE_MAKE_PROGRAM=/usr/bin/make
 CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
 CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
 
-# **************************************************************************
+echo "============================================================="
 # rm -fr ./build_by_sh   
 BuildDir_ubuntu=${Repo_ROOT}/build_by_sh/ubuntu
 
@@ -81,7 +79,8 @@ cmakeCommonParams=(
   #  -DCMAKE_C_FLAGS= "-fPIC"     
   #  -DCMAKE_CXX_FLAGS="-fPIC" 
 echo "cmakeCommonParams=${cmakeCommonParams[@]}"
-# **************************************************************************
+
+echo "============================================================="
 # functions
 prepareBuilding()
 {
@@ -233,10 +232,14 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
     #       所以作为workaround，这里使用/usr/share/cmake-3.28/Modules/FindZLIB.cmake
     # 
     # --备份 zlib源码编译后产生的ZLIBConfig.cmake
-    mv    ${INSTALL_PREFIX_zlib}/lib/cmake  ${INSTALL_PREFIX_zlib}/lib/cmake-bk
-    mv    ${INSTALL_PREFIX_zlib}/lib/pkgconfig  ${INSTALL_PREFIX_zlib}/lib/pkgconfig-bk
+    cmakeZlib_dir=${INSTALL_PREFIX_zlib}/lib/cmake/zlib/
+    mv    ${cmakeZlib_dir}/ZLIB-static-debug.cmake   ${cmakeZlib_dir}/ZLIB-static-debug---bk.cmake
+    mv    ${cmakeZlib_dir}/ZLIB-static.cmake         ${cmakeZlib_dir}/ZLIB-static---bk.cmake
+    mv    ${cmakeZlib_dir}/ZLIBConfig.cmake          ${cmakeZlib_dir}/ZLIBConfig---bk.cmake
+    mv    ${cmakeZlib_dir}/ZLIBConfigVersion.cmake   ${cmakeZlib_dir}/ZLIBConfigVersion---bk.cmake
+
+    # mv    ${INSTALL_PREFIX_zlib}/lib/pkgconfig/zlib.pc  ${INSTALL_PREFIX_zlib}/lib/pkgconfig/zlib.pc-bk
     # -- 把 FindZLIB.cmake 放到 ${INSTALL_PREFIX_zlib}/lib/cmake/
-    mkdir -p ${INSTALL_PREFIX_zlib}/lib/cmake/zlib
     cp ${Repo_ROOT}/cmake/FindZLIB.cmake  ${INSTALL_PREFIX_zlib}/lib/cmake/zlib
     #################################################################### 
     # cd ${BuildDIR_lib}
@@ -410,7 +413,7 @@ if [ "${isFinished_build_libpsl}" != "true" ] ; then
     BuildDIR_libpsl=${BuildDir_ubuntu}/3rd/libpsl 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_libpsl} ${INSTALL_PREFIX_psl} ${isRebuild}
 
-    cd ${SrcDIR_lib}  && ./autogen.sh
+    cd ${SrcDIR_lib} && make distclean  && ./autogen.sh
 
     # 在构建目录中运行configure
     cd ${BuildDIR_libpsl} 
@@ -425,7 +428,7 @@ if [ "${isFinished_build_libpsl}" != "true" ] ; then
                 --disable-runtime --enable-builtin  -disable-gtk-doc
                 # --without-libidn2 --without-libicu --without-libidn 
     # 
-    make   -j$(nproc)  -v
+    make   -j$(nproc)  
     make install       
     echo "========== Finished Building libpsl =========" &&  sleep 2
 fi
@@ -593,7 +596,7 @@ if [ "${isFinished_build_libpng}" != "true" ] ; then
             "${cmakeCommonParams[@]}"  \
             -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
-            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_png} \
+            -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX_png}" \
             -DZLIB_ROOT="${INSTALL_PREFIX_zlib}" \
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
@@ -746,6 +749,7 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
             -DFT_REQUIRE_PNG=ON  \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
 
+    # --Hi..in PNGTargets.cmake: CMAKE_CURRENT_LIST_FILE=/home/abner/osgearth0x/build_by_sh/ubuntu/install/libpng/lib/cmake/PNG/PNGTargets.cmake
     cmake --build ${BuildDIR_lib} -j$(nproc) -v
 
     cmake --build ${BuildDIR_lib} --target install
