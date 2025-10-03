@@ -1,8 +1,10 @@
  
-ABIS=("aa01")
+ABIS=("aa01"  "bbb02")
 for ABI in "${ABIS[@]}"; do
     echo "++++++++++++ ABI=${ABI} ++++++++++++"
 done
+
+
 
 echo "----------------------------------------"
 get_targetHost_byABILvl()
@@ -34,7 +36,7 @@ get_targetHost_byABILvl()
 ret_targetHost=$(get_targetHost_byABILvl "arm64-v8a")
 echo "....ret_targetHost=${ret_targetHost}"  
 
-exit 11
+ 
 
 echo "----------------------------------------"
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
@@ -81,7 +83,7 @@ cmakeCommonParams2+=(
 )
 
 echo "cmakeCommonParams2=${cmakeCommonParams2[@]}"
-exit 11
+
 echo "----------------------------------------"
 INSTALL_PREFIX_zlib=11
 INSTALL_PREFIX_xz=22
@@ -89,7 +91,7 @@ INSTALL_PREFIX_jpegTurbo=33
 INSTALL_PREFIX_openssl=44
 INSTALL_PREFIX_curl=55
 INSTALL_PREFIX_sqlite=66
-cmk_prefixPath=( "${INSTALL_PREFIX_zlib};" 
+cmk_prefixPath0=( "${INSTALL_PREFIX_zlib};" 
             "${INSTALL_PREFIX_xz};"
             "${INSTALL_PREFIX_jpegTurbo};"
             "${INSTALL_PREFIX_openssl};"
@@ -98,14 +100,23 @@ cmk_prefixPath=( "${INSTALL_PREFIX_zlib};"
             )
 
 
-echo "cmk_prefixPath=${cmk_prefixPath[*]}"
+echo "cmk_prefixPath0=${cmk_prefixPath0[*]}"
+
+
 echo "----------------------------------------"
 
 cmk_prefixPath1="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_xz};${INSTALL_PREFIX_jpegTurbo}; \
                  ${INSTALL_PREFIX_openssl};${INSTALL_PREFIX_curl};${INSTALL_PREFIX_sqlite}"
 
 echo "cmk_prefixPath1=${cmk_prefixPath1}"
-
+echo "----------------------------------------"
+cmk_prefixPath2="${INSTALL_PREFIX_zlib}"
+cmk_prefixPath2+=";${INSTALL_PREFIX_xz}"
+cmk_prefixPath2+=";${INSTALL_PREFIX_jpegTurbo}"
+cmk_prefixPath2+=";${INSTALL_PREFIX_openssl}"
+cmk_prefixPath2+=";${INSTALL_PREFIX_curl}"
+cmk_prefixPath2+=";${INSTALL_PREFIX_sqlite}"
+echo "cmk_prefixPath2=${cmk_prefixPath2}"
 
 echo "----------------------------------------"
 set -x

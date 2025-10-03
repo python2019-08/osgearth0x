@@ -1,4 +1,4 @@
- # osgearth触控代码的git链接 
+# 1. osgearth触控代码的git链接 
 
 ### 官方的更差些
 https://github.com/gwaldron/osgearth
@@ -10,3 +10,4 @@ https://github.com/gwaldron/osgearth/tree/master/src/applications/osgearth_viewe
 https://gitee.com/xiaoyan159/osgearth-collect
 
 https://gitee.com/xiaoyan159/osgearth-collect/tree/master/OSGEarthAndroidDemo
+
