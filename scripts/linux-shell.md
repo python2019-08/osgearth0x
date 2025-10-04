@@ -173,3 +173,140 @@ cd /home/abner/abner2/zdev/nv/osgearth0x
 
 # 输出应显示软链接路径（/home/abner/abner2/...）
 ```
+
+======================================
+# 2.$(pwd)    $PWD
+
+在 Unix/Linux/macOS 等类 Unix 系统的终端中，`$(pwd)` 和 `$PWD` 都与「当前工作目录（Present Working Directory）」相关，但二者的**本质、执行逻辑和使用场景存在关键区别**，具体对比如下：
+
+
+### 核心区别对比表
+| 特性                | `$PWD`                          | `$(pwd)`                        |
+|---------------------|---------------------------------|---------------------------------|
+| 本质                | **环境变量**（系统预定义的变量） | **命令替换**（执行 `pwd` 命令并获取输出） |
+| 数据来源            | 系统维护的目录状态变量          | 执行 `pwd` 命令后返回的结果      |
+| 执行时机与开销      | 直接读取变量值，无额外执行开销  | 需启动子进程运行 `pwd` 命令，有轻微开销 |
+| 结果是否「实时」    | 通常实时，但极端场景下可能滞后  | 每次执行都实时获取当前目录      |
+| 典型使用场景        | 脚本/命令中快速引用当前目录路径 | 需强制确认「最新当前目录」时    |
+
+
+### 1. `$PWD`：预定义的环境变量
+`$PWD` 是系统**默认自带的环境变量**，其值由 Shell（如 Bash、Zsh）自动维护，始终指向当前用户所在的目录路径。
+
+#### 特点：
+- **无执行开销**：直接读取变量值，无需额外运行命令，效率更高。
+- **基本实时性**：当你通过 `cd` 命令切换目录时，Shell 会自动更新 `$PWD` 的值，确保其与当前目录一致（99% 的日常场景下完全可靠）。
+- **使用简单**：直接通过 `$` 符号引用即可，无需额外括号。
+
+#### 示例：
+```bash
+# 查看 $PWD 的值（当前目录）
+echo $PWD
+# 输出示例：/home/yourname/Documents
+
+# 切换目录后，$PWD 自动更新
+cd ../Downloads
+echo $PWD
+# 输出示例：/home/yourname/Downloads
+```
+
+
+### 2. `$(pwd)`：命令替换（执行 `pwd` 命令）
+`$(...)` 是 Shell 中的「命令替换语法」—— 它会先执行括号内的 `pwd` 命令，再将命令的**输出结果**作为字符串返回。  
+简单说：`$(pwd)` = 「先运行 `pwd` 命令，再用命令的结果代替这个表达式」。
+
+#### 特点：
+- **实时性绝对可靠**：每次使用 `$(pwd)` 时，都会重新执行一次 `pwd` 命令，获取的是「当前瞬间」的目录（极端场景下比 `$PWD` 更准，见下文）。
+- **有轻微执行开销**：执行 `pwd` 命令需要启动一个子进程，虽然开销极小，但高频使用（如循环内）时会比 `$PWD` 慢。
+- **等价于反引号 `pwd`**：在老的 Shell 脚本中，可能会看到 `pwd`（反引号包裹），其功能与 `$(pwd)` 完全一致，但 `$(...)` 语法更清晰、支持嵌套，现在更推荐使用。
+
+#### 示例：
+```bash
+# 查看 $(pwd) 的值（本质是执行 pwd 命令并输出结果）
+echo $(pwd)
+# 输出示例：/home/yourname/Documents
+
+# 切换目录后，$(pwd) 重新执行，结果更新
+cd ../Pictures
+echo $(pwd)
+# 输出示例：/home/yourname/Pictures
+```
+
+
+### 关键差异：极端场景下的不一致
+在绝大多数日常操作（如 `cd` 切换目录、执行普通命令）中，`$PWD` 和 `$(pwd)` 的结果完全一致。但在**极少数特殊场景**下，二者可能出现差异：
+
+当你通过「非 `cd` 方式」改变当前目录时（如通过 `chdir()` 系统调用的程序、或某些特殊工具），Shell 可能没来得及更新 `$PWD` 变量，此时：
+- `$PWD` 会显示「旧的目录路径」（变量未更新）；
+- `$(pwd)` 会执行 `pwd` 命令，获取「新的实际目录路径」（结果准确）。
+
+#### 示例（模拟极端场景）：
+```bash
+# 1. 先查看初始状态，二者一致
+echo "PWD变量: $PWD"       # 输出：PWD变量: /home/yourname
+echo "pwd命令: $(pwd)"     # 输出：pwd命令: /home/yourname
+
+# 2. 通过 Python 调用 chdir() 切换目录（不触发 Shell 的 $PWD 更新）
+python3 -c "import os; os.chdir('/tmp')"
+
+# 3. 再次查看，二者出现差异
+echo "PWD变量: $PWD"       # 输出：PWD变量: /home/yourname（变量未更新，显示旧路径）
+echo "pwd命令: $(pwd)"     # 输出：pwd命令: /tmp（执行命令，显示实际新路径）
+```
+
+
+### 总结：该用哪个？
+1. **日常使用/脚本开发（99% 场景）**：优先用 `$PWD`  
+   - 优势：无执行开销、语法简洁，且结果完全可靠。
+
+2. **需强制确保目录实时性（极端场景）**：用 `$(pwd)`  
+   - 例如：脚本中涉及第三方工具（可能修改目录但不通知 Shell）、或需要绝对精确的目录路径时。
+
+3. **避免混淆**：不要写成 `$(PWD)` 或 `$pwd`  
+   - `$(PWD)`：会执行名为 `PWD` 的命令（系统中不存在该命令，会报错）；
+   - `$pwd`：会引用名为 `pwd` 的自定义变量（默认未定义，输出空值）。
+
+==========================================
+# 3. 例子
+
+这里，/home/abner/abner2 是 实际路径/mnt/disk2/abner/ 的软链接。
+
+path_softlink.sh代码如下 
+```sh 
+#!/bin/bash
+echo "mk4ubuntu.sh: param 0=$0" # 输出脚本名称
+
+# 获取脚本的物理绝对路径（解析软链接）
+SCRIPT_PHYSICAL_PATH=$(readlink -f "$0")
+echo "Physical path: $SCRIPT_PHYSICAL_PATH"
+
+path01="$PWD/$0"
+path02="$(pwd)"
+echo "path01=${path01}"
+echo "path02=${path02}"
+exit 11
+```
+运行path_softlink.sh ：
+```sh
+~/abner2/zdev/nv/osgearth0x/scripts/test$ ./path_softlink.sh 
+mk4ubuntu.sh: param 0=./path_softlink.sh
+Physical path: /mnt/disk2/abner/zdev/nv/osgearth0x/scripts/test/path_softlink.sh
+path01=/home/abner/abner2/zdev/nv/osgearth0x/scripts/test/./path_softlink.sh
+path02=/home/abner/abner2/zdev/nv/osgearth0x/scripts/test
+
+# --------
+~$ /home/abner/abner2/zdev/nv/osgearth0x/scripts/test/path_softlink.sh
+mk4ubuntu.sh: param 0=/home/abner/abner2/zdev/nv/osgearth0x/scripts/test/path_softlink.sh
+Physical path: /mnt/disk2/abner/zdev/nv/osgearth0x/scripts/test/path_softlink.sh
+path01=/home/abner//home/abner/abner2/zdev/nv/osgearth0x/scripts/test/path_softlink.sh
+path02=/home/abner
+
+# --------
+/mnt/disk2/abner/zdev/nv/osgearth0x/scripts/test$ ./path_softlink.sh 
+mk4ubuntu.sh: param 0=./path_softlink.sh
+Physical path: /mnt/disk2/abner/zdev/nv/osgearth0x/scripts/test/path_softlink.sh
+path01=/mnt/disk2/abner/zdev/nv/osgearth0x/scripts/test/./path_softlink.sh
+path02=/mnt/disk2/abner/zdev/nv/osgearth0x/scripts/test
+
+```
+从上面的运行结果来看，**用"$PWD/$0" 不能稳定地得到 软链接版本的全路径**。

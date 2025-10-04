@@ -1,12 +1,15 @@
 #!/bin/bash
+# see "scripts/linux-shell.md"
 
 # 输出脚本名称
 echo "mk4ubuntu.sh: param 0=$0"
+
 
 # 获取脚本的物理绝对路径（解析软链接）
 SCRIPT_PHYSICAL_PATH=$(readlink -f "$0")
 echo "Physical path: $SCRIPT_PHYSICAL_PATH"
 
+# ----------------------------------------
 # 获取脚本的软链接路径（保留软链接结构）
 if [[ "$0" == /* ]]; then
     # 如果$0是绝对路径（可能含软链接），直接使用
@@ -26,3 +29,4 @@ if [[ ! -d "$Repo_ROOT" ]]; then
     echo "Error: Repo_ROOT does not exist: $Repo_ROOT"
     exit 1
 fi
+

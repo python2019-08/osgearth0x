@@ -28,27 +28,27 @@ fi
 echo "============================================================="
 isRebuild=true
 # ------------
-isFinished_build_zlib=true  
+isFinished_build_zlib=false  
 # isFinished_build_zstd=true
-isFinished_build_openssl=true  
+isFinished_build_openssl=false  
 # isFinished_build_icu=true  
 # isFinished_build_libidn2=true 
 # isFinished_build_libpsl=true  
-isFinished_build_curl=true   # false  
+isFinished_build_curl=false   # false  
 # isFinished_build_jpeg9f=true  
-isFinished_build_libjpegTurbo=true   
-isFinished_build_libpng=true    
+isFinished_build_libjpegTurbo=false   
+isFinished_build_libpng=false    
 # isFinished_build_xz=true  
-isFinished_build_libtiff=true  
-isFinished_build_freetype=true
-isFinished_build_geos=true     # false
-isFinished_build_sqlite=true
-isFinished_build_proj=true   
+isFinished_build_libtiff=false  
+isFinished_build_freetype=false
+isFinished_build_geos=false     # false
+isFinished_build_sqlite=false
+isFinished_build_proj=false   
 # isFinished_build_libexpat=true  
-isFinished_build_absl=true
-isFinished_build_protobuf=true
-isFinished_build_boost=true  
-isFinished_build_gdal=true # v
+isFinished_build_absl=false
+isFinished_build_protobuf=false
+isFinished_build_boost=false  
+isFinished_build_gdal=false # v
 isFinished_build_osg=false
 isFinished_build_zip=false
 isFinished_build_oearth=false
@@ -57,10 +57,19 @@ isFinished_build_oearth=false
 export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006    
 # ANDROID_NDK_HOME​ ​:后来 Android Studio 和 Gradle 更倾向于使用此变量。    
 export ANDROID_NDK_HOME="${ANDROID_NDK_ROOT}"
+# 确保 NDK 路径已设置（需要根据实际环境修改或通过环境变量传入）
+if [ -z "${ANDROID_NDK_HOME}" -o ! -d "${ANDROID_NDK_HOME}"  ]; then
+    echo "ERROR: ANDROID_NDK_HOME=${ANDROID_NDK_HOME} not exist!"
+    exit 1001
+fi
 # CMAKE_SYSROOT=${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
 # 
 # 设置 NDK 工具链路径（使用 LLVM 工具）
 TOOLCHAIN=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64
+if [ ! -d "${TOOLCHAIN}"  ]; then
+    echo "ERROR: TOOLCHAIN=${TOOLCHAIN} not exist!"
+    exit 1001
+fi
 # 使用统一的 LLVM 工具替代传统工具
 export AR=${TOOLCHAIN}/bin/llvm-ar
 export AS=${TOOLCHAIN}/bin/llvm-as
@@ -69,21 +78,25 @@ export RANLIB=${TOOLCHAIN}/bin/llvm-ranlib
 export STRIP=${TOOLCHAIN}/bin/llvm-strip
 # 
 ANDRO_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake
-
+if [ ! -f "${ANDRO_TOOLCHAIN_FILE}"  ]; then
+    echo "ERROR: ANDRO_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE} not exist!"
+    exit 1001
+fi
 
 export PATH=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
 export PATH=$PATH:$ANDROID_NDK_HOME
 
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=${ANDROID_NDK_HOME}/prebuilt/linux-x86_64/bin/make
+if [ ! -f "${CMAKE_MAKE_PROGRAM}"  ]; then
+    echo "ERROR: CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM} not exist!"
+    exit 1001
+fi
+
 # CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
 # CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
 
-# 确保 NDK 路径已设置（需要根据实际环境修改或通过环境变量传入）
-if [ -z "${ANDROID_NDK_HOME}" ]; then
-    echo "ERROR: ANDROID_NDK_HOME environment variable is not set!"
-    exit 1001
-fi
+
 # **************************************************************************
 # rm -fr ./build_by_sh   
 BuildDir_andro=${Repo_ROOT}/build_by_sh/android
@@ -92,9 +105,9 @@ INSTALL_PREFIX_andro=${BuildDir_andro}/install
 mkdir -p ${INSTALL_PREFIX_andro} 
 
 # 定义需要编译的 Android ABI 列表
-# ABIS=("arm64-v8a"  "armeabi-v7a"  "x86_64"  "x86" )
+# ABIS=("arm64-v8a"  "x86_64"   "armeabi-v7a"  "x86" )
 # CMAKE_ANDROID_ARCH_ABI="x86_64" 
-ABIS=(  "armeabi-v7a"  "x86_64")  
+ABIS=("arm64-v8a")  
 ABI_LEVEL=24
  
 cmakeCommonParams=(
