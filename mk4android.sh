@@ -16,7 +16,7 @@ echo "Physical path: $SCRIPT_PHYSICAL_PATH"
 #--当/home/abner/abner2 是 实际路径/mnt/disk2/abner/ 的软链接时，Repo_ROOT应该是 软链接目录下的路径，
 #--否则，cmake 在使用CMAKE_PREFIX_PATH查找 xxxConfig.cmake 时有歧义、混淆，从而编译失败。
 #--所以这里强制指定为：
-Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
+Repo_ROOT=/mnt/d/gm/zdev/nv/osgearth0x
 echo "Repo_ROOT=${Repo_ROOT}"
 
 # 验证路径是否存在
@@ -54,7 +54,7 @@ isFinished_build_zip=false
 isFinished_build_oearth=false
 # ------------    
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
-export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006    
+export ANDROID_NDK_ROOT=/home/abel/programs/android-ndk-r27d    
 # ANDROID_NDK_HOME​ ​:后来 Android Studio 和 Gradle 更倾向于使用此变量。    
 export ANDROID_NDK_HOME="${ANDROID_NDK_ROOT}"
 # 确保 NDK 路径已设置（需要根据实际环境修改或通过环境变量传入）
