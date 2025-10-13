@@ -16,7 +16,7 @@ echo "Physical path: $SCRIPT_PHYSICAL_PATH"
 #--当/home/abner/abner2 是 实际路径/mnt/disk2/abner/ 的软链接时，Repo_ROOT应该是 软链接目录下的路径，
 #--否则，cmake 在使用CMAKE_PREFIX_PATH查找 xxxConfig.cmake 时有歧义、混淆，从而编译失败。
 #--所以这里强制指定为：
-Repo_ROOT=/mnt/d/gm/zdev/nv/osgearth0x
+Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 echo "Repo_ROOT=${Repo_ROOT}"
 
 # 验证路径是否存在
@@ -28,33 +28,35 @@ fi
 echo "============================================================="
 isRebuild=true
 # ------------
-isFinished_build_zlib=false  
+isFinished_build_zlib=true  
 # isFinished_build_zstd=true
-isFinished_build_openssl=false  
+isFinished_build_openssl=true  
 # isFinished_build_icu=true  
 # isFinished_build_libidn2=true 
 # isFinished_build_libpsl=true  
-isFinished_build_curl=false   # false  
+isFinished_build_curl=true   # false  
 # isFinished_build_jpeg9f=true  
-isFinished_build_libjpegTurbo=false   
-isFinished_build_libpng=false    
+isFinished_build_libjpegTurbo=true   
+isFinished_build_libpng=true    
 # isFinished_build_xz=true  
-isFinished_build_libtiff=false  
-isFinished_build_freetype=false
-isFinished_build_geos=false     # false
-isFinished_build_sqlite=false
-isFinished_build_proj=false   
+isFinished_build_libtiff=true  
+isFinished_build_freetype=true
+isFinished_build_geos=true     # false
+isFinished_build_sqlite=true
+isFinished_build_proj=true   
 # isFinished_build_libexpat=true  
-isFinished_build_absl=false
-isFinished_build_protobuf=false
-isFinished_build_boost=false  
-isFinished_build_gdal=false # v
+isFinished_build_absl=true
+isFinished_build_protobuf=true
+isFinished_build_boost=true  
+isFinished_build_gdal=true # v
 isFinished_build_osg=false
-isFinished_build_zip=false
+isFinished_build_zip=true
 isFinished_build_oearth=false
 # ------------    
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
-export ANDROID_NDK_ROOT=/home/abel/programs/android-ndk-r27d    
+# export ANDROID_NDK_ROOT=/home/abel/programs/android-ndk-r27d    
+export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006   
+
 # ANDROID_NDK_HOME​ ​:后来 Android Studio 和 Gradle 更倾向于使用此变量。    
 export ANDROID_NDK_HOME="${ANDROID_NDK_ROOT}"
 # 确保 NDK 路径已设置（需要根据实际环境修改或通过环境变量传入）
@@ -1150,9 +1152,9 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 -DSQLite3_HAS_RTREE=ON             \
                 -DSQLITE3_LIBRARY=${INSTALL_PREFIX_sqlite}/lib/libsqlite3.a \
                 -DOPENSSL_DIR=${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL/ \
-                -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl} \
-                -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include \
-                -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a \
+                -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}                    \
+                -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include          \
+                -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a      \
                 -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libcrypto.a \
                 -DPROTOBUF_LIBRARY=${INSTALL_PREFIX_protobuf}/lib/libprotobuf.a \
                 -DPROTOBUF_INCLUDE_DIR=${INSTALL_PREFIX_protobuf}/include  \
@@ -1278,9 +1280,9 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DOPENGL_PROFILE="GLES3" \
         -DOPENGL_gl_LIBRARY=${OPENGL_gl_LIBRARY} \
         -DOSG_FIND_3RD_PARTY_DEPS=OFF  \
-        -DZLIB_USE_STATIC_LIBS=ON \
-        -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
-        -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a \
+        -DZLIB_USE_STATIC_LIBS=ON                         \
+        -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include  \
+        -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a    \
         -DZLIB_LIBRARIES="${INSTALL_PREFIX_zlib}/lib/libz.a" \
         -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include \
         -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
@@ -1289,8 +1291,12 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
         -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a       \
         -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a      \
-        -DOpenSSL_ROOT="${INSTALL_PREFIX_openssl}" \
-        -DOpenSSL_USE_STATIC_LIBS=ON                \
+        -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib/cmake/OpenSSL"   \
+        -DOPENSSL_ROOT_DIR="${INSTALL_PREFIX_openssl}"                 \
+        -DOpenSSL_USE_STATIC_LIBS=ON                                    \
+        -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include          \
+        -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a      \
+        -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libcrypto.a \
         -DTIFF_INCLUDE_DIR=${INSTALL_PREFIX_tiff}/include   \
         -DTIFF_LIBRARY=${INSTALL_PREFIX_tiff}/lib/libtiff.a  \
         -DTIFF_LIBRARIES=${INSTALL_PREFIX_tiff}/lib/libtiff.a \
@@ -1569,6 +1575,7 @@ if [ "${isFinished_build_oearth}" != "true" ] ; then
             -DGDAL_ROOT=${INSTALL_PREFIX_gdal}                \
             -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include  \
             -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a \
+            -DOPENSSL_ROOT_DIR=${INSTALL_PREFIX_openssl}                    \
             -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libssl.a     \
             -DSSL_EAY_RELEASE=${INSTALL_PREFIX_openssl}/lib/libssl.a          \
             -DOPENSSL_CRYPTO_LIBRARY=${INSTALL_PREFIX_openssl}/lib/libcrypto.a \
