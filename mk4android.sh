@@ -49,7 +49,7 @@ isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true  
 isFinished_build_gdal=true # v
-isFinished_build_osg=false
+isFinished_build_osg=true
 isFinished_build_zip=true
 isFinished_build_oearth=false
 # ------------    
@@ -109,7 +109,7 @@ mkdir -p ${INSTALL_PREFIX_andro}
 # 定义需要编译的 Android ABI 列表
 # ABIS=("arm64-v8a"  "x86_64"   "armeabi-v7a"  "x86" )
 # CMAKE_ANDROID_ARCH_ABI="x86_64" 
-ABIS=("arm64-v8a")  
+ABIS=("arm64-v8a"  "x86_64")  
 ABI_LEVEL=24
  
 cmakeCommonParams=(
@@ -1255,7 +1255,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find  \
             "${cmakeCommonParams[@]}"  -DANDROID_ABI=${ABI}       \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a"         \
-            -DCMAKE_PREFIX_PATH="${cmk_prefixPath}"     \
+            -DCMAKE_PREFIX_PATH="${cmkPrefixPath}"      \
             -DCMAKE_MODULE_PATH="${osg_MODULE_PATH}"     \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osg}  \
             -DCMAKE_C_FLAGS="-fPIC"             \
@@ -1280,13 +1280,14 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DOPENGL_PROFILE="GLES3" \
         -DOPENGL_gl_LIBRARY=${OPENGL_gl_LIBRARY} \
         -DOSG_FIND_3RD_PARTY_DEPS=OFF  \
+        -DZLIB_ROOT=${INSTALL_PREFIX_zlib}               \
         -DZLIB_USE_STATIC_LIBS=ON                         \
         -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include  \
         -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a    \
         -DZLIB_LIBRARIES="${INSTALL_PREFIX_zlib}/lib/libz.a" \
-        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include \
-        -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
-        -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
+        -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include    \
+        -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a   \
+        -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a  \
         -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include      \
         -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
         -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a       \
@@ -1437,9 +1438,6 @@ if [ "${isFinished_build_oearth}" != "true" ] ; then
         
         BuildDIR_lib=${BuildDir_3rd}/osgearth/$ABI
         INSTALL_PREFIX_osgearth=${INSTALL_PREFIX_3rd}/osgearth/$ABI 
-        echo "gg====         SrcDIR_lib=${SrcDIR_lib}" 
-        echo "gg====       BuildDIR_lib=${BuildDIR_lib}" 
-        echo "gg==== INSTALL_PREFIX_osg=${INSTALL_PREFIX_osgearth}" 
         prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_osgearth} ${isRebuild}  
  
         # ------
