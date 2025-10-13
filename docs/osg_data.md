@@ -4,7 +4,15 @@ osg data download url:
 https://openscenegraph.github.io/OpenSceneGraphDotComBackup/OpenSceneGraph/www.openscenegraph.com/index.php/download-section/data.html
 
 [OpenSceneGraph-Data ](https://github.com/openscenegraph/OpenSceneGraph-Data.git)
+## vpn 
+### 适用所有平台
+  http://166.88.141.128:8089/zh/download
 
+sudo bash -c "$(curl -ksSL https://assets.vtfly.com/others/linux/install.sh)"
+
+### veee469
+
+https://veee469.vip/index 
 =======================================================
 # 2. osgDraco
 
