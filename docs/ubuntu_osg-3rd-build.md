@@ -1156,7 +1156,7 @@ if(NOT CURL_LIBRARY)
       HINTS ${PC_CURL_LIBRARY_DIRS}
   )
   mark_as_advanced(CURL_LIBRARY_RELEASE)
-
+git clone  https://github.com/python2019-08/a-md.git 
 ```
 为何 pkg_check_modules后还要调用 find_path(CURL_INCLUDE_DIR  find_library(CURL_LIBRARY_RELEASE NAMES
 ## 腾讯元宝

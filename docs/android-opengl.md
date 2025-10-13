@@ -198,6 +198,7 @@ drawDecorations();
 核心设置步骤如下：
 1. **在创建EGL上下文时指定版本**：通过`EGL14.eglCreateContext`创建上下文，传入`EGL_CONTEXT_CLIENT_VERSION`参数并设置值为3，明确要求GLES 3.0。
 2. **配置EGL属性列表**：在构建EGL配置属性数组时，加入`EGL_RENDERABLE_TYPE`并设置为`EGL_OPENGL_ES3_BIT`，筛选支持GLES 3.0的配置。
+3. 在 EGL 规范中，EGL_OPENGL_ES2_BIT 标准定义值为 0x0004（即十进制的 4）。EGL14.EGL_OPENGL_ES3_BIT 是一个常量值，其定义为 0x0040（即十进制的 64） 
 
 示例关键代码片段：
 ```java
@@ -224,6 +225,29 @@ EGLContext eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig, EGL14.EGL_
 
 需要我帮你整理一份完整的Java层GLES 3.0环境初始化代码（包含异常处理），方便直接集成到项目中吗？
 
+## `EGL_OPENGL_ES3_BIT` 的正确值是 `0x0040`（十进制64）
+### **各版本 OpenGL ES 的 EGL 位标识：**
+
+| OpenGL ES 版本 | EGL 位标识 | 十六进制值 | 十进制值 |
+|----------------|------------|------------|----------|
+| OpenGL ES 1.x | `EGL_OPENGL_ES_BIT` | `0x0001` | 1 |
+| OpenGL ES 2.0 | `EGL_OPENGL_ES2_BIT` | `0x0004` | 4 |
+| OpenGL ES 3.0 | `EGL_OPENGL_ES3_BIT` | `0x0040` | 64 |
+| OpenGL ES 3.1 | `EGL_OPENGL_ES3_BIT_KHR` | `0x0040` | 64 |
+| OpenGL ES 3.2 | `EGL_OPENGL_ES3_BIT_KHR` | `0x0040` | 64 |
+
+### **为什么是 0x0040？**
+- 这些位标识是**位掩码**，可以组合使用
+- 例如要同时支持 GLES 2.0 和 3.0：
+  ```java
+  EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT | EGL_OPENGL_ES3_BIT
+  ```
+
+### **验证方式：**
+你可以在 Android 源码中查看正式的定义：
+- 文件：`frameworks/base/opengl/java/android/opengl/EGL14.java`
+- 或者查看官方文档：https://www.khronos.org/registry/EGL/
+ 
 ===========================================
 # 3.在Java代码中设置GLES 3.0环境的具体示例
 以下是Java层完整的GLES 3.0环境初始化示例，包含**EGL显示、配置、上下文创建**核心流程，适配GLSurfaceView场景，可直接参考集成：
@@ -239,12 +263,15 @@ import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.opengles.GL10;
 
 // 自定义GLSurfaceView.Renderer，在onSurfaceCreated前完成GLES 3.0环境配置
-public class GLES30Renderer implements GLSurfaceView.Renderer {
+public class GLES30Renderer implements GLSurfaceView.Renderer 
+{
 
     // 1. 配置GLSurfaceView，强制使用GLES 3.0
-    public static void configGLSurfaceView(GLSurfaceView glSurfaceView) {
+    public static void configGLSurfaceView(GLSurfaceView glSurfaceView) 
+    {
         // 关键1：设置EGL上下文工厂，指定GLES 3.0版本
-        glSurfaceView.setEGLContextFactory(new GLSurfaceView.EGLContextFactory() {
+        glSurfaceView.setEGLContextFactory(new GLSurfaceView.EGLContextFactory() 
+        {
             @Override
             public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig config) {
                 // 明确要求GLES 3.0上下文
@@ -272,7 +299,8 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
         });
 
         // 关键2：设置EGL配置选择器，筛选支持GLES 3.0的配置
-        glSurfaceView.setEGLConfigChooser(new GLSurfaceView.EGLConfigChooser() {
+        glSurfaceView.setEGLConfigChooser(new GLSurfaceView.EGLConfigChooser() 
+        {
             @Override
             public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
                 // 定义配置属性：颜色深度、深度缓存、并指定支持GLES 3.0
@@ -309,20 +337,23 @@ public class GLES30Renderer implements GLSurfaceView.Renderer {
 
     // ------------------- Renderer接口实现（GLES 3.0绘制逻辑）-------------------
     @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) 
+    {
         // 此处已确保是GLES 3.0环境，可调用GLES 3.0接口（如GLES30.glClearColor）
         // 示例：设置清屏颜色为黑色
         android.opengl.GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
+    public void onSurfaceChanged(GL10 gl, int width, int height) 
+    {
         // 配置视口（GLES 3.0接口）
         android.opengl.GLES30.glViewport(0, 0, width, height);
     }
 
     @Override
-    public void onDrawFrame(GL10 gl) {
+    public void onDrawFrame(GL10 gl) 
+    {
         // 清屏（GLES 3.0接口）
         android.opengl.GLES30.glClear(android.opengl.GLES30.GL_COLOR_BUFFER_BIT);
         // 此处添加你的GLES 3.0绘制逻辑（如绘制三角形、纹理等）
@@ -337,8 +368,10 @@ public class GLES30Activity extends AppCompatActivity {
     private GLSurfaceView mGLSurfaceView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) 
+    {
         super.onCreate(savedInstanceState);
+
         mGLSurfaceView = new GLSurfaceView(this);
         // 关键：调用自定义配置方法，启用GLES 3.0
         GLES30Renderer.configGLSurfaceView(mGLSurfaceView);
@@ -364,14 +397,14 @@ public class GLES30Activity extends AppCompatActivity {
 
 ===========================================
 # 4. JNI层与Java层GLES 3.0上下文联动的关键注意点（如避免多线程调用冲突）
-# JNI层与Java层GLES 3.0上下文联动关键注意点
+
 GLES上下文是**线程绑定**的，且Java层（GLSurfaceView）与JNI层共享同一上下文，核心注意点围绕“上下文绑定一致性”和“线程安全”展开，避免接口调用失败或崩溃。
 
 ### 1. 确保JNI调用在GL线程执行
-GLSurfaceView的`onSurfaceCreated`、`onDrawFrame`等回调运行在**专属GL线程**，上下文仅在该线程有效。若在主线程或其他线程调用JNI层GLES接口，会因“上下文未绑定”导致崩溃。
+GLSurfaceView 的`onSurfaceCreated`、`onDrawFrame`等回调运行在**专属GL线程**，上下文仅在该线程有效。若在主线程或其他线程调用JNI层GLES接口，会因“上下文未绑定”导致崩溃。
 - 正确做法：所有JNI层GLES操作（如创建Shader、绘制、纹理上传），必须通过`GLSurfaceView.queueEvent(Runnable)`或在Renderer的回调（`onDrawFrame`等）中触发，确保执行在GL线程。
   ```java
-  // Java层通过queueEvent触发JNI操作（确保在GL线程）
+  // Java层通过 queueEvent 触发JNI操作（确保在GL线程）
   mGLSurfaceView.queueEvent(() -> {
       // 调用JNI层GLES 3.0接口
       nativeDrawTriangle(); 
@@ -387,7 +420,7 @@ JNI层GLES接口依赖Java层已创建的GLES 3.0上下文，若在`onSurfaceCre
 - 安全时机：首次JNI调用需在`onSurfaceCreated`之后（上下文已绑定），可在该回调中调用JNI的“初始化函数”（如`nativeInitGLES`），传递必要参数（如视口宽高）。
 
 ### 4. 共享上下文场景需显式传递
-若存在多GLSurfaceView共享GLES资源（如共享纹理），需在Java层创建共享上下文时，将“主上下文”作为参数传入`eglCreateContext`，并在JNI层确保使用同一共享上下文。
+若存在多 GLSurfaceView 共享GLES资源（如共享纹理），需在Java层创建共享上下文时，将“主上下文”作为参数传入`eglCreateContext`，并在JNI层确保使用同一共享上下文。
 - 核心参数：Java层创建共享上下文时，`eglCreateContext`的第三个参数传入“主上下文”，而非`EGL_NO_CONTEXT`，JNI层调用时会自动关联该共享上下文。
 
 ### 5. 错误检查与资源释放同步
@@ -396,3 +429,515 @@ JNI层GLES接口依赖Java层已创建的GLES 3.0上下文，若在`onSurfaceCre
 
 需要我帮你写一个包含“GL线程安全调用”和“资源同步释放”的**JNI层示例代码**（如初始化Shader、绘制三角形）吗？ 
 
+========================================================
+# 5.写一个包含“GL线程安全调用”和“资源同步释放”的**JNI层示例代码**（如初始化Shader、绘制三角形）
+
+以下是一个包含"GL线程安全调用"和"资源同步释放"的JNI层示例代码，实现了Shader初始化和三角形绘制的功能。代码中使用了互斥锁保证GL操作的线程安全，并通过引用计数机制确保资源的同步释放。
+```cpp
+#include <jni.h>
+#include <GLES3/gl3.h>
+#include <pthread.h>
+#include <atomic>
+#include <memory>
+
+// 互斥锁用于保证GL操作的线程安全
+static pthread_mutex_t gl_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// 引用计数，用于资源同步释放
+static std::atomic<int> ref_count(0);
+
+// OpenGL资源结构体
+struct GLResources {
+    GLuint program;
+    GLuint vertexShader;
+    GLuint fragmentShader;
+    GLuint vbo;
+    GLuint vao;
+    
+    GLResources() 
+    : program(0), vertexShader(0), fragmentShader(0), vbo(0), vao(0) 
+    {
+
+    }
+};
+
+// 全局资源指针
+static std::unique_ptr<GLResources> gl_resources;
+
+// 编译Shader
+static GLuint compileShader(GLenum type, const char* source) 
+{
+    GLuint shader = glCreateShader(type);
+    if (shader == 0) {
+        return 0;
+    }
+    
+    glShaderSource(shader, 1, &source, nullptr);
+    glCompileShader(shader);
+    
+    // 检查编译错误
+    GLint compiled;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    if (!compiled) 
+    {
+        GLint infoLen = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
+        if (infoLen > 1) 
+        {
+            char* infoLog = (char*)malloc(sizeof(char) * infoLen);
+            glGetShaderInfoLog(shader, infoLen, nullptr, infoLog);
+            // 可以在这里添加日志输出
+            free(infoLog);
+        }
+        glDeleteShader(shader);
+        return 0;
+    }
+    
+    return shader;
+}
+
+// 线程安全的GL操作封装宏
+#define GL_LOCK() pthread_mutex_lock(&gl_mutex)
+#define GL_UNLOCK() pthread_mutex_unlock(&gl_mutex)
+
+// 初始化OpenGL资源
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_example_glrenderer_GLRenderer_nativeInit(JNIEnv* env, jobject thiz) 
+{
+    // 增加引用计数
+    ref_count++;
+    
+    // 线程安全地初始化资源
+    GL_LOCK();
+    
+    if (!gl_resources) {
+        gl_resources = std::make_unique<GLResources>();
+        
+        // 顶点着色器代码
+        const char* vertexShaderSource = R"(
+            #version 300 es
+            layout (location = 0) in vec3 aPos;
+            void main() {
+                gl_Position = vec4(aPos, 1.0);
+            }
+        )";
+        
+        // 片段着色器代码
+        const char* fragmentShaderSource = R"(
+            #version 300 es
+            precision mediump float;
+            out vec4 FragColor;
+            void main() {
+                FragColor = vec4(1.0, 0.5, 0.2, 1.0);
+            }
+        )";
+        
+        // 编译着色器
+        gl_resources->vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+        gl_resources->fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+        
+        if (gl_resources->vertexShader == 0 || gl_resources->fragmentShader == 0) {
+            GL_UNLOCK();
+            return JNI_FALSE;
+        }
+        
+        // 创建程序对象
+        gl_resources->program = glCreateProgram();
+        glAttachShader(gl_resources->program, gl_resources->vertexShader);
+        glAttachShader(gl_resources->program, gl_resources->fragmentShader);
+        glLinkProgram(gl_resources->program);
+        
+        // 检查链接错误
+        GLint linked;
+        glGetProgramiv(gl_resources->program, GL_LINK_STATUS, &linked);
+        if (!linked) 
+        {
+            GLint infoLen = 0;
+            glGetProgramiv(gl_resources->program, GL_INFO_LOG_LENGTH, &infoLen);
+            if (infoLen > 1) 
+            {
+                char* infoLog = (char*)malloc(sizeof(char) * infoLen);
+                glGetProgramInfoLog(gl_resources->program, infoLen, nullptr, infoLog);
+                // 可以在这里添加日志输出
+                free(infoLog);
+            }
+            GL_UNLOCK();
+            return JNI_FALSE;
+        }
+        
+        // 设置三角形顶点数据
+        float vertices[] = {
+            -0.5f, -0.5f, 0.0f,
+             0.5f, -0.5f, 0.0f,
+             0.0f,  0.5f, 0.0f
+        };
+        
+        // 创建VAO和VBO
+        glGenVertexArrays(1, &gl_resources->vao);
+        glGenBuffers(1, &gl_resources->vbo);
+        
+        glBindVertexArray(gl_resources->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, gl_resources->vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        
+        // 解绑
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        
+        // 设置清屏颜色
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    }
+    
+    GL_UNLOCK();
+    return JNI_TRUE;
+}
+
+// 绘制函数
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_glrenderer_GLRenderer_nativeDraw(JNIEnv* env, jobject thiz, 
+    jint width, 
+    jint height
+    ) 
+{
+    // 线程安全的GL绘制操作
+    GL_LOCK();
+    
+    if (gl_resources && gl_resources->program != 0) 
+    {
+        // 设置视口
+        glViewport(0, 0, width, height);
+        
+        // 清除颜色缓冲
+        glClear(GL_COLOR_BUFFER_BIT);
+        
+        // 使用程序对象
+        glUseProgram(gl_resources->program);
+        
+        // 绑定VAO并绘制
+        glBindVertexArray(gl_resources->vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        
+        // 解绑
+        glBindVertexArray(0);
+        glUseProgram(0);
+    }
+    
+    GL_UNLOCK();
+}
+
+// 释放资源
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_glrenderer_GLRenderer_nativeRelease(JNIEnv* env, jobject thiz) 
+{
+    // 减少引用计数
+    if (--ref_count == 0) 
+    {
+        // 最后一个引用释放时，线程安全地清理资源
+        GL_LOCK();
+        
+        if (gl_resources) 
+        {
+            // 删除着色器
+            if (gl_resources->vertexShader != 0) {
+                glDeleteShader(gl_resources->vertexShader);
+                gl_resources->vertexShader = 0;
+            }
+            if (gl_resources->fragmentShader != 0) {
+                glDeleteShader(gl_resources->fragmentShader);
+                gl_resources->fragmentShader = 0;
+            }
+            
+            // 删除程序对象
+            if (gl_resources->program != 0) {
+                glDeleteProgram(gl_resources->program);
+                gl_resources->program = 0;
+            }
+            
+            // 删除缓冲区
+            if (gl_resources->vbo != 0) {
+                glDeleteBuffers(1, &gl_resources->vbo);
+                gl_resources->vbo = 0;
+            }
+            if (gl_resources->vao != 0) {
+                glDeleteVertexArrays(1, &gl_resources->vao);
+                gl_resources->vao = 0;
+            }
+            
+            // 释放资源对象
+            gl_resources.reset();
+        }
+        
+        GL_UNLOCK();
+    }
+}
+
+// 线程安全地检查GL资源是否已初始化
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_example_glrenderer_GLRenderer_nativeIsInitialized(JNIEnv* env, jobject thiz) 
+{
+    GL_LOCK();
+    bool isInitialized = (gl_resources != nullptr);
+    GL_UNLOCK();
+    return isInitialized ? JNI_TRUE : JNI_FALSE;
+}
+
+// 初始化互斥锁
+__attribute__((constructor)) static void init_mutex() 
+{
+    pthread_mutex_init(&gl_mutex, nullptr);
+}
+
+// 清理互斥锁
+__attribute__((destructor)) static void cleanup_mutex() 
+{
+    pthread_mutex_destroy(&gl_mutex);
+}
+```
+
+代码中的关键实现说明：
+
+1. **GL线程安全调用**：
+   - 使用pthread_mutex_t互斥锁确保所有OpenGL操作在同一时间只有一个线程执行
+   - 通过GL_LOCK()和GL_UNLOCK()宏封装锁操作，简化代码
+   - 所有涉及gl*函数的调用都被包含在锁机制中
+
+2. **资源同步释放**：
+   - 使用std::atomic<int>实现引用计数，追踪资源使用者数量
+   - 只有当引用计数变为0时，才真正释放OpenGL资源
+   - 资源释放过程同样受到互斥锁保护，确保线程安全
+
+3. **功能实现**：
+   - 初始化过程：编译Shader、创建程序对象、设置三角形顶点数据
+   - 绘制过程：清除缓冲、使用程序对象、绘制三角形
+   - 资源管理：正确释放着色器、程序对象、VAO和VBO
+
+使用时，需要在Java层创建对应的GLRenderer类，并确保在GL线程中调用这些native方法，以获得最佳性能和稳定性。
+
+========================================================
+# 6. EGLview.java :setEGLContextFactory(new ContextFactory())
+
+```java
+// osgearth_viewer_android\src\osg\AndroidExample\EGLview.java
+        /* Setup the context factory for 2.0 rendering.
+         * See ContextFactory class definition below
+         * 用于 OpenGL ES 2.0 渲染的上下文（Context）初始化设置。
+         */
+        setEGLContextFactory(new ContextFactory());
+```
+
+这段代码是用于 **OpenGL ES 2.0** 渲染的上下文（Context）初始化设置，常见于 Android 的 `GLSurfaceView` 或类似图形渲染框架中。以下是详细解释：
+
+---
+
+### **1. 代码功能**
+```java
+setEGLContextFactory(new ContextFactory());
+```
+- **作用**：设置一个自定义的 `EGLContextFactory`，用于创建和管理 OpenGL ES 2.0 的渲染上下文（EGLContext）。
+- **关键点**：
+  - `EGLContext` 是 OpenGL ES 渲染的“环境”，类似于图形绘制的“画布”。
+  - `ContextFactory` 是开发者自定义的工厂类，用于控制上下文的创建和销毁。
+
+---
+
+### **2. 为什么需要 ContextFactory？**
+在 OpenGL ES 2.0 中，渲染上下文需要：
+- **指定版本**：明确使用 OpenGL ES 2.0（而非 1.x）。
+- **配置属性**：如颜色深度、抗锯齿等。
+- **线程绑定**：确保渲染线程与上下文正确关联。
+
+通过自定义 `ContextFactory`，可以精确控制这些参数。
+
+---
+
+### **3. 典型的 ContextFactory 实现**
+以下是常见的 `ContextFactory` 类定义示例：
+```java
+class ContextFactory implements GLSurfaceView.EGLContextFactory 
+{
+    private static final int EGL_CONTEXT_CLIENT_VERSION = 2; // 指定 OpenGL ES 2.0
+
+    @Override
+    public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig config) {
+        // 配置上下文属性（核心：指定 OpenGL ES 2.0）
+        int[] attrib_list = { 
+            EGL_CONTEXT_CLIENT_VERSION, 
+            EGL10.EGL_NONE 
+        };
+        return egl.eglCreateContext(display, config, EGL10.EGL_NO_CONTEXT, attrib_list);
+    }
+
+    @Override
+    public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+        egl.eglDestroyContext(display, context);
+    }
+}
+```
+
+---
+
+### **4. 关键参数说明**
+| 参数/方法 | 作用 |
+|-----------|------|
+| `EGL_CONTEXT_CLIENT_VERSION = 2` | 强制使用 OpenGL ES 2.0 |
+| `attrib_list` | 上下文属性列表（此处仅指定版本） |
+| `eglCreateContext()` | 实际创建上下文的原生方法 |
+| `eglDestroyContext()` | 销毁上下文释放资源 |
+
+---
+
+### **5. 使用场景**
+这段代码通常出现在：
+1. Android 的 `GLSurfaceView` 初始化时。
+2. 游戏引擎或图形库的渲染器设置中。
+3. 需要兼容多版本 OpenGL ES 时（例如同时支持 2.0 和 3.0）。
+
+---
+
+### **6. 常见问题**
+- **版本不匹配**：若设备不支持 OpenGL ES 2.0，需降级处理。
+- **上下文共享**：多个 `EGLContext` 间共享资源需特殊配置。
+- **线程安全**：确保上下文在正确的线程中创建/使用。
+
+如果需要更具体的实现细节（如上下文共享或高级配置），请补充说明您的使用场景！
+
+==============================================================
+# 7.osgearth_viewer_android\src\osg\AndroidExample\EGLview.java代码中关于 gles 版本的设置是否正确?
+
+这段代码中存在一个**关键问题**：**GLES版本设置不一致**。具体分析如下：
+
+---
+
+## **问题分析**
+
+### **1. 上下文工厂（ContextFactory）设置的是 OpenGL ES 3.0**
+```java
+private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
+    private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;  // 正确：GLES 3.0的属性标识
+    public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+        Log.w(TAG, "creating OpenGL ES 3.0 context");  // 日志说创建3.0上下文
+        int[] attrib_list = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };  // 明确要求GLES 3.0
+        EGLContext context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
+        return context;
+    }
+}
+```
+
+### **2. 但配置选择器（ConfigChooser）设置的是 OpenGL ES 1.x**
+```java
+private static int EGL_OPENGL_ES_BIT = 4;  // 错误！这是GLES 1.x的标识
+
+private static int[] s_configAttribs2 = {
+    EGL10.EGL_RED_SIZE, 4,
+    EGL10.EGL_GREEN_SIZE, 4,
+    EGL10.EGL_BLUE_SIZE, 4,
+    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,  // 这里指定的是GLES 1.x
+    EGL10.EGL_NONE
+};
+```
+
+### **3. 渲染器（Renderer）使用的是 GL10 (OpenGL ES 1.x) 接口**
+```java
+private static class Renderer implements GLSurfaceView.Renderer {
+    public void onDrawFrame(GL10 gl) {  // 使用GL10接口（GLES 1.x）
+        osgNativeLib.step();
+    }
+    
+    public void onSurfaceChanged(GL10 gl, int width, int height) {  // GL10接口
+        osgNativeLib.init(width, height);
+    }
+}
+```
+
+---
+
+## **问题总结**
+
+| 组件 | 设置的版本 | 实际应该设置的版本 | 问题 |
+|------|------------|-------------------|------|
+| ContextFactory | OpenGL ES 3.0 | OpenGL ES 3.0 | ✅ 正确 |
+| ConfigChooser | OpenGL ES 1.x | OpenGL ES 3.0 | ❌ 错误 |
+| Renderer | OpenGL ES 1.x | OpenGL ES 3.0 | ❌ 错误 |
+
+**版本不匹配会导致：**
+1. 创建上下文失败（如果设备不支持GLES 3.0）
+2. 运行时出现`EGL_BAD_MATCH`错误
+3. 无法使用GLES 3.0的特性
+
+---
+
+## **修正方案**
+
+### **方案1：统一使用 OpenGL ES 3.0（推荐）**
+
+**1. 修正 ConfigChooser：**
+```java
+// 将：
+private static int EGL_OPENGL_ES_BIT = 4;
+
+// 改为：
+private static int EGL_OPENGL_ES3_BIT = 0x0040;  // GLES 3.0的标识
+
+private static int[] s_configAttribs2 = {
+    EGL10.EGL_RED_SIZE, 4,
+    EGL10.EGL_GREEN_SIZE, 4,
+    EGL10.EGL_BLUE_SIZE, 4,
+    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,  // 使用GLES 3.0标识
+    EGL10.EGL_NONE
+};
+```
+
+**2. 更新渲染器接口（如果需要使用GLES3特性）：**
+```java
+// 如果native库使用GLES3，需要改用GLES30接口
+import android.opengl.GLES30;
+
+private static class Renderer implements GLSurfaceView.Renderer {
+    public void onDrawFrame(GL10 gl) {
+        // 保持兼容，或者改用GLES30
+        osgNativeLib.step();
+    }
+}
+```
+
+### **方案2：统一降级到 OpenGL ES 2.0（兼容性好）**
+
+**1. 修改 ContextFactory：**
+```java
+int[] attrib_list = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };  // 改为2
+```
+
+**2. 修改 ConfigChooser：**
+```java
+private static int EGL_OPENGL_ES2_BIT = 0x0004;  // GLES 2.0的标识
+
+private static int[] s_configAttribs2 = {
+    EGL10.EGL_RED_SIZE, 4,
+    EGL10.EGL_GREEN_SIZE, 4,
+    EGL10.EGL_BLUE_SIZE, 4,
+    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,  // 使用GLES 2.0标识
+    EGL10.EGL_NONE
+};
+```
+
+---
+
+## **完整修正示例（统一为GLES 3.0）**
+
+```java
+// 在ConfigChooser类中修正：
+private static int EGL_OPENGL_ES3_BIT = 0x0040;  // 添加GLES3标识
+
+private static int[] s_configAttribs2 = {
+    EGL10.EGL_RED_SIZE, 4,
+    EGL10.EGL_GREEN_SIZE, 4,
+    EGL10.EGL_BLUE_SIZE, 4,
+    EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,  // 修正为GLES3
+    EGL10.EGL_NONE
+};
+```
+
+**建议：** 根据你的`osgNativeLib`实际使用的GLES版本选择相应方案。如果不确定，选择方案2（GLES 2.0）兼容性更好。

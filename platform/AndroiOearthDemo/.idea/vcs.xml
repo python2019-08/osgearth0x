@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/../.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/abseil-cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/curl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/freetype" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/gdal" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/geos" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/libjpeg-turbo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/libpng" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/libpsl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/libtiff" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/libzip" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/openssl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/osg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/proj" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/protobuf" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/xz" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/zlib" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/zstd" vcs="Git" />
+  </component>
+</project>

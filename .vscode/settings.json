@@ -484,7 +484,8 @@
         "imagelayer": "cpp",
         "cullvisitor": "cpp",
         "annotationdata": "cpp",
-        "viewerbase": "cpp"
+        "viewerbase": "cpp",
+        "options": "cpp"
     }
 }
 

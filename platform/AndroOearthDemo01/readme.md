@@ -1,0 +1,1 @@
+This project is created by wizard "Phone and Tablet --> Game Activity(C++)"
