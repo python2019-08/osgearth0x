@@ -102,6 +102,7 @@ else()
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_bsp.a
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_bvh.a
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_cfg.a
+        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_curl.a
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_dds.a
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osg.a
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osganimation.a
@@ -182,6 +183,156 @@ else()
   
 endif()
 
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/libjpeg-turbo/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "libjpeg--include=${Libs3rd_RootDIR}/libjpeg-turbo/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/libjpeg-turbo/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/libjpeg-turbo/${ANDROID_API_NAME}/lib/libjpeg.a
+    )
+endif()
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/libpng/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "libpng--include=${Libs3rd_RootDIR}/libpng/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/libpng/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/libpng/${ANDROID_API_NAME}/lib/libpng.a
+    )
+endif()
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/libtiff/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "libtiff--include=${Libs3rd_RootDIR}/libtiff/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/libtiff/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/libtiff/${ANDROID_API_NAME}/lib/libtiff.a
+    )
+endif()
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/curl/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "curl--include=${Libs3rd_RootDIR}/curl/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/curl/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/curl/${ANDROID_API_NAME}/lib/libcurl-d.a
+    )
+endif()
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/freetype/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "freetype--include=${Libs3rd_RootDIR}/freetype/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/freetype/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/freetype/${ANDROID_API_NAME}/lib/libfreetyped.a
+    )
+endif()
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/gdal/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "gdal--include=${Libs3rd_RootDIR}/gdal/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/gdal/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/gdal/${ANDROID_API_NAME}/lib/libgdal.a
+    )
+endif()
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "geos--include=${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/lib/libgeos_c.a
+        ${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/lib/libgeos.a
+    )
+endif()
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "openssl--include=${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/lib/libssl.a
+        ${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/lib/libcrypto.a
+    )
+endif()
+
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/proj/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "proj--include=${Libs3rd_RootDIR}/proj/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/proj/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS 
+        ${Libs3rd_RootDIR}/proj/${ANDROID_API_NAME}/lib/libproj.a 
+    )
+endif()
+
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "protobuf--include=${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS  
+        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libprotobuf-lited.a  
+        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libprotobufd.a  
+        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libupbd.a  
+        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libutf8_range.a  
+        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libutf8_validity.a
+    )
+endif()
+ 
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/sqlite/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "sqlite--include=${Libs3rd_RootDIR}/sqlite/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/sqlite/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS   
+        ${Libs3rd_RootDIR}/sqlite/${ANDROID_API_NAME}/lib/libsqlite3.a   
+    )
+endif()
+
+if( NOT EXISTS "${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "zlib--include=${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS   
+        ${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/lib/libz.a   
+    )
+endif()
+
 # ------OEarthJni_SRC_FILES 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -210,6 +361,12 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         ${OEarthJni_SRC_FILES} )
 
+target_compile_definitions(${CMAKE_PROJECT_NAME}
+    PRIVATE
+        -DOSG_LIBRARY_STATIC=1, 
+        -DOSGEARTH_LIBRARY_STATIC=1
+        )
+
 target_include_directories(${CMAKE_PROJECT_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -225,4 +382,11 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
         ${Libs3rd_LIBS}
         android
-        log)
+        log
+        GLESv3  
+        # ​​NDK r18+（推荐）​​：Google 移除了 gnustl（GNU STL），仅保留 libc++（LLVM 的 C++ 标准库）。​
+        #                  ​无需再链接 gnustl_static或 supc++​​。
+        #                  自动链接 libc++，无需手动指定
+        # ​​NDK r17 及更早​​：若使用 GNU STL，需显式链接 gnustl_static和 supc++。
+        dl         
+        )
