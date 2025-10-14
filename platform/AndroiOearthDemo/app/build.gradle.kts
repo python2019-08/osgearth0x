@@ -20,8 +20,8 @@ android {
                 val libPath = project.file("../../../build_by_sh/android/install/3rd/").absolutePath // 动态获取路径
                 arguments += listOf(
                     "-DLibs3rd_RootDIR=$libPath",      // 动态传递路径
-                    "-DANDROID_STL=c++_shared" // 其他CMake参数
- 
+                    "-DANDROID_STL=c++_shared", // 其他CMake参数
+                    "-DANDROID_PAGE_SIZE_ALIGNMENT=16384"
                 )
             }
         }

@@ -978,3 +978,95 @@ target_link_libraries(native-lib PRIVATE /path/to/libfoo.a)
    - **解决方案**：统一所有模块的 STL 选择，或使用 `NDK_STL=c++_shared` 动态链接。
 
 **结论**：现代 NDK 开发无需手动处理 `gnustl_static` 或 `supc++`，优先使用 `libc++`。遗留项目需检查 NDK 版本和 STL 配置一致性。
+
+====================================================
+# 11.Android 15+ 设备上​​.so动态库 对齐 16KB 页大小​ 
+
+## Q
+
+android ndk 应用的apk  试图安装在emulator上并调试，但是崩溃了:
+```
+APK app-debug.apk is not compatible with 16 KB devices. Some libraries have LOAD segments not aligned at 16 KB boundaries:
+lib/x86_64/libandroiOearthDemo01.so
+Starting November 1st, 2025, all new apps and updates to existing apps submitted to Google Play and targeting Android 15+ devices must support 16 KB page sizes. For more information about compatibility with 16 KB devices, visit developer.android.com/16kb-page-size.
+```
+
+## A-YuanbaoAI
+
+你的 APK 在模拟器上崩溃，原因是 **`.so` 动态库未正确对齐 16KB 页大小**，而 Android 15+ 设备（或某些模拟器）强制要求此对齐方式。以下是解决方案：
+
+---
+
+### **1. 问题原因**
+- **16KB 页大小设备**（如某些 ARM64 或 x86_64 设备）要求所有 `.so` 文件的 `LOAD` 段必须 **16KB 对齐**。
+- 你的 `lib/x86_64/libandroiOearthDemo01.so` 未满足此要求，导致安装失败或崩溃。
+
+---
+
+### **2. 解决方案**
+#### **(1) 更新 NDK 和构建工具**
+确保使用 **NDK r25+**（推荐最新稳定版），并在 `app/build.gradle` 中配置：
+```groovy
+android {
+    ndkVersion "25.1.8937393" // 使用最新 NDK
+    externalNativeBuild {
+        cmake {
+            // 启用 16KB 页对齐
+            arguments "-DANDROID_PAGE_SIZE_ALIGNMENT=16384"
+        }
+    }
+}
+```
+
+#### **(2) 修改 CMake 配置**
+在 `CMakeLists.txt` 中强制对齐：
+```cmake
+# 对所有共享库启用 16KB 对齐
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384")
+```
+
+#### **(3) 手动验证 `.so` 文件**
+编译后检查库文件是否对齐：
+```bash
+# 检查 LOAD 段对齐（Linux/Mac）
+objdump -p yourlib.so | grep -A1 LOAD
+```
+输出中的 `align` 值应为 `0x4000`（16KB）：
+```
+LOAD off    0x0000000000000000 vaddr 0x0000000000000000 align 2**14
+```
+
+---
+
+### **3. 临时绕过方案（不推荐）**
+如果无法立即修改代码，可临时禁用 16KB 检查（仅限调试）：
+```bash
+# 在设备上执行（需 root）
+adb shell setprop wrap.com.your.package 'LD_SHIM_LIBS=1'
+```
+但此方法 **不适用于正式发布**。
+
+---
+
+### **4. 其他注意事项**
+- **模拟器配置**：确保模拟器使用 **API 34+（Android 15）** 并启用 16KB 页大小。
+- **依赖库检查**：如果使用第三方预编译 `.so`，要求提供者更新库。
+- **Play Store 合规性**：2025年11月后，所有新应用必须支持 16KB 设备。
+
+---
+
+### **5. 完整修复流程**
+1. 升级 NDK 和 CMake。
+2. 修改 `CMakeLists.txt` 和 `build.gradle`。
+3. 清理并重新编译：
+   ```bash
+   ./gradlew clean assembleDebug
+   ```
+4. 使用 `objdump` 验证 `.so` 文件。
+5. 重新部署到模拟器测试。
+
+---
+
+**参考链接**：  
+https://developer.android.com/16kb-page-size  
+https://github.com/android/ndk/issues/1736
