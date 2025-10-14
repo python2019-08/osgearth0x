@@ -11,3 +11,8 @@ https://gitee.com/xiaoyan159/osgearth-collect
 
 https://gitee.com/xiaoyan159/osgearth-collect/tree/master/OSGEarthAndroidDemo
 
+======================================
+# 2. osgEarth入门38 OSG实现简单闪电效果
+https://zhuanlan.zhihu.com/p/704892449
+
+https://www.zhihu.com/people/wang-feng-dev/posts

@@ -485,7 +485,8 @@
         "cullvisitor": "cpp",
         "annotationdata": "cpp",
         "viewerbase": "cpp",
-        "options": "cpp"
+        "options": "cpp",
+        "elevationtextureutils": "cpp"
     }
 }
 

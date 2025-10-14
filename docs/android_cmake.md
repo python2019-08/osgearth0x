@@ -938,3 +938,43 @@ target_link_libraries(native-lib PRIVATE /path/to/libfoo.a)
 如果仍有问题，请提供以下信息进一步分析：  
 - `libfoo.a` 和 `libnative-lib.so` 的符号表输出（`objdump -g`）。  
 - Android Studio 的调试日志（`View > Tool Windows > LLDB`）。
+
+=================================================================
+# 10.android ndk so 链接时，必须链接 gnustl_static 、 supc++吗
+
+在 Android NDK 开发中，`gnustl_static` 和 `supc++` 的链接需求取决于你使用的 NDK 版本和 C++ 标准库的选择。以下是关键点说明：
+
+### 1. **NDK 版本的影响**
+   - **NDK r18+（推荐）**：Google 移除了 `gnustl`（GNU STL），仅保留 `libc++`（LLVM 的 C++ 标准库）。**无需再链接 `gnustl_static` 或 `supc++`**。
+   - **NDK r17 及更早**：若使用 GNU STL，需显式链接 `gnustl_static` 和 `supc++`。
+
+### 2. **现代 NDK 的推荐配置**
+   ```cmake
+   # CMakeLists.txt 示例（NDK r18+）
+   cmake_minimum_required(VERSION 3.4.1)
+   add_library(native-lib SHARED native.cpp)
+   target_link_libraries(native-lib 
+       android 
+       log
+       # 自动链接 libc++，无需手动指定
+   )
+   ```
+   - **libc++** 是默认且唯一选项，自动处理所有依赖（包括异常支持 `supc++` 已整合）。
+
+### 3. **历史版本的特殊情况**
+   - **NDK r16 及更早**：若必须使用 GNU STL，需在 `Android.mk` 中添加：
+     ```makefile
+     LOCAL_STATIC_LIBRARIES += gnustl_static
+     LOCAL_CPP_FEATURES += exceptions rtti  # 如需异常/RTTI
+     ```
+   - **supc++** 通常由 `gnustl_static` 自动引入，无需单独声明。
+
+### 4. **迁移建议**
+   - **升级到 NDK r18+**：避免 GNU STL 的兼容性问题。
+   - **检查依赖库**：确保第三方库也使用 `libc++`（可通过 `nm -D libfoo.so | grep __cxa` 验证符号）。
+
+### 5. **常见问题**
+   - **链接错误**：若遇到 `undefined reference to __cxa_throw` 等，通常是因混合了不同 STL（如主工程用 `libc++` 但依赖库用 `gnustl`）。
+   - **解决方案**：统一所有模块的 STL 选择，或使用 `NDK_STL=c++_shared` 动态链接。
+
+**结论**：现代 NDK 开发无需手动处理 `gnustl_static` 或 `supc++`，优先使用 `libc++`。遗留项目需检查 NDK 版本和 STL 配置一致性。

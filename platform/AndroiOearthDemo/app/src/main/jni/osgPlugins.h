@@ -9,8 +9,8 @@ USE_OSGPLUGIN(curl)
 //USE_OSGPLUGIN(tiff)
 USE_OSGPLUGIN(jpeg)
 USE_OSGPLUGIN(earth)
-USE_OSGPLUGIN(osgearth_tms)
-USE_OSGPLUGIN(osgearth_engine_mp)
+// USE_OSGPLUGIN(osgearth_tms) //abner??
+// USE_OSGPLUGIN(osgearth_engine_mp)//??
 USE_OSGPLUGIN(osgearth_engine_rex)
 
 USE_DOTOSGWRAPPER_LIBRARY(osg)

@@ -21,13 +21,15 @@ android {
                 arguments += listOf(
                     "-DLibs3rd_RootDIR=$libPath",      // 动态传递路径
                     "-DANDROID_STL=c++_shared" // 其他CMake参数
+ 
                 )
             }
         }
 
         ndk {
             // 指定要构建的 ABI（默认情况下，Gradle 会构建所有支持的 ABI）"armeabi-v7a", "x86", 
-            abiFilters += listOf("arm64-v8a", "x86_64")
+            // abiFilters += listOf("arm64-v8a", "x86_64")
+            abiFilters += listOf("x86_64")
         }        
     }
 
@@ -42,7 +44,7 @@ android {
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11       
     }
     externalNativeBuild {
         cmake {
