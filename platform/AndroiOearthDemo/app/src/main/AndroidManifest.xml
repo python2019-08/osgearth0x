@@ -10,6 +10,9 @@
     <uses-feature android:glEsVersion="0x00030000"/> <!-- OpenGL min requirements (2.0) -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.MANAGE_ETHERNET_NETWORKS" />
 
    <application
        android:allowBackup="true"

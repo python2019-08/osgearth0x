@@ -60,6 +60,13 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
         super.onCreate(icicle);
         setContentView(R.layout.ui_layout_gles);
 
+//        // 检查 Ethernet 服务是否可用
+//        boolean isEthernetOk = isEthernetSupported();
+//        if(!isEthernetOk){
+//            Log.d(TAG,"^-^::::::isEthernetOk==false");
+//        }
+        
+
         // get the gl view and attach touch listeners
         mView= (EGLview) findViewById(R.id.surfaceGLES);
         mView.setOnTouchListener(this);
@@ -67,6 +74,8 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
 
         uiCenterViewButton = (Button) findViewById(R.id.uiButtonCenter);
         uiCenterViewButton.setOnClickListener(uiListenerCenterView);
+
+        
     }
 
     @Override protected void onPause() {
@@ -323,5 +332,19 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
 
         return (float)(Math.sqrt(x * x + y * y));
     }
+
+//    // 检查 Ethernet 服务是否可用
+//    public boolean isEthernetSupported()
+//    {
+//        try {
+//            // 尝试通过反射获取ETHERNET_SERVICE常量
+//            Field field = Context.class.getField("ETHERNET_SERVICE");
+//            String ethernetService = (String) field.get(null);
+//            return getSystemService(ethernetService) != null;
+//        } catch (Exception e) {
+//            // 如果获取失败，说明设备不支持以太网服务
+//            return false;
+//        }
+//    }
 
 }
