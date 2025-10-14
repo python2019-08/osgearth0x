@@ -15,6 +15,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+
+# 对所有共享库启用 16KB 对齐
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384")
+
+
 # -------- CMAKE_ANDROID_ARCH_ABI
 # set(CMAKE_ANDROID_ARCH_ABI  "x86_64" CACHE STRING 
 #         "Value should only be one of arm64-v8a, x86_64, armeabi-v7a or x86")
