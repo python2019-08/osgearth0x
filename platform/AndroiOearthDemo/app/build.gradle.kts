@@ -21,7 +21,8 @@ android {
                 arguments += listOf(
                     "-DLibs3rd_RootDIR=$libPath",      // 动态传递路径
                     "-DANDROID_STL=c++_shared", // 其他CMake参数
-                    "-DANDROID_PAGE_SIZE_ALIGNMENT=16384"
+                    "-DANDROID_PAGE_SIZE_ALIGNMENT=16384",
+                    "-DCMAKE_BUILD_TYPE=Debug"
                 )
             }
         }
@@ -34,8 +35,11 @@ android {
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = false
+        debug {
+            isMinifyEnabled = false  // 关闭混淆
+            isDebuggable= true
+            isJniDebuggable=true    // 启用 NDK 调试
+            
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
