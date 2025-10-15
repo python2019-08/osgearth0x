@@ -1070,3 +1070,466 @@ adb shell setprop wrap.com.your.package 'LD_SHIM_LIBS=1'
 **参考链接**：  
 https://developer.android.com/16kb-page-size  
 https://github.com/android/ndk/issues/1736
+
+==============================================================
+# 12.android java+ndk的程序的如何调试
+
+调试 **Android Java + NDK** 程序需要结合 **Java 调试**（Android Studio）和 **Native 调试**（LLDB/GDB）。以下是详细步骤：
+
+---
+
+## **1. 基础环境准备**
+### **(1) 启用调试支持**
+在 `app/build.gradle` 中确保以下配置：
+```groovy
+android {
+    buildTypes {
+        debug {
+            isDebuggable true
+            isJniDebuggable true    // 启用 NDK 调试
+            minifyEnabled false  // 关闭混淆
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            arguments "-DCMAKE_BUILD_TYPE=Debug"  // 强制 Debug 模式
+        }
+    }
+}
+```
+
+### **(2) 检查 `AndroidManifest.xml`**
+确保已允许调试：
+```xml
+<application
+    android:debuggable="true">  <!-- 仅 debug 构建有效 -->
+```
+
+---
+
+## **2. Java 代码调试**
+### **(1) 使用 Android Studio 的 Java 调试器**
+1. 在 Java 代码中设置断点（点击行号左侧）。
+2. 点击 **Debug** 按钮（绿色虫子图标）运行应用。
+3. 在 **Debug 窗口** 查看变量、调用栈等。
+
+---
+
+## **3. NDK (C/C++) 代码调试**
+### **(1) 配置 LLDB 调试器**
+1. 在 Android Studio 中打开 **Run/Debug Configurations**。
+2. 选择你的 App 配置，勾选 **Debug native code**（自动启用 LLDB）。
+
+### **(2) 设置 Native 断点**
+1. 打开 `cpp` 文件，在行号左侧点击设置断点（需确保已同步 NDK 符号）。
+2. 以 **Debug 模式** 启动应用，LLDB 会在断点处暂停。
+
+### **(3) 手动附加 LLDB（可选）**
+如果自动调试失败，手动附加：
+```bash
+# 查看进程 ID
+adb shell ps -A | grep your.package.name
+
+# 启动 LLDB 并附加
+adb shell lldb
+(lldb) attach --pid <PID>
+(lldb) continue
+```
+
+---
+
+## **4. 日志输出**
+### **(1) Java 日志**
+```java
+Log.d("TAG", "Debug message");
+```
+在 **Logcat** 中过滤 `TAG`。
+
+### **(2) NDK 日志**
+```cpp
+#include <android/log.h>
+__android_log_print(ANDROID_LOG_DEBUG, "NDK_TAG", "Debug: %d", value);
+```
+在 `CMakeLists.txt` 中链接日志库：
+```cmake
+target_link_libraries(your_lib log)
+```
+
+---
+
+## **5. 高级调试技巧**
+### **(1) 检查崩溃日志**
+- **Java 崩溃**：查看 Logcat 的 `AndroidRuntime` 错误。
+- **Native 崩溃**：使用 `adb logcat` 或 **Android Studio 的 Native Crash 分析**。
+
+### **(2) 使用 `ndk-stack` 解析 Native 崩溃**
+```bash
+adb logcat | ndk-stack -sym ./app/build/intermediates/cmake/debug/obj/arm64-v8a
+```
+
+### **(3) 内存调试工具**
+- **AddressSanitizer (ASan)**：检测内存错误。
+  ```cmake
+  # 在 CMakeLists.txt 中启用
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+  ```
+
+### **(4) 性能分析**
+- **Simpleperf**：分析 Native 代码性能。
+  ```bash
+  adb shell simpleperf record -p <PID> --duration 10
+  adb pull /data/local/tmp/perf.data
+  simpleperf report
+  ```
+
+---
+
+## **6. 常见问题**
+### **(1) 断点不生效**
+- 确保编译的是 **Debug 版本**（非 Release）。
+- 检查 `CMakeLists.txt` 是否包含 `-g` 调试符号。
+
+### **(2) LLDB 连接失败**
+- 确认设备/模拟器支持 NDK 调试（API 21+）。
+- 重启 ADB：
+  ```bash
+  adb kill-server && adb start-server
+  ```
+
+### **(3) 符号文件缺失**
+- 确保 `.so` 文件包含调试信息（未剥离符号）：
+  ```bash
+  file app/build/intermediates/cmake/debug/obj/arm64-v8a/libnative.so
+  ```
+  输出应包含 **"with debug_info"**。
+
+---
+
+## **7. 参考链接**
+- https://developer.android.com/studio/debug
+- https://lldb.llvm.org/use/map.html
+- https://github.com/google/sanitizers/wiki/AddressSanitizer
+
+---
+
+**总结**：
+1. **Java 调试**：直接用 Android Studio 的调试器。
+2. **NDK 调试**：启用 `jniDebuggable`，使用 LLDB 设置断点。
+3. **日志**：结合 Java Logcat 和 NDK `__android_log_print`。
+4. **高级工具**：`ndk-stack`、ASan、Simpleperf 解决复杂问题。
+
+==============================================
+# 13.wait for debugger to attach
+
+在 Android NDK 调试时，如果遇到 **"wait for debugger to attach"** 的问题，通常是由于 **调试器未正确附加到 Native 进程** 或 **调试配置不正确**。以下是完整的解决方案：
+
+---
+
+## **1. 确保正确配置调试环境**
+### **(1) 启用 NDK 调试**
+在 `app/build.gradle` 中确认以下配置：
+```groovy
+android {
+    buildTypes {
+        debug {
+            debuggable true
+            jniDebuggable true  // 关键！启用 Native 调试
+            minifyEnabled false
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            arguments "-DCMAKE_BUILD_TYPE=Debug"  // 强制 Debug 编译
+        }
+    }
+}
+```
+
+### **(2) 检查 `AndroidManifest.xml`**
+确保调试标志已启用（仅 Debug 构建有效）：
+```xml
+<application android:debuggable="true">
+```
+
+---
+
+## **2. 强制等待调试器附加**
+### **(1) 在 Java 代码中调用**
+在 `MainActivity` 或 JNI 调用前添加：
+```java
+// 等待调试器附加（Java 层）
+android.os.Debug.waitForDebugger();
+Log.d("Debug", "Debugger attached!");
+```
+
+### **(2) 在 Native (C/C++) 代码中调用**
+```cpp
+#include <android/log.h>
+#include <unistd.h>
+#include <jni.h>
+
+void wait_for_debugger() {
+    volatile int debugger_attached = 0;
+    while (debugger_attached == 0) {
+        sleep(1); // 每秒检查一次
+        __android_log_print(ANDROID_LOG_DEBUG, "NDK", "Waiting for debugger...");
+    }
+}
+
+// 在 JNI_OnLoad 或关键代码前调用
+wait_for_debugger();
+```
+
+---
+
+## **3. 手动附加调试器**
+### **(1) 使用 Android Studio 自动附加**
+1. 点击 **Run > Edit Configurations**。
+2. 勾选 **Debug native code**（启用 LLDB）。
+3. 以 **Debug 模式** 运行应用。
+
+### **(2) 手动通过 LLDB 附加**
+如果自动附加失败：
+```bash
+# 查看进程 PID
+adb shell ps -A | grep your.package.name
+
+# 启动 LLDB 并附加
+adb shell lldb
+(lldb) attach --pid <PID>
+(lldb) continue  # 继续执行
+```
+
+---
+
+## **4. 检查调试符号**
+### **(1) 确认 `.so` 文件包含调试信息**
+```bash
+# 检查是否包含 debug_info
+file app/build/intermediates/cmake/debug/obj/arm64-v8a/libnative.so
+```
+输出应包含 **`with debug_info`**。
+
+### **(2) 如果符号缺失**
+在 `CMakeLists.txt` 中强制生成调试符号：
+```cmake
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
+```
+
+---
+
+## **5. 解决常见问题**
+### **(1) 断点未命中**
+- 确保编译的是 **Debug 版本**（非 Release）。
+- 清理并重新构建：
+  ```bash
+  ./gradlew clean assembleDebug
+  ```
+
+### **(2) 调试器超时**
+- 在 Android Studio 的 **LLDB 设置** 中增加超时时间：
+  ```
+  Run > Edit Configurations > Debugger > LLDB Startup Timeout (改为 30s)
+  ```
+
+### **(3) 设备兼容性**
+- 某些模拟器可能不支持 NDK 调试，改用 **真机** 或 **官方模拟器**（如 Pixel 5 + API 30）。
+
+---
+
+## **6. 高级调试技巧**
+### **(1) 使用 `ndk-gdb`（传统方式）**
+```bash
+# 进入项目目录
+cd /path/to/project
+
+# 启动 ndk-gdb
+ndk-gdb --start --verbose
+```
+
+### **(2) 打印 Native 堆栈**
+```cpp
+#include <unwind.h>
+#include <dlfcn.h>
+
+void print_stack() {
+    void* callstack[128];
+    int frames = backtrace(callstack, 128);
+    char** symbols = backtrace_symbols(callstack, frames);
+    for (int i = 0; i < frames; i++) {
+        __android_log_print(ANDROID_LOG_DEBUG, "NDK", "%s", symbols[i]);
+    }
+    free(symbols);
+}
+```
+
+---
+
+## **7. 参考链接**
+- https://developer.android.com/studio/debug
+- https://lldb.llvm.org/use/map.html
+- https://android.googlesource.com/platform/ndk/+/master/docs/NDK-GDB.md
+
+---
+
+**总结**：
+1. **配置**：确保 `jniDebuggable=true` 和 `CMAKE_BUILD_TYPE=Debug`。
+2. **等待调试器**：在代码中插入 `waitForDebugger()` 或 Native 循环等待。
+3. **附加调试器**：通过 Android Studio 或手动使用 LLDB。
+4. **验证符号**：检查 `.so` 文件是否包含调试信息。
+5. **问题排查**：优先使用真机，增加超时时间，清理重建项目。
+
+===================================================
+# 14.at com.google.android.gles_jni.EGLImpl._eglCreateContext(Native Method)
+
+```
+2025-10-15 00:59:15.875  6380-6423  EGLview                 com.example.androioearthdemo         W  creating OpenGL ES 3.0 context
+2025-10-15 00:59:15.882  6380-6423  AndroidRuntime          com.example.androioearthdemo         E  FATAL EXCEPTION: GLThread 43
+                                                                                                    Process: com.example.androioearthdemo, PID: 6380
+                                                                                                    java.lang.IllegalArgumentException
+                                                                                                    	at com.google.android.gles_jni.EGLImpl._eglCreateContext(Native Method)
+                                                                                                    	at com.google.android.gles_jni.EGLImpl.eglCreateContext(EGLImpl.java:63)
+                                                                                                    	at com.example.androioearthdemo.EGLview$ContextFactory.createContext(EGLview.java:91)
+                                                                                                    	at android.opengl.GLSurfaceView$EglHelper.start(GLSurfaceView.java:1060)
+                                                                                                    	at android.opengl.GLSurfaceView$GLThread.guardedRun(GLSurfaceView.java:1431)
+                                                                                                    	at android.opengl.GLSurfaceView$GLThread.run(GLSurfaceView.java:1272)
+```
+
+这个错误表明你的应用在尝试创建 **OpenGL ES 3.0 上下文** 时失败了，导致 `IllegalArgumentException`。以下是详细分析和解决方案：
+
+---
+
+## **1. 错误原因**
+- **设备/模拟器不支持 OpenGL ES 3.0**：部分低端设备或旧模拟器仅支持 OpenGL ES 2.0。
+- **EGL 配置错误**：传递给 `eglCreateContext` 的参数不合法（如不兼容的 `EGLConfig`）。
+- **线程问题**：OpenGL 上下文未在正确的线程创建。
+
+---
+
+## **2. 解决方案**
+
+### **(1) 检查设备支持的 OpenGL ES 版本**
+在代码中动态检查设备支持的最高版本：
+```java
+// 在 Activity 中调用
+ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+ConfigurationInfo info = am.getDeviceConfigurationInfo();
+int maxGlEsVersion = info.reqGlEsVersion; // 格式：0x30000 = 3.0
+Log.d("OpenGL", "Max supported version: " + Integer.toHexString(maxGlEsVersion));
+```
+如果返回值 `< 0x30000`，说明设备不支持 OpenGL ES 3.0。
+
+---
+
+### **(2) 降级到 OpenGL ES 2.0**
+如果设备不支持 ES 3.0，修改 `EGLview.java` 中的配置：
+```java
+// 修改 createContext 方法中的 EGL 配置
+EGLContext context = egl.eglCreateContext(
+    eglDisplay, 
+    eglConfig, 
+    EGL10.EGL_NO_CONTEXT, 
+    new int[] { 
+        EGL10.EGL_CONTEXT_CLIENT_VERSION, 2, // 改用 ES 2.0
+        EGL10.EGL_NONE 
+    }
+);
+```
+
+---
+
+### **(3) 验证 EGLConfig 的合法性**
+确保 `eglChooseConfig` 返回的 `EGLConfig` 有效：
+```java
+// 在创建上下文前检查 EGLConfig
+if (eglConfig == null) {
+    throw new RuntimeException("No valid EGLConfig found!");
+}
+```
+
+---
+
+### **(4) 更新模拟器或使用真机**
+- **模拟器问题**：旧版 Android 模拟器对 OpenGL ES 3.0 支持不完善。
+  - 改用 **最新版 Android Studio 模拟器**（如 Pixel 5 + API 34）。
+  - 在 AVD 设置中启用 **Hardware-GLES 3.0**：
+    ```xml
+    <hw.gpu.enabled>true</hw.gpu.enabled>
+    <hw.gpu.mode>host</hw.gpu.mode>  <!-- 或 "swiftshader" -->
+    ```
+- **真机测试**：优先在支持 OpenGL ES 3.0 的物理设备上调试。
+
+---
+
+### **(5) 检查线程和 EGL 初始化**
+确保 OpenGL 操作在 **GLThread** 中执行：
+```java
+// 在 GLSurfaceView 子类中设置正确的渲染模式
+setEGLContextClientVersion(3); // 或 2
+setRenderer(new YourRenderer());
+setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+```
+
+---
+
+## **3. 高级调试**
+### **(1) 打印 EGL 错误信息**
+在 `eglCreateContext` 失败后获取错误码：
+```java
+int error = egl.eglGetError();
+Log.e("EGL", "Error code: 0x" + Integer.toHexString(error));
+```
+常见错误：
+- `0x3000`（EGL_NOT_INITIALIZED）：EGL 未初始化。
+- `0x3005`（EGL_BAD_CONFIG）：`EGLConfig` 无效。
+
+### **(2) 使用兼容性配置**
+在 `eglChooseConfig` 中放宽配置要求：
+```java
+int[] attribs = {
+    EGL10.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT, // 兼容 ES 2.0/3.0
+    EGL10.EGL_RED_SIZE, 8,
+    EGL10.EGL_GREEN_SIZE, 8,
+    EGL10.EGL_BLUE_SIZE, 8,
+    EGL10.EGL_ALPHA_SIZE, 8,
+    EGL10.EGL_DEPTH_SIZE, 16,
+    EGL10.EGL_NONE
+};
+```
+
+---
+
+## **4. 常见问题**
+### **(1) 模拟器黑屏**
+- 改用 **SwiftShader** 或 **ANGLE** 渲染器：
+  ```bash
+  adb shell setprop debug.hwui.renderer opengl
+  ```
+
+### **(2) 真机兼容性**
+- 某些设备（如华为旧机型）需要特殊配置：
+  ```java
+  // 尝试禁用 EGL_CONTEXT_PRIORITY_LEVEL_IMG
+  new int[] { 
+      EGL10.EGL_CONTEXT_CLIENT_VERSION, 3,
+      0x3100 /*EGL_CONTEXT_PRIORITY_LEVEL_IMG*/, 0x3101 /*EGL_CONTEXT_PRIORITY_HIGH_IMG*/,
+      EGL10.EGL_NONE 
+  }
+  ```
+
+---
+
+## **5. 参考链接**
+- https://developer.android.com/guide/topics/graphics/opengl
+- https://www.khronos.org/registry/EGL/sdk/docs/man/html/eglGetError.xhtml
+- https://developer.android.com/studio/run/emulator-acceleration
+
+---
+
+**总结**：
+1. **检查设备支持**：优先使用 OpenGL ES 2.0 或动态降级。
+2. **验证 EGLConfig**：确保 `eglChooseConfig` 返回有效配置。
+3. **更新模拟器/真机**：避免旧版模拟器的兼容性问题。
+4. **错误捕获**：通过 `eglGetError` 定位具体问题。

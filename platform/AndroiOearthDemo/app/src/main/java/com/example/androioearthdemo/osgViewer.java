@@ -66,7 +66,7 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
 //            Log.d(TAG,"^-^::::::isEthernetOk==false");
 //        }
         
-
+        Log.d(TAG,"^-^:::::: onCreate(Bundle icicle) start.....................................");
         // get the gl view and attach touch listeners
         mView= (EGLview) findViewById(R.id.surfaceGLES);
         mView.setOnTouchListener(this);
