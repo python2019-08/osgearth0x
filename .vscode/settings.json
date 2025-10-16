@@ -486,7 +486,8 @@
         "annotationdata": "cpp",
         "viewerbase": "cpp",
         "options": "cpp",
-        "elevationtextureutils": "cpp"
+        "elevationtextureutils": "cpp",
+        "patchlayer": "cpp"
     }
 }
 

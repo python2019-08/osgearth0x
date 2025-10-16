@@ -7,17 +7,41 @@
     <mapping directory="$PROJECT_DIR$/../../3rd/freetype" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/gdal" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/geos" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/libexpat" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/libjpeg-turbo" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/libpng" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/libpsl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/libpsl/list" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/libtiff" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/libzip" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/openssl" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/osg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../../3rd/osgdraco" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/proj" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/protobuf" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/xz" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/zlib" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../3rd/zstd" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/abseil-cpp" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/curl" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/freetype" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/gdal" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/geos" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/libexpat" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/libjpeg-turbo" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/libpng" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/libpsl" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/libpsl/list" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/libtiff" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/libzip" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/openssl" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/osg" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/osgdraco" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/proj" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/protobuf" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/xz" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/zlib" vcs="Git" />
+    <mapping directory="/mnt/disk2/abner/zdev/nv/osgearth0x/3rd/zstd" vcs="Git" />
   </component>
 </project>

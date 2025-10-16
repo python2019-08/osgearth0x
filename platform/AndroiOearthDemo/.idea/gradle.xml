@@ -9,8 +9,8 @@
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="/mnt/disk2/abner/zdev/nv/osgearth0x/platform/AndroiOearthDemo" />
+            <option value="/mnt/disk2/abner/zdev/nv/osgearth0x/platform/AndroiOearthDemo/app" />
           </set>
         </option>
       </GradleProjectSettings>
