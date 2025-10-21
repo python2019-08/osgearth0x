@@ -88,7 +88,7 @@ cmakeCommonParams=(
   #  -DCMAKE_C_FLAGS= "-fPIC"     
   #  -DCMAKE_CXX_FLAGS="-fPIC" 
 echo "cmakeCommonParams=${cmakeCommonParams[@]}"
-
+exit 11
 echo "============================================================="
 # functions
 prepareBuilding()

@@ -30,11 +30,17 @@ android {
         ndk {
             // 指定要构建的 ABI（默认情况下，Gradle 会构建所有支持的 ABI）"armeabi-v7a", "x86", 
             // abiFilters += listOf("arm64-v8a", "x86_64")
-            abiFilters += listOf("x86_64")
+            abiFilters += listOf("arm64-v8a" ,"x86_64")
         }        
     }
 
     buildTypes {
+        getByName("release") {
+            isDebuggable = true
+            isJniDebuggable = true
+            isRenderscriptDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
+        }
         debug {
             isMinifyEnabled = false  // 关闭混淆
             isDebuggable= true

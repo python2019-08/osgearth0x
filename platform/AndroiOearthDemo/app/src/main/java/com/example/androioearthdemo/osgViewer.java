@@ -28,6 +28,10 @@ import android.widget.Toast;
 import android.widget.ImageButton;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class osgViewer extends Activity implements View.OnTouchListener, View.OnKeyListener
 {
@@ -54,6 +58,8 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
     AlertDialog removeLayerDialog;
     AlertDialog loadLayerAddress;
 
+    public static String mEarthPath = null;
+
     //Main Android Activity life cycle
     @Override protected void onCreate(Bundle icicle)
     {
@@ -75,8 +81,35 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
         uiCenterViewButton = (Button) findViewById(R.id.uiButtonCenter);
         uiCenterViewButton.setOnClickListener(uiListenerCenterView);
 
-        
+        mEarthPath = copyAssetsToInternalStorage();
     }
+
+
+    public String copyAssetsToInternalStorage() 
+    {
+        File internalFile = new File(getFilesDir(), "readymap.earth");
+
+        try  
+        {
+            InputStream is = getAssets().open("readymap.earth");
+            OutputStream os = new FileOutputStream(internalFile);
+
+            
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) 
+            {
+                os.write(buffer, 0, length);
+            }
+
+
+            return internalFile.getAbsolutePath();
+        } catch (IOException e) {
+            Log.e("OSG", "Failed to copy file", e);
+            return null;
+        }
+    }
+
 
     @Override protected void onPause() {
         super.onPause();
