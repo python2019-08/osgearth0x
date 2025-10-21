@@ -11,7 +11,7 @@ public class osgNativeLib
      * @param width the current view width
      * @param height the current view height
      */
-    public static native void 		init(int width, int height);
+    public static native void 		init(int width, int height, String aEarthPath);
     public static native void 		step();
     public static native void 		mouseButtonPressEvent(float x,float y, int button);
     public static native void 		mouseButtonReleaseEvent(float x,float y, int button);

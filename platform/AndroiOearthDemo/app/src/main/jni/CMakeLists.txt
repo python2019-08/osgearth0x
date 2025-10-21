@@ -338,6 +338,18 @@ else()
     )
 endif()
 
+if( NOT EXISTS "${Libs3rd_RootDIR}/libzip/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "libzip--include=${Libs3rd_RootDIR}/libzip/${ANDROID_API_NAME}/include  NOT EXISTS !")
+else()
+    # list(APPEND    Libs3rd_includeDIRS
+    #     ${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/include
+    #     )        
+    list(APPEND  Libs3rd_LIBS   
+        ${Libs3rd_RootDIR}/libzip/${ANDROID_API_NAME}/lib/libzip.a   
+    )
+endif()
+
+
 # ------OEarthJni_SRC_FILES 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.

@@ -8,6 +8,12 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
@@ -38,11 +44,11 @@ public class EGLview extends GLSurfaceView
 
     public EGLview(Context context) {
         super(context);
-        init(false, 16, 8);
+        init(true, 24, 8);
     }
     public EGLview(Context context, AttributeSet attrs) {
         super(context,attrs);
-        init(false, 16, 8);
+        init(true, 24, 8);
     }
     public EGLview(Context context, boolean translucent, int depth, int stencil)
     {
@@ -123,13 +129,13 @@ public class EGLview extends GLSurfaceView
          * We use a minimum size of 4 bits for red/green/blue, but will
          * perform actual matching in chooseConfig() below.
          */
-        private static int EGL_OPENGL_ES_BIT = 4;
+        private static int EGL_OPENGL_ES3_BIT = 0x0040;
         private static int[] s_configAttribs2 =
                 {
                         EGL10.EGL_RED_SIZE, 4,
                         EGL10.EGL_GREEN_SIZE, 4,
                         EGL10.EGL_BLUE_SIZE, 4,
-                        EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,
+                        EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
                         EGL10.EGL_NONE
                 };
 
@@ -306,7 +312,7 @@ public class EGLview extends GLSurfaceView
         protected int mAlphaSize;
         protected int mDepthSize;
         protected int mStencilSize;
-        private int[] mValue = new int[1];
+        private int[] mValue = new int[1];        
     }
 
     private static class Renderer implements GLSurfaceView.Renderer {
@@ -316,13 +322,25 @@ public class EGLview extends GLSurfaceView
         }
 
         public void onSurfaceChanged(GL10 gl, int width, int height) {
-            osgNativeLib.init(width, height);
+            if (osgViewer.mEarthPath != null) { 
+                Log.d("EarthActivity", "mEarthPath=" + osgViewer.mEarthPath);
+            }    
+
+            osgNativeLib.init(width, height, osgViewer.mEarthPath);
         }
 
-        public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        public void onSurfaceCreated(GL10 gl, EGLConfig config) 
+        {
+            String version = gl.glGetString(GL10.GL_VERSION);
+            String renderer = gl.glGetString(GL10.GL_RENDERER);
+            Log.d("OpenGL", "Version: " + version + ", Renderer: " + renderer);
+
             // Do nothing
             gl.glEnable(GL10.GL_DEPTH_TEST);
         }
     }
+
+
+
 
 }//public class EGLview extends GLSurfaceView

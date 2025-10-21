@@ -3,13 +3,13 @@
 #include <android/log.h>
 
 #include <iostream>
-
+#include <osg/Notify>
 #include "OsgMainApp.hpp"
 
 OsgMainApp mainApp;
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_init(JNIEnv * env, jobject obj, jint width, jint height);
+    JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_init(JNIEnv * env, jobject obj, jint width, jint height, jstring aEarthPath);
     JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_step(JNIEnv * env, jobject obj);
     JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_mouseButtonPressEvent(JNIEnv * env, jobject obj, jfloat x, jfloat y, jint button);
     JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_mouseButtonReleaseEvent(JNIEnv * env, jobject obj, jfloat x, jfloat y, jint button);
@@ -18,8 +18,20 @@ extern "C" {
     JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_keyboardUp(JNIEnv * env, jobject obj, jint key);
 };
 
-extern "C" JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_init(JNIEnv * env, jobject obj, jint width, jint height){
-    mainApp.initOsgWindow(0,0,width,height);
+extern "C" JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_init(JNIEnv * env, jobject obj, 
+    jint width, jint height, jstring aEarthPath)
+{
+    std::string  cppStr;
+    if(aEarthPath)
+    {
+        const char* path = env->GetStringUTFChars(aEarthPath, nullptr);
+        cppStr = path;
+        env->ReleaseStringUTFChars(aEarthPath, path);
+    }else{
+        OSG_ALWAYS << "aEarthPath is null" << std::endl;
+    }
+
+    mainApp.initOsgWindow(0,0,width,height, cppStr );
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_example_androioearthdemo_osgNativeLib_step(JNIEnv * env, jobject obj){

@@ -119,7 +119,7 @@ public:
     ~OsgMainApp();
 
     //Initialization function
-    void initOsgWindow(int x,int y,int width,int height);
+    void initOsgWindow(int x,int y,int width,int height, const std::string& aEarthPath );
     //Draw
     void draw();
     //Events

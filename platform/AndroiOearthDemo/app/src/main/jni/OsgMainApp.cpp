@@ -17,7 +17,7 @@ OsgMainApp::~OsgMainApp()
 }
 
 //Initialization function
-void OsgMainApp::initOsgWindow(int x,int y,int width,int height)
+void OsgMainApp::initOsgWindow(int x,int y,int width,int height, const std::string& aEarthPath)
 {
     __android_log_write(ANDROID_LOG_ERROR, "OSGANDROID",
             "Initializing geometry");
@@ -26,9 +26,10 @@ void OsgMainApp::initOsgWindow(int x,int y,int width,int height)
     OsgAndroidNotifyHandler* _notifyHandler = new OsgAndroidNotifyHandler();
     _notifyHandler->setTag("Osg Viewer");
     osg::setNotifyHandler(_notifyHandler);
-
+	
     osg::notify(osg::ALWAYS)<<"Testing"<<std::endl;
-
+	osg::setNotifyLevel(osg::DEBUG_INFO);
+	
     _viewer = new osgViewer::Viewer();
 
     _viewer->setUpViewerAsEmbeddedInWindow(0, 0, width, height);
@@ -47,7 +48,7 @@ void OsgMainApp::initOsgWindow(int x,int y,int width,int height)
 	_viewer->setCameraManipulator(new osgEarth::Util::EarthManipulator());
 	// _viewer->setRunFrameScheme( osgViewer::ViewerBase::ON_DEMAND );
 
-	std::string filepath = "/sdcard/Download/readymap.earth";
+	std::string filepath = aEarthPath;//"/sdcard/Download/readymap.earth";
 	osg::Node* node = osgDB::readNodeFile(filepath);
 
 	if(!node) {
