@@ -120,8 +120,11 @@ public:
 
     //Initialization function
     void initOsgWindow(int x,int y,int width,int height, const std::string& aEarthPath );
+
+    void testDrawTriangle();
     //Draw
     void draw();
+
     //Events
     void mouseButtonPressEvent(float x,float y,int button);
     void mouseButtonReleaseEvent(float x,float y,int button);

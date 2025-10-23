@@ -82,6 +82,9 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
         uiCenterViewButton.setOnClickListener(uiListenerCenterView);
 
         mEarthPath = copyAssetsToInternalStorage();
+
+        File file = new File(mEarthPath);
+        Log.e("PATH", "File exists: " + file.exists() + ", path: " + mEarthPath);
     }
 
 

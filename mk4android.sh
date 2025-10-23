@@ -26,7 +26,7 @@ if [ ! -d "$Repo_ROOT" ]; then
 fi
  
 echo "============================================================="
-isRebuild=false
+isRebuild=true
 # ------------
 isFinished_build_zlib=true  
 # isFinished_build_zstd=true
