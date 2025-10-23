@@ -183,7 +183,8 @@ else()
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_txf.a
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_vtf.a
         ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_x.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_zip.a        
+        # ### do not use "osg/**/libosgdb_zip.a", but use "osgearth/**/osgdb_zip.a". 
+        # ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_zip.a        
     )
   
 endif()

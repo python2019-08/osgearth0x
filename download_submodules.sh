@@ -250,7 +250,8 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/osg/CMakeLists.txt" ]; then  
-    git clone https://github.com/openscenegraph/OpenSceneGraph.git  3rd/osg  || { echo " 克隆失败！"; exit 1; }
+    # git clone https://github.com/openscenegraph/OpenSceneGraph.git  3rd/osg  || { echo " 克隆失败！"; exit 1; }
+    git clone https://github.com/python2019-08/osg.git  3rd/osg   || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/osg 
     # git checkout -b my-OpenSceneGraph-3.6.5 tags/OpenSceneGraph-3.6.5
     # 
@@ -260,7 +261,7 @@ if [ ! -f "${Repo_ROOT}/3rd/osg/CMakeLists.txt" ]; then
     # Date:   Thu Dec 1 18:17:31 2022 +0000
     #     Removed indentation to avoid github MD mark up from loosing link.
     # 
-    git checkout -b  myosg-2022dec01-181731  2e4ae2ea94595995c1fc56860051410b0c0be605
+    # git checkout -b  myosg-2022dec01-181731  2e4ae2ea94595995c1fc56860051410b0c0be605
     cd ${Repo_ROOT}
 fi
 
@@ -286,11 +287,12 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/osgearth/CMakeLists.txt" ]; then  
-    git clone https://github.com/gwaldron/osgearth.git   3rd/osgearth  || { echo " 克隆失败！"; exit 1; }
+    # git clone https://github.com/gwaldron/osgearth.git   3rd/osgearth  || { echo " 克隆失败！"; exit 1; }
+    git clone https://github.com/python2019-08/osgearth.git 3rd/osgearth  || { echo " 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/osgearth 
     git submodule update --init --recursive
     # git checkout -b my-osgearth-3.7.2   tags/osgearth-3.7.2
-    git checkout  -b myoe-2025Sep12-093115    928195eb74d85eac21c0c727af0fafc6d01be87c  # master
+    # git checkout  -b myoe-2025Oct16-112942    2230ccf968416a46ab30cba18d771b652c5389dd  # master
     cd ${Repo_ROOT}
 fi
 
