@@ -17,7 +17,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags += "-std=c++17"
-                val libPath = project.file("../../../build_by_sh/android/install/3rd/").absolutePath // 动态获取路径
+                val libPath = project.file("../../../build_by_sh/install/android/3rd/").absolutePath // 动态获取路径
                 arguments += listOf(
                     "-DLibs3rd_RootDIR=$libPath",      // 动态传递路径
                     "-DANDROID_STL=c++_shared", // 其他CMake参数
@@ -54,7 +54,7 @@ android {
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11       
+        targetCompatibility = JavaVersion.VERSION_11
     }
     externalNativeBuild {
         cmake {
@@ -68,7 +68,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)

@@ -31,322 +31,322 @@ else()
 endif()
 
 # ------Libs3rd 
-set(Libs3rd_RootDIR "" CACHE PATH "Location of 3rd libraries folder")
-mark_as_advanced(Libs3rd_RootDIR)
-if(NOT Libs3rd_RootDIR OR NOT EXISTS "${Libs3rd_RootDIR}")
-    message(FATAL_ERROR "Libs3rd_RootDIR=${Libs3rd_RootDIR} NOT EXISTS !")
+set(InstallRoot_3rd "" CACHE PATH "Location of 3rd libraries folder")
+mark_as_advanced(InstallRoot_3rd)
+if(NOT InstallRoot_3rd OR NOT EXISTS "${InstallRoot_3rd}")
+    message(FATAL_ERROR "InstallRoot_3rd=${InstallRoot_3rd} NOT EXISTS !")
 else ()
-    message(STATUS "Libs3rd_RootDIR=${Libs3rd_RootDIR} EXISTS ^-^!")
+    message(STATUS "InstallRoot_3rd=${InstallRoot_3rd} EXISTS ^-^!")
 endif()
  
 
 set(Libs3rd_includeDIRS "")
 set(Libs3rd_LIBS "")
-if( NOT EXISTS "${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "Libs3rd_RootDIR=${Libs3rd_RootDIR} NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "InstallRoot_3rd=${InstallRoot_3rd} NOT EXISTS !")
 else()
     list(APPEND    Libs3rd_includeDIRS
-       ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/include 
+       ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/include 
         )       
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/libosgEarth.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_earth.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_gltf.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_kml.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_bumpmap.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_cache_filesystem.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_colorramp.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_detail.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_engine_rex.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_featurefilter_intersect.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_featurefilter_join.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_scriptengine_javascript.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_sky_gl.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_sky_simple.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_terrainshader.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_vdatum_egm2008.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_vdatum_egm84.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_vdatum_egm96.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_viewpoints.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_template.a
-        ${Libs3rd_RootDIR}/osgearth/${ANDROID_API_NAME}/lib/osgdb_zip.a        
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/libosgEarth.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_earth.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_gltf.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_kml.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_bumpmap.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_cache_filesystem.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_colorramp.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_detail.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_engine_rex.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_featurefilter_intersect.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_featurefilter_join.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_scriptengine_javascript.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_sky_gl.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_sky_simple.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_terrainshader.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_vdatum_egm2008.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_vdatum_egm84.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_vdatum_egm96.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_osgearth_viewpoints.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_template.a
+        ${InstallRoot_3rd}/osgearth/${ANDROID_API_NAME}/lib/osgdb_zip.a        
      )    
         
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "Libs3rd_RootDIR=${Libs3rd_RootDIR} NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "InstallRoot_3rd=${InstallRoot_3rd} NOT EXISTS !")
 else()
     list(APPEND    Libs3rd_includeDIRS
-       ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/include 
+       ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/include 
         )        
 
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libOpenThreads.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosg.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgAnimation.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgDB.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgFX.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgGA.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgManipulator.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgParticle.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgPresentation.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgShadow.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgSim.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgTerrain.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgText.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgUI.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgUtil.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgViewer.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgVolume.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/libosgWidget.a        
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_3dc.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_ac.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_bmp.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_bsp.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_bvh.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_cfg.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_curl.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_dds.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osg.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osganimation.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgfx.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgparticle.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgshadow.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgsim.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgterrain.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgtext.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgviewer.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgvolume.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgwidget.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_dot.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_dxf.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_freetype.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_gdal.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_gles.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_glsl.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_gz.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_hdr.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_ive.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_jpeg.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_ktx.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_logo.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_lua.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_lws.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_md2.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_mdl.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_normals.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_obj.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_ogr.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_openflight.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osc.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osg.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osga.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgjs.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgshadow.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgterrain.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgtgz.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgviewer.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_p3d.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_pic.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_png.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_pnm.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_pov.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_pvr.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_revisions.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_rgb.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_rot.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_scale.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osg.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osganimation.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgfx.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgga.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgmanipulator.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgparticle.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgshadow.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgsim.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgterrain.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgtext.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgui.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgutil.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgviewer.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgvolume.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_shp.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_stl.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_tf.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_tga.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_tgz.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_tiff.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_trans.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_trk.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_txf.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_vtf.a
-        ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_x.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libOpenThreads.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosg.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgAnimation.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgDB.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgFX.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgGA.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgManipulator.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgParticle.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgPresentation.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgShadow.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgSim.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgTerrain.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgText.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgUI.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgUtil.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgViewer.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgVolume.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/libosgWidget.a        
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_3dc.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_ac.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_bmp.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_bsp.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_bvh.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_cfg.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_curl.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_dds.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osg.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osganimation.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgfx.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgparticle.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgshadow.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgsim.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgterrain.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgtext.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgviewer.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgvolume.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_deprecated_osgwidget.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_dot.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_dxf.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_freetype.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_gdal.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_gles.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_glsl.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_gz.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_hdr.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_ive.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_jpeg.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_ktx.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_logo.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_lua.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_lws.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_md2.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_mdl.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_normals.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_obj.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_ogr.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_openflight.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osc.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osg.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osga.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgjs.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgshadow.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgterrain.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgtgz.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_osgviewer.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_p3d.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_pic.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_png.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_pnm.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_pov.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_pvr.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_revisions.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_rgb.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_rot.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_scale.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osg.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osganimation.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgfx.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgga.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgmanipulator.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgparticle.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgshadow.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgsim.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgterrain.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgtext.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgui.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgutil.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgviewer.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_serializers_osgvolume.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_shp.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_stl.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_tf.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_tga.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_tgz.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_tiff.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_trans.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_trk.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_txf.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_vtf.a
+        ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_x.a
         # ### do not use "osg/**/libosgdb_zip.a", but use "osgearth/**/osgdb_zip.a". 
-        # ${Libs3rd_RootDIR}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_zip.a        
+        # ${InstallRoot_3rd}/osg/${ANDROID_API_NAME}/lib/osgPlugins-3.7.0/libosgdb_zip.a        
     )
   
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/libjpeg-turbo/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "libjpeg--include=${Libs3rd_RootDIR}/libjpeg-turbo/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/libjpeg-turbo/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "libjpeg--include=${InstallRoot_3rd}/libjpeg-turbo/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/libjpeg-turbo/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/libjpeg-turbo/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/libjpeg-turbo/${ANDROID_API_NAME}/lib/libjpeg.a
+        ${InstallRoot_3rd}/libjpeg-turbo/${ANDROID_API_NAME}/lib/libjpeg.a
     )
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/libpng/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "libpng--include=${Libs3rd_RootDIR}/libpng/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/libpng/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "libpng--include=${InstallRoot_3rd}/libpng/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/libpng/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/libpng/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/libpng/${ANDROID_API_NAME}/lib/libpng.a
+        ${InstallRoot_3rd}/libpng/${ANDROID_API_NAME}/lib/libpng.a
     )
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/libtiff/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "libtiff--include=${Libs3rd_RootDIR}/libtiff/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/libtiff/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "libtiff--include=${InstallRoot_3rd}/libtiff/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/libtiff/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/libtiff/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/libtiff/${ANDROID_API_NAME}/lib/libtiff.a
+        ${InstallRoot_3rd}/libtiff/${ANDROID_API_NAME}/lib/libtiff.a
     )
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/curl/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "curl--include=${Libs3rd_RootDIR}/curl/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/curl/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "curl--include=${InstallRoot_3rd}/curl/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/curl/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/curl/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/curl/${ANDROID_API_NAME}/lib/libcurl-d.a
+        ${InstallRoot_3rd}/curl/${ANDROID_API_NAME}/lib/libcurl-d.a
     )
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/freetype/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "freetype--include=${Libs3rd_RootDIR}/freetype/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/freetype/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "freetype--include=${InstallRoot_3rd}/freetype/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/freetype/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/freetype/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/freetype/${ANDROID_API_NAME}/lib/libfreetyped.a
+        ${InstallRoot_3rd}/freetype/${ANDROID_API_NAME}/lib/libfreetyped.a
     )
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/gdal/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "gdal--include=${Libs3rd_RootDIR}/gdal/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/gdal/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "gdal--include=${InstallRoot_3rd}/gdal/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/gdal/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/gdal/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/gdal/${ANDROID_API_NAME}/lib/libgdal.a
+        ${InstallRoot_3rd}/gdal/${ANDROID_API_NAME}/lib/libgdal.a
     )
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "geos--include=${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/geos/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "geos--include=${InstallRoot_3rd}/geos/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/geos/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/lib/libgeos_c.a
-        ${Libs3rd_RootDIR}/geos/${ANDROID_API_NAME}/lib/libgeos.a
+        ${InstallRoot_3rd}/geos/${ANDROID_API_NAME}/lib/libgeos_c.a
+        ${InstallRoot_3rd}/geos/${ANDROID_API_NAME}/lib/libgeos.a
     )
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "openssl--include=${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/openssl/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "openssl--include=${InstallRoot_3rd}/openssl/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/openssl/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/lib/libssl.a
-        ${Libs3rd_RootDIR}/openssl/${ANDROID_API_NAME}/lib/libcrypto.a
+        ${InstallRoot_3rd}/openssl/${ANDROID_API_NAME}/lib/libssl.a
+        ${InstallRoot_3rd}/openssl/${ANDROID_API_NAME}/lib/libcrypto.a
     )
 endif()
 
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/proj/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "proj--include=${Libs3rd_RootDIR}/proj/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/proj/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "proj--include=${InstallRoot_3rd}/proj/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/proj/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/proj/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS 
-        ${Libs3rd_RootDIR}/proj/${ANDROID_API_NAME}/lib/libproj.a 
+        ${InstallRoot_3rd}/proj/${ANDROID_API_NAME}/lib/libproj.a 
     )
 endif()
 
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "protobuf--include=${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/protobuf/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "protobuf--include=${InstallRoot_3rd}/protobuf/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/protobuf/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS  
-        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libprotobuf-lited.a  
-        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libprotobufd.a  
-        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libupbd.a  
-        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libutf8_range.a  
-        ${Libs3rd_RootDIR}/protobuf/${ANDROID_API_NAME}/lib/libutf8_validity.a
+        ${InstallRoot_3rd}/protobuf/${ANDROID_API_NAME}/lib/libprotobuf-lited.a  
+        ${InstallRoot_3rd}/protobuf/${ANDROID_API_NAME}/lib/libprotobufd.a  
+        ${InstallRoot_3rd}/protobuf/${ANDROID_API_NAME}/lib/libupbd.a  
+        ${InstallRoot_3rd}/protobuf/${ANDROID_API_NAME}/lib/libutf8_range.a  
+        ${InstallRoot_3rd}/protobuf/${ANDROID_API_NAME}/lib/libutf8_validity.a
     )
 endif()
  
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/sqlite/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "sqlite--include=${Libs3rd_RootDIR}/sqlite/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/sqlite/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "sqlite--include=${InstallRoot_3rd}/sqlite/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/sqlite/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/sqlite/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS   
-        ${Libs3rd_RootDIR}/sqlite/${ANDROID_API_NAME}/lib/libsqlite3.a   
+        ${InstallRoot_3rd}/sqlite/${ANDROID_API_NAME}/lib/libsqlite3.a   
     )
 endif()
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "zlib--include=${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/zlib/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "zlib--include=${InstallRoot_3rd}/zlib/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/zlib/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS   
-        ${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/lib/libz.a   
+        ${InstallRoot_3rd}/zlib/${ANDROID_API_NAME}/lib/libz.a   
     )
 endif()
 
-if( NOT EXISTS "${Libs3rd_RootDIR}/libzip/${ANDROID_API_NAME}/include")
-    message(FATAL_ERROR "libzip--include=${Libs3rd_RootDIR}/libzip/${ANDROID_API_NAME}/include  NOT EXISTS !")
+if( NOT EXISTS "${InstallRoot_3rd}/libzip/${ANDROID_API_NAME}/include")
+    message(FATAL_ERROR "libzip--include=${InstallRoot_3rd}/libzip/${ANDROID_API_NAME}/include  NOT EXISTS !")
 else()
     # list(APPEND    Libs3rd_includeDIRS
-    #     ${Libs3rd_RootDIR}/zlib/${ANDROID_API_NAME}/include
+    #     ${InstallRoot_3rd}/zlib/${ANDROID_API_NAME}/include
     #     )        
     list(APPEND  Libs3rd_LIBS   
-        ${Libs3rd_RootDIR}/libzip/${ANDROID_API_NAME}/lib/libzip.a   
+        ${InstallRoot_3rd}/libzip/${ANDROID_API_NAME}/lib/libzip.a   
     )
 endif()
 

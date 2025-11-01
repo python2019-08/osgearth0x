@@ -921,3 +921,266 @@ CFLAGS="-O3 -march=x86-64-v2"  # 根据宿主 CPU 调整
 
 
 ========================================================================
+# 7. 一个 基于cmake 编译 libwebp 的完整步骤的脚本。
+
+## 7.1 基于 CMake 编译 libwebp 的完整步骤和脚本
+
+以下是使用 CMake 编译 libwebp 库的完整步骤和一个自动化脚本。
+
+### 编译步骤
+
+> 1. **安装依赖**
+>    - 安装 CMake 和编译工具链
+> 
+> 2. **获取源码**
+>    - 从官方仓库克隆源码
+> 
+> 3. **创建构建目录**
+>    - 使用 CMake 的 out-of-source 构建
+> 
+> 4. **配置编译选项**
+>    - 运行 `cmake` 配置项目
+> 
+> 5. **编译**
+>    - 使用 `make` 进行编译
+> 
+> 6. **安装**
+>    - 使用 `make install` 安装到系统
+
+### 自动化编译脚本
+
+```bash
+#!/bin/bash
+
+# 基于 CMake 的 libwebp 编译安装脚本
+# 使用方法: ./build_libwebp_cmake.sh [版本号，默认为1.3.2] [安装目录，默认为/usr/local]
+
+set -e
+
+# 参数设置
+LIBWEBP_VERSION=${1:-"1.3.2"}
+INSTALL_DIR=${2:-"/usr/local"}
+WORK_DIR=$(pwd)
+THREADS=$(nproc)
+BUILD_DIR="libwebp-build-${LIBWEBP_VERSION}"
+
+# 颜色输出函数
+red_echo() { echo -e "\033[31m$1\033[0m"; }
+green_echo() { echo -e "\033[32m$1\033[0m"; }
+blue_echo() { echo -e "\033[34m$1\033[0m"; }
+
+# 检查命令是否存在
+check_command() {
+    if ! command -v $1 &> /dev/null; then
+        red_echo "错误: 未找到 $1 命令，请先安装"
+        exit 1
+    fi
+}
+
+blue_echo "=== 开始编译 libwebp ${LIBWEBP_VERSION} (使用 CMake) ==="
+
+# 检查必要命令
+check_command cmake
+check_command make
+check_command git
+
+# 安装构建依赖
+blue_echo "[1/7] 安装构建依赖..."
+if [[ -f /etc/redhat-release ]]; then
+    # CentOS/RHEL/Rocky
+    if command -v dnf &> /dev/null; then
+        sudo dnf install -y git cmake make gcc gcc-c++ || sudo yum install -y git cmake make gcc gcc-c++
+    else
+        sudo yum install -y git cmake make gcc gcc-c++
+    fi
+elif [[ -f /etc/debian_version ]]; then
+    # Debian/Ubuntu
+    sudo apt-get update
+    sudo apt-get install -y git cmake make gcc g++
+elif [[ $(uname) == "Darwin" ]]; then
+    # macOS
+    if command -v brew &> /dev/null; then
+        brew install cmake
+    else
+        red_echo "请在 macOS 上先安装 Homebrew"
+        exit 1
+    fi
+else
+    red_echo "不支持的系统，请手动安装依赖: git cmake make gcc g++"
+    exit 1
+fi
+
+# 下载源码
+blue_echo "[2/7] 下载 libwebp 源码..."
+if [ ! -d "libwebp-${LIBWEBP_VERSION}" ]; then
+    if [ -f "libwebp-${LIBWEBP_VERSION}.tar.gz" ]; then
+        green_echo "发现已下载的源码包，直接解压..."
+        tar -xzf "libwebp-${LIBWEBP_VERSION}.tar.gz"
+    else
+        green_echo "下载 libwebp-${LIBWEBP_VERSION}.tar.gz..."
+        wget -O "libwebp-${LIBWEBP_VERSION}.tar.gz" \
+            "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${LIBWEBP_VERSION}.tar.gz"
+        tar -xzf "libwebp-${LIBWEBP_VERSION}.tar.gz"
+    fi
+fi
+
+# 或者使用 git 克隆（如果需要最新版本）
+# blue_echo "使用 git 克隆最新源码..."
+# if [ ! -d "libwebp" ]; then
+#     git clone https://chromium.googlesource.com/webm/libwebp
+#     cd libwebp
+# else
+#     cd libwebp
+#     git pull
+# fi
+
+cd "libwebp-${LIBWEBP_VERSION}"
+
+# 创建构建目录
+blue_echo "[3/7] 创建构建目录..."
+if [ -d "${BUILD_DIR}" ]; then
+    green_echo "构建目录已存在，清理..."
+    rm -rf "${BUILD_DIR}"
+fi
+mkdir -p "${BUILD_DIR}"
+cd "${BUILD_DIR}"
+
+# CMake 配置
+blue_echo "[4/7] 配置 CMake..."
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DWEBP_BUILD_ANIM_UTILS=ON \
+    -DWEBP_BUILD_CWEBP=ON \
+    -DWEBP_BUILD_DWEBP=ON \
+    -DWEBP_BUILD_GIF2WEBP=ON \
+    -DWEBP_BUILD_IMG2WEBP=ON \
+    -DWEBP_BUILD_VWEBP=ON \
+    -DWEBP_BUILD_WEBPINFO=ON \
+    -DWEBP_BUILD_WEBPMUX=ON \
+    -DWEBP_BUILD_EXTRAS=ON \
+    -DWEBP_ENABLE_SIMD=ON \
+    -DWEBP_ENABLE_SWAP_16BIT_CSP=ON
+
+# 显示配置摘要
+green_echo "CMake 配置完成，构建选项摘要:"
+grep -E "WEBP_BUILD_|WEBP_ENABLE_" CMakeCache.txt | grep -v "ADVANCED" | sort
+
+# 编译
+blue_echo "[5/7] 编译 libwebp (使用 ${THREADS} 线程)..."
+make -j${THREADS}
+
+# 可选：运行测试
+blue_echo "[6/7] 运行测试..."
+if make test; then
+    green_echo "所有测试通过!"
+else
+    yellow_echo "部分测试失败，但继续安装..."
+fi
+
+# 安装
+blue_echo "[7/7] 安装到系统..."
+sudo make install
+
+# 更新动态链接库缓存（Linux）
+if [[ $(uname) == "Linux" ]]; then
+    sudo ldconfig
+fi
+
+# 验证安装
+green_echo "=== 安装验证 ==="
+if [ -f "${INSTALL_DIR}/bin/cwebp" ]; then
+    green_echo "✓ libwebp ${LIBWEBP_VERSION} 安装成功!"
+    echo "安装目录: ${INSTALL_DIR}"
+    echo ""
+    echo "可用工具:"
+    ls ${INSTALL_DIR}/bin/webp* ${INSTALL_DIR}/bin/*webp* 2>/dev/null | xargs -I {} basename {} | sort | uniq
+    echo ""
+    echo "库文件:"
+    ls ${INSTALL_DIR}/lib/libwebp* 2>/dev/null || ls ${INSTALL_DIR}/lib64/libwebp* 2>/dev/null
+else
+    red_echo "✗ 安装可能失败，请检查输出日志"
+    exit 1
+fi
+
+cd ${WORK_DIR}
+```
+
+### 简化版脚本（仅基本功能）
+
+```bash
+#!/bin/bash
+# 简化版 CMake 编译脚本
+
+set -e
+
+VERSION="1.3.2"
+PREFIX="/usr/local"
+
+echo "正在编译 libwebp ${VERSION}..."
+
+# 下载和解压
+wget -O "libwebp-${VERSION}.tar.gz" \
+    "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${VERSION}.tar.gz"
+tar -xzf "libwebp-${VERSION}.tar.gz"
+cd "libwebp-${VERSION}"
+
+# 创建构建目录
+mkdir build && cd build
+
+# CMake 配置和编译
+cmake .. -DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+sudo make install
+
+# 更新库缓存
+sudo ldconfig 2>/dev/null || true
+
+echo "libwebp 安装完成!"
+```
+
+### 使用说明
+
+1. **保存脚本**：
+   ```bash
+   chmod +x build_libwebp_cmake.sh
+   ```
+
+2. **基本使用**：
+   ```bash
+   ./build_libwebp_cmake.sh
+   ```
+
+3. **自定义版本和安装目录**：
+   ```bash
+   ./build_libwebp_cmake.sh 1.3.1 /opt/libwebp
+   ```
+
+### CMake 主要选项说明
+
+- `-DBUILD_SHARED_LIBS=ON`：构建共享库
+- `-DWEBP_BUILD_CWEBP=ON`：构建 cwebp 工具
+- `-DWEBP_BUILD_DWEBP=ON`：构建 dwebp 工具  
+- `-DWEBP_ENABLE_SIMD=ON`：启用 SIMD 优化
+- `-DCMAKE_BUILD_TYPE=Release`：发布模式构建
+
+### 验证安装
+
+```bash
+# 检查工具
+cwebp -version
+dwebp -version
+
+# 检查库文件
+pkg-config --modversion libwebp
+```
+
+### 注意事项
+
+1. 需要 CMake 3.5 或更高版本
+2. 脚本会自动检测系统并安装相应依赖
+3. 支持 Linux、macOS 系统
+4. 如果需要静态库，设置 `-DBUILD_SHARED_LIBS=OFF`
+
+这个脚本提供了完整的 CMake 编译流程，包含错误处理和详细的输出信息。

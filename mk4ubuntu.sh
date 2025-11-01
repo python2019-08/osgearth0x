@@ -21,8 +21,8 @@ if [ ! -d "$Repo_ROOT" ]; then
     exit 1
 fi
  
-echo "============================================================="
-isRebuild=true
+# echo "============================================================="
+isRebuild=false
 # ------
 isFinished_build_zlib=true
 isFinished_build_zstd=true
@@ -44,10 +44,10 @@ isFinished_build_libexpat=true
 isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true
-isFinished_build_gdal=false   #-- false #big code
-isFinished_build_osg=false    # osg-a ..false  
-isFinished_build_osgdll=false # osg-dll..false
-isFinished_build_zip=false
+isFinished_build_gdal=true   #-- false #big code
+isFinished_build_osg=true    # osg-a ..false  
+isFinished_build_osgdll=true # osg-dll..false
+isFinished_build_zip=true
 isFinished_build_osgearth=false  # osgearth-a
 isFinished_build_oearthdll=false  # osgearth-dll
 # ------
@@ -56,22 +56,22 @@ CMAKE_MAKE_PROGRAM=/usr/bin/make
 CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
 CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
 
-echo "============================================================="
-# rm -fr ./build_by_sh   
-BuildDir_ubuntu=${Repo_ROOT}/build_by_sh/ubuntu
+# echo "============================================================="
+BuildROOT=${Repo_ROOT}/build_by_sh
+# rm -fr ./build_by_sh 
+BuildROOT_ubuntu=${BuildROOT}/build/ubuntu
+InstallROOT_ubuntu=${BuildROOT}/install/ubuntu
+mkdir -p ${BuildROOT_ubuntu} 
+mkdir -p ${InstallROOT_ubuntu} 
 
-# INSTALL_PREFIX_root
-INSTALL_PREFIX_ubt=${BuildDir_ubuntu}/install
-mkdir -p ${INSTALL_PREFIX_ubt} 
-
-
+# echo "============================================================="
 cmakeCommonParams=(
   "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
   "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
   "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
   "-DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config"
-  "-DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_ubt}"
+  "-DCMAKE_FIND_ROOT_PATH=${InstallROOT_ubuntu}"
   "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
   "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
   "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY" # BOTH：先查根路径，再查系统路径    
@@ -88,7 +88,7 @@ cmakeCommonParams=(
   #  -DCMAKE_C_FLAGS= "-fPIC"     
   #  -DCMAKE_CXX_FLAGS="-fPIC" 
 echo "cmakeCommonParams=${cmakeCommonParams[@]}"
-exit 11
+
 echo "============================================================="
 # functions
 prepareBuilding()
@@ -202,15 +202,17 @@ check_concat_paths_1()
 # **************************************************************************
 SrcDIR_3rd=${Repo_ROOT}/3rd
 
+BuildDIR_3rd=${BuildROOT_ubuntu}/3rd
+InstallDIR_3rd=${InstallROOT_ubuntu}/3rd
 # -------------------------------------------------
 # zlib
 # -------------------------------------------------
-INSTALL_PREFIX_zlib=${INSTALL_PREFIX_ubt}/zlib
+INSTALL_PREFIX_zlib=${InstallDIR_3rd}/zlib
 
 if [ "${isFinished_build_zlib}" != "true" ]; then 
     echo "========== building zlib 4 ubuntu========== " &&  sleep 1
     SrcDIR_lib=${SrcDIR_3rd}/zlib
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/zlib     
+    BuildDIR_lib=${BuildDIR_3rd}/zlib     
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_zlib} ${isRebuild} 
  
     #################################################################### 
@@ -267,12 +269,12 @@ fi
 # -------------------------------------------------
 # zstd
 # -------------------------------------------------
-INSTALL_PREFIX_zstd=${INSTALL_PREFIX_ubt}/zstd
+INSTALL_PREFIX_zstd=${InstallDIR_3rd}/zstd
 
 if [ "${isFinished_build_zstd}" != "true" ]; then 
     echo "========== building zstd 4 ubuntu========== " &&  sleep 1
     SrcDIR_zstd=${SrcDIR_3rd}/zstd
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/zstd
+    BuildDIR_lib=${BuildDIR_3rd}/zstd
     prepareBuilding  ${SrcDIR_zstd} ${BuildDIR_lib} ${INSTALL_PREFIX_zstd} ${isRebuild} 
   
     # remark:zstd的根CMakeLists.txt在 "${SrcDIR_zstd}/build/cmake"目录下，比较特别^-^
@@ -298,13 +300,13 @@ fi
 # libssl.a是静态库​​，通常依赖 libcrypto.a提供底层加密函数
 # （如 SHA256_Init、EVP_CIPHER_CTX_new）。
 # -------------------------------------------------
-INSTALL_PREFIX_openssl=${INSTALL_PREFIX_ubt}/openssl
+INSTALL_PREFIX_openssl=${InstallDIR_3rd}/openssl
 
 if [ "${isFinished_build_openssl}" != "true" ]; then 
     echo "========== Building openssl 4 ubuntu ========== " &&  sleep 3
 
     SrcDIR_openssl=${SrcDIR_3rd}/openssl
-    BuildDIR_openssl=${BuildDir_ubuntu}/3rd/openssl
+    BuildDIR_openssl=${BuildDIR_3rd}/openssl
     prepareBuilding  ${SrcDIR_openssl} ${BuildDIR_openssl} ${INSTALL_PREFIX_openssl} ${isRebuild}
  
 
@@ -347,13 +349,13 @@ fi
 # 其他：
 #   iconv（可选）：部分平台可能需要 iconv 库用于字符编码转换，但 ICU 通常自带编码转换逻辑，可独立于 iconv。
 # -------------------------------------------------
-# INSTALL_PREFIX_icu=${INSTALL_PREFIX_ubt}/icu
+# INSTALL_PREFIX_icu=${InstallDIR_3rd}/icu
 # 
 # if [ "${isFinished_build_icu}" != "true" ] ; then 
 #     echo "========== building icu 4 ubuntu==========do nothing " &&  sleep 3
 # 
 #     SrcDIR_lib=${SrcDIR_3rd}/icu/icu4c/source/
-#     BuildDIR_lib=${BuildDir_ubuntu}/3rd/icu
+#     BuildDIR_lib=${BuildDIR_3rd}/icu
 #     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_icu} ${isRebuild}  
 # 
 #     
@@ -380,13 +382,13 @@ fi
 # -------------------------------------------------
 # libidn2
 # -------------------------------------------------
-# INSTALL_PREFIX_idn2=${INSTALL_PREFIX_ubt}/libidn2
+# INSTALL_PREFIX_idn2=${InstallDIR_3rd}/libidn2
 # 
 # if [ "${isFinished_build_libidn2}" != "true" ] ; then 
 #     echo "============= Building libidn2 =============" &&  sleep 3
 # 
 #     SrcDIR_lib=${SrcDIR_3rd}/libidn2
-#     BuildDIR_lib=${BuildDir_ubuntu}/3rd/libidn2
+#     BuildDIR_lib=${BuildDIR_3rd}/libidn2
 #     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_idn2} ${isRebuild}    
 #  
 #     cd ${SrcDIR_lib}  && ./bootstrap
@@ -413,13 +415,13 @@ fi
 # -------------------------------------------------
 # libpsl : is depended on by curl.
 # -------------------------------------------------
-INSTALL_PREFIX_psl=${INSTALL_PREFIX_ubt}/libpsl
+INSTALL_PREFIX_psl=${InstallDIR_3rd}/libpsl
 
 if [ "${isFinished_build_libpsl}" != "true" ] ; then 
     echo "======== Building libpsl =========" &&  sleep 3 
 
     SrcDIR_lib=${SrcDIR_3rd}/libpsl
-    BuildDIR_libpsl=${BuildDir_ubuntu}/3rd/libpsl 
+    BuildDIR_libpsl=${BuildDIR_3rd}/libpsl 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_libpsl} ${INSTALL_PREFIX_psl} ${isRebuild}
 
     cd ${SrcDIR_lib} && make distclean  && ./autogen.sh
@@ -447,13 +449,13 @@ fi
 # -------------------------------------------------
 # curl
 # -------------------------------------------------
-INSTALL_PREFIX_curl=${INSTALL_PREFIX_ubt}/curl
+INSTALL_PREFIX_curl=${InstallDIR_3rd}/curl
 
 if [ "${isFinished_build_curl}" != "true" ] ; then 
     echo "======== Building curl =========" &&  sleep 3 # && set -x     
 
     SrcDIR_lib=${SrcDIR_3rd}/curl
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/curl 
+    BuildDIR_lib=${BuildDIR_3rd}/curl 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_curl} ${isRebuild}              
     # ---------------------    
     cmk_prefixPath=$(check_concat_paths  "${INSTALL_PREFIX_openssl}" \
@@ -530,13 +532,13 @@ fi
 # libjpeg-turbo 的位深度支持​​ ：默认仅支持 8-bit​​（即使开启 WITH_JPEG7=ON）。
 # ​​12-bit JPEG 支持需要原版 jpeg-9f​，并通过 --enable-12bit编译选项启用。
 # -------------------------------------------------
-# INSTALL_PREFIX_jpeg9f=${INSTALL_PREFIX_ubt}/jpeg9f
+# INSTALL_PREFIX_jpeg9f=${InstallDIR_3rd}/jpeg9f
 # 
 # if [ "${isFinished_build_jpeg9f}" != "true" ] ; then 
 #     echo "========== Building jpeg-9f 4 ubuntu=========="  &&  sleep 5
 # 
 #     SrcDIR_lib=${SrcDIR_3rd}/jpeg-9f
-#     BuildDIR_Jpeg9f=${BuildDir_ubuntu}/3rd/jpeg9f
+#     BuildDIR_Jpeg9f=${BuildDIR_3rd}/jpeg9f
 #     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_Jpeg9f} ${INSTALL_PREFIX_jpeg9f} ${isRebuild}              
 # 
 #     # 在构建目录中运行configure
@@ -558,7 +560,7 @@ fi
 # -------------------------------------------------
 # libjpeg-turbo
 # -------------------------------------------------
-INSTALL_PREFIX_jpegTurbo=${INSTALL_PREFIX_ubt}/libjpeg-turbo
+INSTALL_PREFIX_jpegTurbo=${InstallDIR_3rd}/libjpeg-turbo
 
 if [ "${isFinished_build_libjpegTurbo}" != "true" ]  ; then 
     if true; then 
@@ -566,7 +568,7 @@ if [ "${isFinished_build_libjpegTurbo}" != "true" ]  ; then
     fi
 
     SrcDIR_lib=${SrcDIR_3rd}/libjpeg-turbo
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/libjpeg-turbo
+    BuildDIR_lib=${BuildDIR_3rd}/libjpeg-turbo
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_jpegTurbo} ${isRebuild}  
 
     cmake -S${SrcDIR_lib}  -B ${BuildDIR_lib} --debug-find \
@@ -590,13 +592,13 @@ fi
 # libpng
 # -------------------------------------------------
 
-INSTALL_PREFIX_png=${INSTALL_PREFIX_ubt}/libpng
+INSTALL_PREFIX_png=${InstallDIR_3rd}/libpng
  
 if [ "${isFinished_build_libpng}" != "true" ] ; then 
     echo "========== Building libpng 4 Ubuntu==========" && sleep 1 && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/libpng
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/libpng
+    BuildDIR_lib=${BuildDIR_3rd}/libpng
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_png} ${isRebuild}  
          
     cmk_prefixPath="${INSTALL_PREFIX_zlib}"
@@ -622,12 +624,12 @@ fi
 # -------------------------------------------------
 # xz : xz generates liblzma.a which is needed by libtiff
 # -------------------------------------------------
-INSTALL_PREFIX_xz=${INSTALL_PREFIX_ubt}/xz
+INSTALL_PREFIX_xz=${InstallDIR_3rd}/xz
  
 if [ "${isFinished_build_xz}" != "true" ]  ; then 
     echo "========== Building xz 4 Ubuntu==========" && sleep 5
     SrcDIR_lib=${SrcDIR_3rd}/xz
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/xz
+    BuildDIR_lib=${BuildDIR_3rd}/xz
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_xz} ${isRebuild}     
 
     cmake -S${SrcDIR_lib}  -B ${BuildDIR_lib}  --debug-find \
@@ -657,12 +659,12 @@ fi
 # 
 # liblzma.so:  LZMA 的压缩率通常高于传统的 ZIP（Deflate）或 JPEG 压缩，适合需要高压缩比的场景（如存档、卫星图像）。
 # -------------------------------------------------
-INSTALL_PREFIX_tiff=${INSTALL_PREFIX_ubt}/libtiff
+INSTALL_PREFIX_tiff=${InstallDIR_3rd}/libtiff
  
 if [ "${isFinished_build_libtiff}" != "true" ] ; then 
     echo "========== Building libtiff 4 Ubuntu==========" && sleep 1 # && set -x
     SrcDIR_lib=${SrcDIR_3rd}/libtiff
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/libtiff
+    BuildDIR_lib=${BuildDIR_3rd}/libtiff
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_tiff} ${isRebuild}     
 
     cmk_prefixPath="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_xz}"
@@ -728,12 +730,12 @@ fi
 # | **ZLIB**     | 已找到（`libz.so`）    | 支持 `.ttf.gz` 和常规压缩。                              |
 # | **PNG**      | 已找到（`libpng.so`）  | 支持位图字体（如 `.png` 格式的彩色字体）。                   |
 # -------------------------------------------------
-INSTALL_PREFIX_freetype=${INSTALL_PREFIX_ubt}/freetype
+INSTALL_PREFIX_freetype=${InstallDIR_3rd}/freetype
  
 if [ "${isFinished_build_freetype}" != "true" ] ; then 
     echo "========== Building freetype 4 Ubuntu==========" && sleep 1 # && set -x
     SrcDIR_lib=${SrcDIR_3rd}/freetype
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/freetype
+    BuildDIR_lib=${BuildDIR_3rd}/freetype
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_freetype} ${isRebuild}       
  
 
@@ -772,13 +774,13 @@ fi
 # geos
 # ------------------------------------------------- 
 
-INSTALL_PREFIX_geos=${INSTALL_PREFIX_ubt}/geos
+INSTALL_PREFIX_geos=${InstallDIR_3rd}/geos
 
 if [ "${isFinished_build_geos}" != "true" ] ; then 
     echo "========== building geos 4 ubuntu========== " &&  sleep 3
 
     SrcDIR_lib=${SrcDIR_3rd}/geos
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/geos 
+    BuildDIR_lib=${BuildDIR_3rd}/geos 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_geos} ${isRebuild} 
      
     #################################################################### 
@@ -805,12 +807,12 @@ fi
 # -------------------------------------------------
 # sqlite
 # ------------------------------------------------- 
-INSTALL_PREFIX_sqlite=${INSTALL_PREFIX_ubt}/sqlite
+INSTALL_PREFIX_sqlite=${InstallDIR_3rd}/sqlite
 
 if [ "${isFinished_build_sqlite}" != "true" ] ; then 
     echo "========== building sqlite 4 ubuntu========== " &&  sleep 1
     SrcDIR_lib=${SrcDIR_3rd}/sqlite3cmake
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/sqlite
+    BuildDIR_lib=${BuildDIR_3rd}/sqlite
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_sqlite} ${isRebuild}   
 
     #################################################################### 
@@ -828,7 +830,7 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
     # ldFlags="-Wl,-rpath=${INSTALL_PREFIX_sqlite}/lib -lz -lm"
     # 
     # 
-    # echo "sqlite...SrcDIR=${SrcDIR_lib};BuildDIR=${BuildDir_ubuntu}/3rd/sqlite"
+    # echo "sqlite...SrcDIR=${SrcDIR_lib};BuildDIR=${BuildDIR_3rd}/sqlite"
     # CC=${CMAKE_C_COMPILER} \
     # ${SrcDIR_lib}/configure  --prefix=${INSTALL_PREFIX_sqlite} \
 	# 	--host=x86_64-linux-musl \
@@ -867,13 +869,13 @@ fi
 # -------------------------------------------------
 # proj
 # ------------------------------------------------- 
-INSTALL_PREFIX_proj=${INSTALL_PREFIX_ubt}/proj
+INSTALL_PREFIX_proj=${InstallDIR_3rd}/proj
 
 if [ "${isFinished_build_proj}" != "true" ] ; then 
     echo "========== building proj 4 ubuntu========== " &&  sleep 1 && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/proj
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/proj 
+    BuildDIR_lib=${BuildDIR_3rd}/proj 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_proj} ${isRebuild} 
                     
     #################################################################### 
@@ -956,13 +958,13 @@ fi
 # -------------------------------------------------
 # libexpat
 # ------------------------------------------------- 
-INSTALL_PREFIX_expat=${INSTALL_PREFIX_ubt}/libexpat
+INSTALL_PREFIX_expat=${InstallDIR_3rd}/libexpat
 
 if [ "${isFinished_build_libexpat}" != "true" ] ; then 
     echo "========== building libexpat 4 ubuntu========== " &&  sleep 5
 
     SrcDIR_lib=${SrcDIR_3rd}/libexpat/expat
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/libexpat 
+    BuildDIR_lib=${BuildDIR_3rd}/libexpat 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_expat} ${isRebuild} 
         
     ####################################################################
@@ -991,14 +993,14 @@ fi
 # -------------------------------------------------
 # abseil-cpp  
 # -------------------------------------------------
-INSTALL_PREFIX_absl=${INSTALL_PREFIX_ubt}/abseil-cpp
+INSTALL_PREFIX_absl=${InstallDIR_3rd}/abseil-cpp
 
 
 if [ "${isFinished_build_absl}" != "true" ] ; then 
     echo "========== building abseil-cpp 4 ubuntu========== " &&  sleep 5
 
     SrcDIR_lib=${SrcDIR_3rd}/abseil-cpp
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/abseil-cpp 
+    BuildDIR_lib=${BuildDIR_3rd}/abseil-cpp 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_absl} ${isRebuild}        
     ####################################################################
     cmk_prefixPath=“” 
@@ -1022,13 +1024,13 @@ fi
 # -------------------------------------------------
 # protobuf  
 # -------------------------------------------------
-INSTALL_PREFIX_protobuf=${INSTALL_PREFIX_ubt}/protobuf
+INSTALL_PREFIX_protobuf=${InstallDIR_3rd}/protobuf
 
 if [ "${isFinished_build_protobuf}" != "true" ] ; then 
     echo "========== building protobuf 4 ubuntu========== " &&  sleep 5
 
     SrcDIR_lib=${SrcDIR_3rd}/protobuf
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/protobuf 
+    BuildDIR_lib=${BuildDIR_3rd}/protobuf 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_protobuf} ${isRebuild}        
     ####################################################################
     cmk_prefixPath="${INSTALL_PREFIX_zlib};${INSTALL_PREFIX_absl}"
@@ -1059,13 +1061,13 @@ fi
 # -------------------------------------------------
 # boost  
 # -------------------------------------------------
-INSTALL_PREFIX_boost=${INSTALL_PREFIX_ubt}/boost
+INSTALL_PREFIX_boost=${InstallDIR_3rd}/boost
 
 if [ "${isFinished_build_boost}" != "true" ] ; then 
     echo "========== building boost 4 ubuntu========== " &&  sleep 1 && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/boost
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/boost
+    BuildDIR_lib=${BuildDIR_3rd}/boost
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_boost} ${isRebuild} 
 
     # 1. 进入 Boost 源码目录 
@@ -1104,13 +1106,13 @@ fi
 # -------------------------------------------------
 # gdal , see 3rd/gdal/fuzzers/build.sh
 # -------------------------------------------------
-INSTALL_PREFIX_gdal=${INSTALL_PREFIX_ubt}/gdal
+INSTALL_PREFIX_gdal=${InstallDIR_3rd}/gdal
 
 if [ "${isFinished_build_gdal}" != "true" ] ; then 
     echo "========== building gdal 4 ubuntu========== " &&  sleep 1 # && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/gdal
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/gdal 
+    BuildDIR_lib=${BuildDIR_3rd}/gdal 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_gdal} ${isRebuild}   
 
     #################################################################### 
@@ -1208,16 +1210,13 @@ fi
 #     其次用-DCMAKE_PREFIX_PATH="${cmk_prefixPath}"
 # (3)3rd/osg/examples/osgstaticviewer
 # -------------------------------------------------
-INSTALL_PREFIX_osg=${INSTALL_PREFIX_ubt}/osg
+INSTALL_PREFIX_osg=${InstallDIR_3rd}/osg
 
 if [ "${isFinished_build_osg}" != "true" ] ; then 
     echo "========== building osg 4 ubuntu========== " &&  sleep 1
 
     SrcDIR_lib=${SrcDIR_3rd}/osg
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/osg
-    echo "gg====         SrcDIR_lib=${SrcDIR_lib}" 
-    echo "gg====       BuildDIR_lib=${BuildDIR_lib}" 
-    echo "gg==== INSTALL_PREFIX_osg=${INSTALL_PREFIX_osg}" 
+    BuildDIR_lib=${BuildDIR_3rd}/osg
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_osg} ${isRebuild}  
 
     #################################################################### 
@@ -1404,16 +1403,13 @@ fi
 # ----- 
 # only for debug
 # -------------------------------------------------
-INSTALL_PREFIX_osgdll=${INSTALL_PREFIX_ubt}/osgdll
+INSTALL_PREFIX_osgdll=${InstallDIR_3rd}/osgdll
 
 if [ "${isFinished_build_osgdll}" != "true" ] ; then 
     echo "========== building osgdll 4 ubuntu========== " &&  sleep 1
 
     SrcDIR_lib=${SrcDIR_3rd}/osg
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/osgdll
-    echo "gg====         SrcDIR_lib=${SrcDIR_lib}" 
-    echo "gg====       BuildDIR_lib=${BuildDIR_lib}" 
-    echo "gg==== INSTALL_PREFIX_osgdll=${INSTALL_PREFIX_osgdll}" 
+    BuildDIR_lib=${BuildDIR_3rd}/osgdll
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_osgdll} ${isRebuild}  
 
     #################################################################### 
@@ -1553,12 +1549,12 @@ fi
 # -------------------------------------------------
 # libzip 
 # ------------------------------------------------- 
-INSTALL_PREFIX_zip=${INSTALL_PREFIX_ubt}/libzip
+INSTALL_PREFIX_zip=${InstallDIR_3rd}/libzip
 
 if [ "${isFinished_build_zip}" != "true" ]; then 
     echo "========== building libzip 4 ubuntu========== " &&  sleep 3
     SrcDIR_lib=${SrcDIR_3rd}/libzip 
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/libzip     
+    BuildDIR_lib=${BuildDIR_3rd}/libzip     
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_zip} ${isRebuild} 
  
     ####################################################################  
@@ -1604,16 +1600,13 @@ fi
 # -------------------------------------------------
 # osgearth 
 # -------------------------------------------------
-INSTALL_PREFIX_osgearth=${INSTALL_PREFIX_ubt}/osgearth
+INSTALL_PREFIX_osgearth=${InstallDIR_3rd}/osgearth
 
 if [ "${isFinished_build_osgearth}" != "true" ] ; then 
     echo "========== building osgearth 4 ubuntu========== " &&  sleep 1  && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/osgearth
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/osgearth
-    echo "gg====             SrcDIR_lib=${SrcDIR_lib}" 
-    echo "gg====           BuildDIR_lib=${BuildDIR_lib}" 
-    echo "gg====INSTALL_PREFIX_osgearth=${INSTALL_PREFIX_osgearth}" 
+    BuildDIR_lib=${BuildDIR_3rd}/osgearth
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_osgearth} ${isRebuild}  
 
     #################################################################### 
@@ -1788,16 +1781,13 @@ fi
 # -------------------------------------------------
 # oearthdll
 # -------------------------------------------------
-INSTALL_PREFIX_oearthdll=${INSTALL_PREFIX_ubt}/osgearthdll
+INSTALL_PREFIX_oearthdll=${InstallDIR_3rd}/osgearthdll
 
 if [ "${isFinished_build_oearthdll}" != "true" ] ; then 
     echo "========== building oearthdll 4 ubuntu========== " &&  sleep 1  && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/osgearth
-    BuildDIR_lib=${BuildDir_ubuntu}/3rd/osgearthdll
-    echo "gg====             SrcDIR_lib=${SrcDIR_lib}" 
-    echo "gg====            BuildDIR_lib=${BuildDIR_lib}" 
-    echo "gg==== INSTALL_PREFIX_oearthdll=${INSTALL_PREFIX_oearthdll}" 
+    BuildDIR_lib=${BuildDIR_3rd}/osgearthdll 
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_oearthdll} ${isRebuild}  
 
     #################################################################### 
@@ -1931,10 +1921,14 @@ fi
 # **************************************************************************
 # **************************************************************************
 #  src/
-# ************************************************************************** 
-SrcDIR_src=${Repo_ROOT}/src 
-echo "in mk4ubuntu.sh....SrcDIR_src=${SrcDIR_src}"
-
+# **************************************************************************
+echo " *********************************************************************" 
+SrcDIR_platform=${Repo_ROOT}/platform 
+BuildDIR_platform=${BuildDir_ubuntu}/platform
+InstallDIR_platform=${INSTALL_PREFIX_ubt}/platform
+echo "mk4ubuntu.sh: SrcDIR_src=${SrcDIR_platform}!!"
+echo "mk4ubuntu.sh: BuildDIR_platform=${BuildDIR_platform}!!"
+echo "mk4ubuntu.sh: InstallDIR_platform=${InstallDIR_platform}!!"
 
 
 # **************************************************************************
