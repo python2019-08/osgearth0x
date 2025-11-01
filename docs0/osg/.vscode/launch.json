@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [ 
+        {
+            "name": "C++ Launch (WSL)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/ubuntu/bin/osgviewerd",
+            "args": ["Data340/cow.osg"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                { "name": "OSG_LIBRARY_PATH", "value": "/home/abner/abner2/zdev/nv/OpenSceneGraph/build/ubuntu/lib/osgPlugins-3.7.0" },
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "wslCompile", // 确保你有一个名为 wslCompile 的构建任务（见下一步）
+            "miDebuggerPath": "/usr/bin/gdb" // 根据你的 WSL 发行版调整 gdb 的路径
+        }
+    ]
+}

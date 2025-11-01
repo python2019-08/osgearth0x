@@ -53,7 +53,7 @@ fi
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/openssl/Configure" ]; then  
     #  git clone --recursive https://github.com/openssl/openssl.git  3rd/openssl   
-    git clone https://github.com/openssl/openssl.git   3rd/openssl    || { echo " 克隆失败！"; exit 1; }
+    git clone https://github.com/openssl/openssl.git   3rd/openssl    || { echo "openssl 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/openssl 
     #  git submodule update --init --recursive --progress -v
 
@@ -69,7 +69,11 @@ echo "----------------------------------------------------"
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libpsl/configure" ]; then  
-    git clone  https://github.com/rockdaboot/libpsl.git  3rd/libpsl   || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/rockdaboot/libpsl.git  3rd/libpsl   || { 
+        echo "libpsl 克隆失败！"; 
+        exit 1; 
+    }
+
     cd ${Repo_ROOT}/3rd/libpsl 
     # git checkout -b my-libpsl-0.21.0  tags/libpsl-0.21.0 #Tue Apr 16 15:10:51 2019 +0200
     git checkout -b my-psl-2024May6-153437  490bd6f98a2addcade55028ea60c36cce07e21e4  
@@ -78,7 +82,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/curl/CMakeLists.txt" ]; then  
-    git clone  https://github.com/curl/curl.git    3rd/curl    || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/curl/curl.git    3rd/curl || { echo "curl 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/curl 
     git checkout -b my-curl-8_15_0  tags/curl-8_15_0 #Wed Jul 16 08:21:52 2025 +0200
     cd ${Repo_ROOT}    
@@ -86,7 +90,11 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libjpeg-turbo/CMakeLists.txt" ]; then  
-    git clone  https://github.com/libjpeg-turbo/libjpeg-turbo.git  3rd/libjpeg-turbo   || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/libjpeg-turbo/libjpeg-turbo.git  3rd/libjpeg-turbo || { 
+        echo "libjpeg-turbo克隆失败！";
+        exit 1; 
+    }
+
     cd ${Repo_ROOT}/3rd/libjpeg-turbo  
     git checkout -b myjpeg-3.1.2   tags/3.1.2 #Tue Aug 26 21:11:07 2025 -0400
     cd ${Repo_ROOT}    
@@ -94,7 +102,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libpng/CMakeLists.txt" ]; then  
-    git clone  https://github.com/glennrp/libpng.git  3rd/libpng  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/glennrp/libpng.git  3rd/libpng  || { echo "libpng 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libpng 
     # git checkout -b my-libpng-1.6.31-signed tags/libpng-1.6.31-signed  ## too old?? Thu Jul 27 06:36:02 2017 -0400
     git checkout -b mypng-2025Sep29-220604 bd41aa64d34609a9f39944fd241c24f38bb7c3d6 
@@ -111,7 +119,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libtiff/CMakeLists.txt" ]; then  
-    git clone  https://github.com/vadz/libtiff.git   3rd/libtiff  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/vadz/libtiff.git   3rd/libtiff  || { echo "libtiff 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libtiff 
     git checkout -b mytiff-Release-v4-0-9  tags/Release-v4-0-9 # Nov 18 20:00:43 2017 +0000
     cd ${Repo_ROOT}    
@@ -119,7 +127,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/freetype/CMakeLists.txt" ]; then  
-    git clone  https://github.com/freetype/freetype.git   3rd/freetype  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/freetype/freetype.git   3rd/freetype  || { echo "freetype 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/freetype 
     # git checkout -b my-VER-2-13-3  tags/VER-2-13-3  # Mon Aug 12 12:59:39 2024 +0200
     git checkout -b myft-2025Aug31-223911  c6cf32de3b3582d0eea9f6372121f0f07d22ae68
@@ -128,7 +136,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/geos/CMakeLists.txt" ]; then  
-    git clone  https://github.com/libgeos/geos.git   3rd/geos  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/libgeos/geos.git   3rd/geos  || { echo "geos 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/geos 
     git checkout -b mygeos-3.13.1 tags/3.13.1 #Mar 3 09:51:17 2025 -0800
     cd ${Repo_ROOT}    
@@ -147,19 +155,19 @@ echo "----------------------------------------------------"
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/proj/CMakeLists.txt" ]; then  
-    git clone  https://github.com/OSGeo/PROJ.git    3rd/proj  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/OSGeo/PROJ.git    3rd/proj  || { echo "proj 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/proj 
     git checkout -b myproj-9.6.2 tags/9.6.2 #Jun 4 13:28:23 2025 +0200
     cd ${Repo_ROOT}    
 fi
 
 echo "----------------------------------------------------"
-# git clone  https://github.com/libexpat/libexpat.git    3rd/libexpat  || { echo " 克隆失败！"; exit 1; }
+# git clone  https://github.com/libexpat/libexpat.git    3rd/libexpat  || { echo "libexpat 克隆失败！"; exit 1; }
 
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/abseil-cpp/CMakeLists.txt" ]; then  
-    git clone  https://github.com/abseil/abseil-cpp.git   3rd/abseil-cpp  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/abseil/abseil-cpp.git   3rd/abseil-cpp  || { echo "abseil-cpp 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/abseil-cpp
     git checkout -b myAbsl-20250512.1   tags/20250512.1  
     cd ${Repo_ROOT}
@@ -167,7 +175,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/protobuf/CMakeLists.txt" ]; then  
-    git clone  https://github.com/protocolbuffers/protobuf.git   3rd/protobuf  || { echo " 克隆失败！"; exit 1; }
+    git clone  https://github.com/protocolbuffers/protobuf.git   3rd/protobuf  || { echo "protobuf克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/protobuf 
     git checkout -b myPbf-v32.0 tags/v32.0 #Aug 14 09:20:26 2025 -0700
     cd ${Repo_ROOT}
@@ -176,14 +184,21 @@ fi
 echo "----------------------------------------------------"
 if false; then  
     git clone  https://github.com/json-c/json-c.git  3rd/json-c  || { 
-        echo " 克隆失败！"; exit 1; 
+        echo "json-c 克隆失败！"; exit 1; 
+    }
+fi
+
+echo "----------------------------------------------------"
+if [ ! -f "${Repo_ROOT}/3rd/libwebp/CMakeLists.txt" ]; then 
+    git clone  https://github.com/webmproject/libwebp.git  3rd/libwebp  || { 
+        echo " libwebp克隆失败！"; exit 1; 
     }
 fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/gdal/CMakeLists.txt" ]; then  
     git clone  https://github.com/OSGeo/gdal.git   3rd/gdal  || { 
-        echo " 克隆失败！"; exit 1; 
+        echo "gdal 克隆失败！"; exit 1; 
     }
     
     cd ${Repo_ROOT}/3rd/gdal  
@@ -193,7 +208,7 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-git clone  https://github.com/google/draco.git  3rd/osgdraco  || { echo " 克隆失败！"; exit 1; }
+git clone  https://github.com/google/draco.git  3rd/osgdraco  || { echo "draco 克隆失败！"; exit 1; }
 fi
 
 
@@ -242,7 +257,7 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-    git clone https://github.com/chriskohlhoff/asio.git   3rd/asio  || { echo " 克隆失败！"; exit 1; }
+    git clone https://github.com/chriskohlhoff/asio.git   3rd/asio  || { echo "asio 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/asio 
     # git checkout -b my-boost_1_88_0    tags/boost_1_88_0
     cd ${Repo_ROOT}
@@ -251,7 +266,7 @@ fi
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/osg/CMakeLists.txt" ]; then  
     # git clone https://github.com/openscenegraph/OpenSceneGraph.git  3rd/osg  || { echo " 克隆失败！"; exit 1; }
-    git clone https://github.com/python2019-08/osg.git  3rd/osg   || { echo " 克隆失败！"; exit 1; }
+    git clone https://github.com/python2019-08/osg.git  3rd/osg   || { echo "osg 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/osg 
     # git checkout -b my-OpenSceneGraph-3.6.5 tags/OpenSceneGraph-3.6.5
     # 
@@ -267,7 +282,7 @@ fi
 
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/libzip/CMakeLists.txt" ]; then  
-    git clone https://github.com/nih-at/libzip.git 3rd/libzip  || { echo " 克隆失败！"; exit 1; }
+    git clone https://github.com/nih-at/libzip.git 3rd/libzip  || { echo "libzip 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/libzip 
     git checkout -b myzip2025Aug14-204435  92035140dfd80f4d31dd33590acb018da21cdfb0
     cd ${Repo_ROOT}
@@ -275,7 +290,7 @@ fi
 
 echo "----------------------------------------------------"
 if false; then  
-    git clone https://github.com/gabime/spdlog.git  3rd/spdlog  || { echo " 克隆失败！"; exit 1; }
+    git clone https://github.com/gabime/spdlog.git  3rd/spdlog  || { echo "spdlog 克隆失败！"; exit 1; }
     cd 3rd/spdlog
     git checkout  -b  myspdlog2025Aug7-204711 f1d748e5e3edfa4b1778edea003bac94781bc7b7 
     cd ${Repo_ROOT}
@@ -288,7 +303,7 @@ fi
 echo "----------------------------------------------------"
 if [ ! -f "${Repo_ROOT}/3rd/osgearth/CMakeLists.txt" ]; then  
     # git clone https://github.com/gwaldron/osgearth.git   3rd/osgearth  || { echo " 克隆失败！"; exit 1; }
-    git clone https://github.com/python2019-08/osgearth.git 3rd/osgearth  || { echo " 克隆失败！"; exit 1; }
+    git clone https://github.com/python2019-08/osgearth.git 3rd/osgearth  || { echo "osgearth 克隆失败！"; exit 1; }
     cd ${Repo_ROOT}/3rd/osgearth 
     git submodule update --init --recursive
     # git checkout -b my-osgearth-3.7.2   tags/osgearth-3.7.2

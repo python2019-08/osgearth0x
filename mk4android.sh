@@ -26,7 +26,7 @@ if [ ! -d "$Repo_ROOT" ]; then
 fi
  
 echo "============================================================="
-isRebuild=true
+isRebuild=false
 # ------------
 isFinished_build_zlib=true  
 # isFinished_build_zstd=true
@@ -49,9 +49,10 @@ isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true  
 isFinished_build_gdal=true # v
-isFinished_build_osg=false
+isFinished_build_osg=true
 isFinished_build_zip=true
 isFinished_build_oearth=false
+echo "============================================================="
 # ------------    
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
 # export ANDROID_NDK_ROOT=/home/abel/programs/android-ndk-r27d    
@@ -98,14 +99,16 @@ fi
 # CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
 # CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
 
+echo "=============================================================" 
+BuildROOT=${Repo_ROOT}/build_by_sh
+# rm -fr ./build_by_sh 
 
-# **************************************************************************
-# rm -fr ./build_by_sh   
-BuildDir_andro=${Repo_ROOT}/build_by_sh/android
+BuildROOT_andro=${BuildROOT}/build/android
+InstallROOT_andro=${BuildROOT}/install/android
+mkdir -p ${BuildROOT_andro} 
+mkdir -p ${InstallROOT_andro} 
 
-INSTALL_PREFIX_andro=${BuildDir_andro}/install
-mkdir -p ${INSTALL_PREFIX_andro} 
-
+echo "============================================================="
 # 定义需要编译的 Android ABI 列表
 # ABIS=("arm64-v8a"  "x86_64"   "armeabi-v7a"  "x86" )
 # CMAKE_ANDROID_ARCH_ABI="x86_64" 
@@ -120,7 +123,7 @@ cmakeCommonParams=(
   "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
   "-DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config"
-  "-DCMAKE_FIND_ROOT_PATH=${INSTALL_PREFIX_andro}"
+  "-DCMAKE_FIND_ROOT_PATH=${InstallROOT_andro}"
   "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
   "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
   "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY" # BOTH：先查根路径，再查系统路径    
@@ -267,8 +270,9 @@ done
 #  3rd/
 # **************************************************************************
 SrcDIR_3rd=${Repo_ROOT}/3rd
-BuildDir_3rd=${BuildDir_andro}/3rd
-INSTALL_PREFIX_3rd=${INSTALL_PREFIX_andro}/3rd
+
+BuildDir_3rd=${BuildROOT_andro}/3rd
+INSTALL_PREFIX_3rd=${InstallROOT_andro}/3rd
 # -------------------------------------------------
 # zlib
 # -------------------------------------------------
@@ -479,7 +483,7 @@ fi
 #         TARGET_HOST=$(get_targetHost_byABILvl "${ABI}")
 #   
 #         # 设置当前架构的构建目录和安装目录
-#         BuildDIR_lib=${BuildDir_andro}/3rd/jpeg-9f/${ABI}
+#         BuildDIR_lib=${BuildROOT_andro}/3rd/jpeg-9f/${ABI}
 #         INSTALL_PREFIX_jpeg9f=${INSTALL_PREFIX_3rd}/jpeg-9f/${ABI}
 #         prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_jpeg9f} ${isRebuild}    
 #

@@ -39,8 +39,8 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
     enum navType { PRINCIPAL , SECONDARY }
     enum lightType { ON , OFF }
 
-    moveTypes mode=moveTypes.NONE;
-    navType navMode = navType.PRINCIPAL;
+    moveTypes mMoveType=moveTypes.NONE;
+    navType mNavMode = navType.PRINCIPAL;
     lightType lightMode = lightType.ON;
 
     PointF oneFingerOrigin = new PointF(0,0);
@@ -178,10 +178,10 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
             switch (action)
             {
                 case MotionEvent.ACTION_DOWN:
-                    mode = moveTypes.DRAG;
+                    mMoveType = moveTypes.DRAG;
 
                     osgNativeLib.mouseMoveEvent(x0, y0);
-                    if (navMode == navType.PRINCIPAL)
+                    if (mNavMode == navType.PRINCIPAL)
                         osgNativeLib.mouseButtonPressEvent(x0, y0, 2);
                     else
                         osgNativeLib.mouseButtonPressEvent(x0, y0, 1);
@@ -190,11 +190,11 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
                     oneFingerOrigin.y = y0;
                     break;
                 case MotionEvent.ACTION_CANCEL:
-                    switch (mode)
+                    switch (mMoveType)
                     {
                         case DRAG:
                             osgNativeLib.mouseMoveEvent( x0, y0);
-                            if (navMode == navType.PRINCIPAL)
+                            if (mNavMode == navType.PRINCIPAL)
                                 osgNativeLib.mouseButtonReleaseEvent(x0, y0, 2);
                             else
                                 osgNativeLib.mouseButtonReleaseEvent(x0, y0, 1);
@@ -202,7 +202,7 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
                         default:
                             Log.e(TAG, "There has been an anomaly in touch input 1point/action");
                     }
-                    mode = moveTypes.NONE;
+                    mMoveType = moveTypes.NONE;
                     break;
                 case MotionEvent.ACTION_MOVE:
 
@@ -213,10 +213,10 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
 
                     break;
                 case MotionEvent.ACTION_UP:
-                    switch (mode)
+                    switch (mMoveType)
                     {
                         case DRAG:
-                            if (navMode == navType.PRINCIPAL)
+                            if (mNavMode == navType.PRINCIPAL)
                                 osgNativeLib.mouseButtonReleaseEvent(x0, y0, 2);
                             else
                                 osgNativeLib.mouseButtonReleaseEvent(x0, y0, 1);
@@ -224,7 +224,7 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
                         default:
                             Log.e(TAG, "There has been an anomaly in touch input 1 point/action");
                     }
-                    mode = moveTypes.NONE;
+                    mMoveType = moveTypes.NONE;
                     break;
                 default:
                     Log.e(TAG, "1 point Action not captured");
@@ -241,16 +241,16 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
             {
                 case MotionEvent.ACTION_POINTER_DOWN:
                     //Free previous Action
-                    switch(mode)
+                    switch(mMoveType)
                     {
                         case DRAG:
-                            if(navMode==navType.PRINCIPAL)
+                            if(mNavMode==navType.PRINCIPAL)
                                 osgNativeLib.mouseButtonReleaseEvent(x0, y0, 2);
                             else
                                 osgNativeLib.mouseButtonReleaseEvent(x0, y0, 1);
                             break;
                     }
-                    mode = moveTypes.ZOOM;
+                    mMoveType = moveTypes.ZOOM;
                     distanceOrigin = sqrDistance(event);
                     twoFingerOrigin.x = x1;
                     twoFingerOrigin.y = y1;
@@ -273,11 +273,11 @@ public class osgViewer extends Activity implements View.OnTouchListener, View.On
 
                     break;
                 case MotionEvent.ACTION_POINTER_UP:
-                    mode =moveTypes.NONE;
+                    mMoveType =moveTypes.NONE;
                     osgNativeLib.mouseButtonReleaseEvent(oneFingerOrigin.x,oneFingerOrigin.y, 3);
                     break;
                 case MotionEvent.ACTION_UP:
-                    mode =moveTypes.NONE;
+                    mMoveType =moveTypes.NONE;
                     osgNativeLib.mouseButtonReleaseEvent(oneFingerOrigin.x,oneFingerOrigin.y, 3);
                     break;
                 default :

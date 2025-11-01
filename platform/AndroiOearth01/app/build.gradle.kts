@@ -3,11 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.androioearthdemo"
-    compileSdk = 36
+    namespace = "com.oearth.androioearth01"
+    compileSdk {
+        version = release(36)
+    }
 
     defaultConfig {
-        applicationId = "com.example.androioearthdemo"
+        applicationId = "com.oearth.androioearth01"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -19,10 +21,11 @@ android {
                 cppFlags += "-std=c++17"
                 val libPath = project.file("../../../build_by_sh/install/android/3rd/").absolutePath // 动态获取路径
                 arguments += listOf(
-                    "-DLibs3rd_RootDIR=$libPath",      // 动态传递路径
+                    "-DInstallRoot_3rd=$libPath",      // 动态传递路径
                     "-DANDROID_STL=c++_shared", // 其他CMake参数
                     "-DANDROID_PAGE_SIZE_ALIGNMENT=16384",
-                    "-DCMAKE_BUILD_TYPE=Debug"
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DANDROID=1"
                 )
             }
         }

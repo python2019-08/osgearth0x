@@ -1,0 +1,5 @@
+build*/ 
+tmp*
+b*.txt
+data/
+docs/

@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.22.1)
 # Since this is the top level CMakeLists.txt, the project name is also accessible
 # with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
 # build script scope).
-project("androiOearthDemo01")
+project("androioearth01")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,6 +29,28 @@ if( ANDROID_API_NAME  MATCHES "arm64-v8a|x86_64|armeabi-v7a|x86")
 else()
     message(FATAL_ERROR "ANDROID_API_NAME=${ANDROID_API_NAME} **NOT** MATCHES arm64-v8a|x86_64|armeabi-v7a|x86 !")    
 endif()
+
+SET(CMAKE_BUILD_TYPE "Debug")
+
+# --------Android 特定设置
+if(ANDROID)
+    message(STATUS "^-^....ANDROID=1")   
+    # 设置 Android 编译选项
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+    
+    # Android 调试配置
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG=1")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -DDEBUG=1")
+    
+    # 确保 NDK 也包含调试信息
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_compile_options(-g -O0 -fno-omit-frame-pointer)
+    endif()
+else()
+    message(STATUS "^v^....ANDROID !=1")   
+endif()
+
 
 # ------Libs3rd 
 set(InstallRoot_3rd "" CACHE PATH "Location of 3rd libraries folder")
@@ -366,9 +388,12 @@ endif()
 # for GameActivity/NativeActivity derived applications, the same library name must be
 # used in the AndroidManifest.xml file.
 set(OEarthJni_SRC_FILES 
-        osgNativeLib.cpp 
-        OsgMainApp.cpp 
-        OsgAndroidNotifyHandler.cpp)
+        # a-native-lib.cpp  // a-native-lib.cpp is created by wizard
+        OsgDebugMsgHandler.cpp
+        OeLayerFactory.cpp
+        OsgDemoScene.cpp    OsgMainApp.cpp    
+        osgNativeLib.cpp   
+         )
 
 message(STATUS "Libs3rd_includeDIRS=${Libs3rd_includeDIRS} haha!")
 message(STATUS "Libs3rd_LIBS=${Libs3rd_LIBS} haha!")
@@ -378,6 +403,25 @@ message(STATUS "Libs3rd_LIBS=${Libs3rd_LIBS} haha!")
 add_library(${CMAKE_PROJECT_NAME} SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         ${OEarthJni_SRC_FILES} )
+
+
+# Android 特定的目标设置
+if(ANDROID)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:
+            -g
+            -ggdb
+            -fno-omit-frame-pointer
+            -fno-optimize-sibling-calls
+        >
+    )
+    
+    # 防止 strip
+    set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+        ANDROID_ARM_NEON TRUE
+        NO_SYSTEM_FROM_IMPORTED TRUE
+    )
+endif()
 
 target_compile_definitions(${CMAKE_PROJECT_NAME}
     PRIVATE
