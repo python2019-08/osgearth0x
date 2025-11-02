@@ -398,10 +398,11 @@ public class EGLview extends GLSurfaceView
 						//---- rotate
 						mRotateAngleCur = Math.atan2(diffY, diffX);
 						double diffRadians =  -(mRotateAngleCur - mRotateAngleOld);
-						double rotationDegreesDelta =Math.abs (diffRadians * 180 / Math.PI);
-
-						if (rotationDegreesDelta > 15 && zoomDelta < 0.2){
-							osgNativeLib.touchRotationEvent( diffRadians * 0.05 );
+						double rotationDegreesDelta =Math.abs (diffRadians * 180 / Math.PI) ;
+						mRotateAngleOld = mRotateAngleCur;
+						Log.i("androioearth01","rotationDegreesDelta="+rotationDegreesDelta+";zoomDelta="+zoomDelta);
+						if (rotationDegreesDelta > 1.01 && Math.abs(zoomDelta) < 0.1){
+							osgNativeLib.touchRotationEvent( diffRadians  );
 						}else{
 							osgNativeLib.touchZoomEvent( zoomDelta );
 						}
