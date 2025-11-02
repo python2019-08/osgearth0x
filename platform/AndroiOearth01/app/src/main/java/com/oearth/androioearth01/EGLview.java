@@ -24,15 +24,21 @@ public class EGLview extends GLSurfaceView
 	
 	int mTouchState;
 	final int ETouchState_IDLE = 0;
-	final int ETouchState_TOUCH = 1;
-	final int ETouchState_PINCH = 2;
+	final int ETouchState_OneFinger = 1;
+	final int ETouchState_TwoFinger = 2;
 
     // enum moveTypes { NONE , DRAG, MDRAG, ZOOM ,ACTUALIZE}
+	private GestureDetector gestureDetector;
+	private ScaleGestureDetector scaleGestureDetector;
      
 	static int mTapcount = 1;
 	double mDist0 = 1;
 	double mDistCurrent = 1;
 	double mDistOld = 1;
+
+	double mRotateAngle0 = 1;//in radians
+	double mRotateAngleCur = 1;
+	double mRotateAngleOld = 1;
 	
 	public EGLview(Context context) {
 	    super(context);
@@ -344,34 +350,62 @@ public class EGLview extends GLSurfaceView
 		@Override
 		public boolean onTouch(View v, MotionEvent event) 
 		{
-			float distx, disty;
-		
 			switch(event.getAction() & MotionEvent.ACTION_MASK) 
 			{
 				case MotionEvent.ACTION_DOWN:
-					mTouchState = ETouchState_TOUCH;
+					mTouchState = ETouchState_OneFinger;
 					int touchID = event.getPointerId(0);
 					osgNativeLib.touchBeganEvent(touchID, event.getX(), event.getY());
-					
 					break;
 				case MotionEvent.ACTION_POINTER_DOWN:
-					mTouchState = ETouchState_PINCH;
-		
-					distx = event.getX(0) - event.getX(1);
-					disty = event.getY(0) - event.getY(1);
-					mDist0 = Math.sqrt(distx * distx + disty * disty);
-					
+				{
+					mTouchState = ETouchState_TwoFinger;
+
+					float diffX = event.getX(0) - event.getX(1);
+					float diffY = event.getY(0) - event.getY(1);
+					//---- zoom 
+					mDist0 = Math.sqrt(diffX * diffX + diffY * diffY);
 					mDistOld = mDist0;
+					//---- rotate
+					mRotateAngle0 = Math.atan2(diffY, diffX);
+					mRotateAngleOld = mRotateAngle0;
+				}
 					break;
 				case MotionEvent.ACTION_MOVE:
-					if(mTouchState == ETouchState_PINCH) 
+					// if (缩放和旋转同时检测) {
+					//     // 基于手势特征判断主导意图
+					//     if (两指距离变化率 > 旋转角度变化率 × 2) {
+					//         优先处理缩放，限制旋转;
+					//     } else if (旋转角度 > 15° && 缩放变化 < 10%) {
+					//         优先处理旋转，限制缩放;
+					//     } else {
+					//         // 混合处理：缩放为主，旋转为辅
+					//         缩放系数 = 距离变化;
+					//         旋转系数 = 角度变化 × (1 - 缩放权重);
+					//     }
+					// }
+					if(mTouchState == ETouchState_TwoFinger) 
 					{
-						distx = event.getX(0) - event.getX(1);
-						disty = event.getY(0) - event.getY(1);
-						mDistCurrent = Math.sqrt(distx * distx + disty * disty);
-		
-						osgNativeLib.touchZoomEvent(-1 * (1 - (mDistOld / mDistCurrent)));
-						mDistOld = mDistCurrent;
+						float diffX = event.getX(0) - event.getX(1);
+						float diffY = event.getY(0) - event.getY(1);	
+
+						//---- zoom 
+						mDistCurrent = Math.sqrt(diffX * diffX + diffY * diffY);
+						double zoomDelta =  -1 * (1 - (mDistOld / mDistCurrent));	
+						mDistOld = mDistCurrent;	
+
+
+						//---- rotate
+						mRotateAngleCur = Math.atan2(diffY, diffX);
+						double diffRadians =  -(mRotateAngleCur - mRotateAngleOld);
+						double rotationDegreesDelta =Math.abs (diffRadians * 180 / Math.PI);
+
+						if (rotationDegreesDelta > 15 && zoomDelta < 0.2){
+							osgNativeLib.touchRotationEvent( diffRadians * 0.05 );
+						}else{
+							osgNativeLib.touchZoomEvent( zoomDelta );
+						}
+
 					} 
 					else 
 					{						

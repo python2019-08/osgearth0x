@@ -12,7 +12,7 @@
             // "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_viewer/osgearth_viewer", //oearth
             // "args": ["/home/abner/abner2/zdev/nv/osgearth0x/3rd/osgearth/tests/boston.earth"],//oearth
             
-            "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_city/osgearth_city",             
+            "program": "${workspaceFolder}/build_by_sh/build/ubuntu/platform/lnx8sky/Lnx8SkyDemo",             
             // -----------${program} args...end
             
             "stopAtEntry": false,

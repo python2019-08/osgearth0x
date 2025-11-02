@@ -33,6 +33,7 @@ public:
 	void touchBeganEvent(int touchid,float x,float y);
 	void touchMovedEvent(int touchid,float x,float y);
 	void touchZoomEvent(double delta);
+	void touchRotationEvent(double delta);
 	void touchEndedEvent(int touchid,float x,float y,int tapcount=0);
 	// ----------------------------- 
 	void mouseButtonPressEvent(float x,float y,int button);

@@ -25,6 +25,10 @@ extern "C" {
         jint touchid, jfloat x, jfloat y);
     JNIEXPORT void JNICALL Java_com_oearth_androioearth01_osgNativeLib_touchZoomEvent(JNIEnv * env, jobject obj, 
         jdouble delta);
+
+    JNIEXPORT void JNICALL
+    Java_com_oearth_androioearth01_osgNativeLib_touchRotationEvent(JNIEnv * env, jobject obj,
+                                                                    jdouble aDelta);
     JNIEXPORT void JNICALL Java_com_oearth_androioearth01_osgNativeLib_touchEndedEvent(JNIEnv * env, jobject obj, 
         jint touchid, jfloat x, jfloat y, jint tapcount);
     JNIEXPORT void JNICALL Java_com_oearth_androioearth01_osgNativeLib_clearEventQueue(JNIEnv * env, jobject obj);
@@ -72,10 +76,20 @@ Java_com_oearth_androioearth01_osgNativeLib_touchMovedEvent(JNIEnv * env, jobjec
 }
 
 JNIEXPORT void JNICALL 
-Java_com_oearth_androioearth01_osgNativeLib_touchZoomEvent(JNIEnv * env, jobject obj, jdouble delta)
+Java_com_oearth_androioearth01_osgNativeLib_touchZoomEvent(JNIEnv * env, jobject obj,
+                                                           jdouble delta)
 {
     mainApp.touchZoomEvent(delta);
 }
+
+
+JNIEXPORT void JNICALL
+Java_com_oearth_androioearth01_osgNativeLib_touchRotationEvent(JNIEnv * env, jobject obj,
+                                                               jdouble aDelta)
+{
+    mainApp.touchRotationEvent(aDelta);
+}
+
 JNIEXPORT void JNICALL 
 Java_com_oearth_androioearth01_osgNativeLib_touchEndedEvent(JNIEnv * env, jobject obj, 
     jint touchid, jfloat x, jfloat y, jint tapcount)

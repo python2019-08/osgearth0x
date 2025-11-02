@@ -64,6 +64,7 @@ int main()
     options.atmosphericLighting() = true;//大气散射光是否可见
     options.sunVisible() = true;
     options.moonVisible() = true;
+    options.moonImageURI() = dataBasePath+"/moon_1024x512.jpg";
     options.starsVisible() = true;
     options.usePBR() = true;
     //添加天空模型
@@ -77,6 +78,7 @@ int main()
 	sky->addChild(mapNode);    
 #endif
 
+    viewer.setRunFrameScheme( osgViewer::ViewerBase::ON_DEMAND );
     //set black background color
     viewer.getCamera()->setClearColor(osg::Vec4(0, 0, 0, 1));//设置宇宙背景颜色为黑色
     viewer.setSceneData(mapNode);

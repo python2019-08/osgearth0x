@@ -68,6 +68,15 @@ void OsgMainApp::touchZoomEvent(double delta)
 	manip->zoom(0.0, delta, _scene->getViewer());
 }
 
+void OsgMainApp::touchRotationEvent(double delta)
+{
+	osgEarth::Util::EarthManipulator* manip = dynamic_cast<osgEarth::Util::EarthManipulator*>(
+        _scene->getViewer()->getCameraManipulator() );
+    if(manip){
+        manip->rotate(delta , 0.0 );
+    }        
+}
+
 void OsgMainApp::touchEndedEvent(int touchid,float x,float y,int tapcount)
 {
     if (!_frameTouchEndedEvents.valid())
