@@ -7,12 +7,12 @@ startTm=$(date +%Y/%m/%d--%H:%M:%S)
 # 获取脚本的物理绝对路径（解析软链接）
 SCRIPT_PATH=$(readlink -f "$0")
 echo "sh-path: $SCRIPT_PATH"
-
 # 额外：获取脚本所在目录的绝对路径
 # Repo_ROOT=$(dirname "$SCRIPT_PATH")
 #--当/home/abner/abner2 是 实际路径/mnt/disk2/abner/ 的软链接时，Repo_ROOT应该是 软链接目录下的路径，
 #--否则，cmake 在使用CMAKE_PREFIX_PATH查找 xxxConfig.cmake 时有歧义、混淆，从而编译失败。
-#--所以这里强制指定为：
+#--所以这里强制指定为： 
+# changable(1)
 Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 echo "Repo_ROOT=${Repo_ROOT}"
 # 验证路径是否存在
@@ -22,14 +22,16 @@ if [ ! -d "$Repo_ROOT" ]; then
 fi
  
 # echo "============================================================="
-isRebuild=false
+# changable(2)
+is_enable_ASAN=true    # false
+isRebuild=true
 # ------
 isFinished_build_zlib=true
 isFinished_build_zstd=true
-isFinished_build_openssl=true  
+isFinished_build_openssl=true 
 # isFinished_build_icu=true  
 # isFinished_build_libidn2=true 
-isFinished_build_libpsl=true  
+isFinished_build_libpsl=true   
 isFinished_build_curl=true   # false #big code
 # isFinished_build_jpeg9f=true  
 isFinished_build_libjpegTurbo=true  
@@ -55,6 +57,28 @@ CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
 CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
 CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
+# ===================================================================
+#------为“./configure --prefix=/path/to/install...”启用HWASan 而设置环境变量
+ENABLE_123ASAN_VAL="OFF"
+ASAN_C_FLAGS="" 
+ASAN_CXX_FLAGS=""  
+ASAN_EXE_LINKER_FLAGS="" 
+ASAN_SHARED_LINKER_FLAGS="" 
+EXE_LINKER_FLAGS="-static"
+if [ "${is_enable_ASAN}" = "true" ]; then 
+    # export CC="clang -fsanitize=address -fno-omit-frame-pointer"
+    # export CXX="clang++ -fsanitize=address -fno-omit-frame-pointer"
+    export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+    export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+    export LDFLAGS="-fsanitize=address"
+
+    ENABLE_123ASAN_VAL="ON"
+    ASAN_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer" 
+    ASAN_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"  
+    ASAN_EXE_LINKER_FLAGS="-fsanitize=address" 
+    ASAN_SHARED_LINKER_FLAGS="-fsanitize=address" 
+    EXE_LINKER_FLAGS="-fsanitize=address"        
+fi
 
 # echo "============================================================="
 BuildROOT=${Repo_ROOT}/build_by_sh
@@ -82,11 +106,21 @@ cmakeCommonParams=(
   # 是否访问PATH\LD_LIBRARY_PATH等环境变量
   "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF" 
   "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a"
+  #  -DCMAKE_C_FLAGS= "-fPIC"     
+  #  -DCMAKE_CXX_FLAGS="-fPIC"   
   "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
   "-DBUILD_SHARED_LIBS=OFF"    
 )
-  #  -DCMAKE_C_FLAGS= "-fPIC"     
-  #  -DCMAKE_CXX_FLAGS="-fPIC" 
+
+if [ "${is_enable_ASAN}" = "true" ]; then 
+    cmakeCommonParams+=(
+      "-DENABLE_123ASAN=${ENABLE_123ASAN_VAL}" 
+      "-DCMAKE_C_FLAGS=${ASAN_C_FLAGS}"
+      "-DCMAKE_CXX_FLAGS=${ASAN_CXX_FLAGS}"  
+    )
+fi
+
+
 echo "cmakeCommonParams=${cmakeCommonParams[@]}"
 
 echo "============================================================="
@@ -227,8 +261,9 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_zlib}  \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}    \
-            -DCMAKE_C_FLAGS="-fPIC -DZLIB_DEBUG=1"  \
-            -DCMAKE_EXE_LINKER_FLAGS="-static"   \
+            -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS}"   \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC  -DZLIB_DEBUG=1" \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC -DZLIB_DEBUG=1" \
             -DBUILD_SHARED_LIBS=OFF     \
             -DCMAKE_EXPORT_PACKAGE_REGISTRY=ON \
             -DZLIB_BUILD_SHARED=OFF \
@@ -283,8 +318,8 @@ if [ "${isFinished_build_zstd}" != "true" ]; then
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DBUILD_SHARED_LIBS=OFF     \
-            -DCMAKE_C_FLAGS="-fPIC" \
-            -DCMAKE_CXX_FLAGS="-fPIC" 
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC" \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC" 
 
     cmake --build ${BuildDIR_lib} -j$(nproc) -v
 
@@ -321,7 +356,7 @@ if [ "${isFinished_build_openssl}" != "true" ]; then
     #     ./Configure linux-x86_64 enable-asan --prefix=...
     # (2) 如需调试符号，改用 -g：
     #     CFLAGS="-fPIC -g" ./Configure ...
-    CFLAGS="-fPIC" \
+    CFLAGS="-fPIC ${ASAN_C_FLAGS}" \
     ${SrcDIR_openssl}/Configure linux-x86_64 -d \
                 --prefix=${INSTALL_PREFIX_openssl} \
                 --openssldir=${INSTALL_PREFIX_openssl}/ssl  \
@@ -432,7 +467,7 @@ if [ "${isFinished_build_libpsl}" != "true" ] ; then
     # CFLAGS="-I${INSTALL_PREFIX_icu}/include/icu" \
     # LDFLAGS="-L${INSTALL_PREFIX_icu}/lib" \
 
-    CFLAGS="-fPIC" \
+    CFLAGS="-fPIC ${ASAN_C_FLAGS}" \
     ${SrcDIR_lib}/configure \
                 --prefix=${INSTALL_PREFIX_psl} --enable-debug \
                 --disable-shared  --enable-static  \
@@ -473,8 +508,6 @@ if [ "${isFinished_build_curl}" != "true" ] ; then
             -DCMAKE_MODULE_PATH="${curl_MODULE_PATH}" \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}"  \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_curl}  \
-            -DCMAKE_C_FLAGS="-fPIC"               \
-            -DCMAKE_CXX_FLAGS="-fPIC"              \
             -DCURL_DISABLE_LDAP=ON     \
             -DCURL_DISABLE_FTP=ON      \
             -DCURL_DISABLE_TELNET=ON   \
@@ -632,8 +665,14 @@ if [ "${isFinished_build_xz}" != "true" ]  ; then
     BuildDIR_lib=${BuildDIR_3rd}/xz
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_xz} ${isRebuild}     
 
+    XZ_SANDBOX_CFG=""
+    if [ "${is_enable_ASAN}" = "true" ]; then 
+        XZ_SANDBOX_CFG="-DXZ_SANDBOX=no"
+    fi
+
     cmake -S${SrcDIR_lib}  -B ${BuildDIR_lib}  --debug-find \
             "${cmakeCommonParams[@]}"    \
+            ${XZ_SANDBOX_CFG}  \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_xz}  
 
     cmake --build ${BuildDIR_lib} -j$(nproc)
@@ -684,9 +723,7 @@ if [ "${isFinished_build_libtiff}" != "true" ] ; then
             -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include \
             -DLIBLZMA_LIBRARY=${INSTALL_PREFIX_xz}/lib/liblzma.a \
             -DLIBLZMA_INCLUDE_DIR=${INSTALL_PREFIX_xz}/include \
-            -DCMAKE_C_FLAGS="-fPIC" \
-            -DCMAKE_CXX_FLAGS="-fPIC" \
-            -DCMAKE_EXE_LINKER_FLAGS="-static" \
+            -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS}" \
             -Djbig=OFF \
             -Dlzma=OFF \
             -Dwebp=OFF \
@@ -747,8 +784,6 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_freetype} \
-            -DCMAKE_C_FLAGS="-fPIC" \
-            -DCMAKE_CXX_FLAGS="-fPIC" \
             -DFT_DISABLE_BZIP2=ON \
             -DFT_DISABLE_BROTLI=ON \
             -DZLIB_ROOT=${INSTALL_PREFIX_zlib}              \
@@ -759,7 +794,7 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
             -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
             -DFT_REQUIRE_ZLIB=ON \
             -DFT_REQUIRE_PNG=ON  \
-            -DCMAKE_EXE_LINKER_FLAGS="-static"
+            -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS}"
 
     # --Hi..in PNGTargets.cmake: CMAKE_CURRENT_LIST_FILE=/home/abner/osgearth0x/build_by_sh/ubuntu/install/libpng/lib/cmake/PNG/PNGTargets.cmake
     cmake --build ${BuildDIR_lib} -j$(nproc) -v
@@ -787,14 +822,14 @@ if [ "${isFinished_build_geos}" != "true" ] ; then
     # 在顶层 CMakeLists.txt 中全局启用 PIC: set(CMAKE_POSITION_INDEPENDENT_CODE ON)  
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-            -DCMAKE_C_FLAGS="-fPIC" \
-            -DCMAKE_CXX_FLAGS="-fPIC" \
+            -DCMAKE_C_FLAGS="-fPIC ${ASAN_C_FLAGS}" \
+            -DCMAKE_CXX_FLAGS="-fPIC ${ASAN_CXX_FLAGS}" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_geos}  \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}    \
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
             -DBUILD_SHARED_LIBS=OFF     \
-            -DCMAKE_EXE_LINKER_FLAGS="-static" 
+            -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS}" 
  
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
     
@@ -898,8 +933,6 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
             -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"  \
             -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX_proj}"               \
             -DBUILD_TESTING=OFF  -DBUILD_EXAMPLES=ON  \
-            -DCMAKE_CXX_FLAGS="-fPIC" \
-            -DCMAKE_C_FLAGS="-fPIC"    \
             -DENABLE_CURL=ON  \
             -DENABLE_TIFF=OFF  \
             -DSQLite3_DISABLE_DYNAMIC_EXTENSIONS=ON \
@@ -975,12 +1008,10 @@ if [ "${isFinished_build_libexpat}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH=${cmk_prefixPath} \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_expat}  \
-            -DCMAKE_C_FLAGS="-fPIC"   \
-            -DCMAKE_CXX_FLAGS="-fPIC" \
             -DEXPAT_BUILD_TESTS=OFF \
             -DEXPAT_BUILD_EXAMPLES=OFF \
             -DEXPAT_BUILD_DOCS=OFF \
-            -DCMAKE_EXE_LINKER_FLAGS="-static"
+            -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS}"
 
         # if " -DEXPAT_BUILD_FUZZERS=ON (测试模式)", expat ->protobuf
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc)
@@ -1009,9 +1040,8 @@ if [ "${isFinished_build_absl}" != "true" ] ; then
             "${cmakeCommonParams[@]}"   \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
-            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_absl}  \
-            -DCMAKE_CXX_FLAGS="-fPIC" \
-            -DCMAKE_C_FLAGS="-fPIC"   
+            -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_absl}  
+ 
 
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
     
@@ -1041,8 +1071,6 @@ if [ "${isFinished_build_protobuf}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_protobuf}  \
-            -DCMAKE_C_FLAGS="-fPIC"   \
-            -DCMAKE_CXX_FLAGS="-fPIC" \
             -Dprotobuf_BUILD_TESTS=OFF \
             -Dprotobuf_BUILD_EXAMPLES=OFF \
             -Dprotobuf_BUILD_PROTOC_BINARIES=OFF \
@@ -1131,8 +1159,8 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH=${cmk_prefixPath}       \
             -DCMAKE_MODULE_PATH="${INSTALL_PREFIX_zlib}/lib/cmake/zlib"  \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_gdal} \
-            -DCMAKE_C_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0"   \
-            -DCMAKE_CXX_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0" \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC  -DJPEG12_SUPPORTED=0"   \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC  -DJPEG12_SUPPORTED=0" \
             -DBUILD_APPS=OFF   -DBUILD_TESTING=OFF -DSHOW_DEPS_PER_TARGET=ON \
             -DGDAL_USE_OPENSSL=ON \
             -DGDAL_USE_ZLIB=ON     \
@@ -1275,14 +1303,14 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
             -DCMAKE_MODULE_PATH="${osg_MODULE_PATH}" \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a"        \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osg}    \
-            -DCMAKE_C_FLAGS="-fPIC  -DOSG_GL3_AVAILABLE=1"   \
-            -DCMAKE_CXX_FLAGS="-fPIC -std=c++14  -DOSG_GL3_AVAILABLE=1" \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC  -DOSG_GL3_AVAILABLE=1"   \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC -std=c++14  -DOSG_GL3_AVAILABLE=1" \
             -DCMAKE_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/" \
             -DCMAKE_INCLUDE_PATH="/usr/include/"                   \
             -DCMAKE_DEBUG_POSTFIX=""   \
         -DDYNAMIC_OPENTHREADS=OFF   \
         -DDYNAMIC_OPENSCENEGRAPH=OFF \
-        -DANDROID=OFF                 \
+        -DANDROID=OFF   -DOPENTHREADS_ATOMIC_USE_MUTEX=ON    \
         -DOSG_GL1_AVAILABLE=OFF   \
         -DOSG_GL2_AVAILABLE=OFF   \
         -DOSG_GL3_AVAILABLE=ON    \
@@ -1348,7 +1376,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a   \
         -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  \
         -DNO_DEFAULT_PATH=ON \
-        -DCMAKE_EXE_LINKER_FLAGS=" \
+        -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS} \
             -Wl,-Bdynamic -lm -lc -lGL -lGLU -ldl \
             -Wl,--no-as-needed -lX11 -lXext"
         
@@ -1457,14 +1485,14 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
             -DCMAKE_MODULE_PATH="${osg_MODULE_PATH}" \
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a;.so"        \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osgdll}    \
-            -DCMAKE_C_FLAGS="-fPIC  -DOSG_GL3_AVAILABLE=1"   \
-            -DCMAKE_CXX_FLAGS="-fPIC -std=c++14  -DOSG_GL3_AVAILABLE=1" \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC  -DOSG_GL3_AVAILABLE=1"   \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC -std=c++14  -DOSG_GL3_AVAILABLE=1" \
             -DCMAKE_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/" \
             -DCMAKE_INCLUDE_PATH="/usr/include/"                   \
             -DCMAKE_DEBUG_POSTFIX=""   \
         -DBUILD_SHARED_LIBS=ON  \
         -DDYNAMIC_OPENTHREADS=ON    -DDYNAMIC_OPENSCENEGRAPH=ON \
-        -DANDROID=OFF                 \
+        -DANDROID=OFF  -DOPENTHREADS_ATOMIC_USE_MUTEX=ON  \
         -DOSG_GL1_AVAILABLE=OFF   \
         -DOSG_GL2_AVAILABLE=OFF   \
         -DOSG_GL3_AVAILABLE=ON    \
@@ -1530,7 +1558,7 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
         -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a   \
         -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  \
         -DNO_DEFAULT_PATH=ON \
-        -DCMAKE_EXE_LINKER_FLAGS=" \
+        -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS} \
             -Wl,-Bdynamic -lm -lc -lGL -lGLU -ldl \
             -Wl,--no-as-needed -lX11 -lXext"
         
@@ -1570,7 +1598,7 @@ if [ "${isFinished_build_zip}" != "true" ]; then
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_zip}  \
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}   \
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}    \
-            -DCMAKE_C_FLAGS="-fPIC"  \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS}  -fPIC"  \
             -DBUILD_SHARED_LIBS=OFF   \
         -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   \
         -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
@@ -1657,12 +1685,12 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osgearth}  \
-            -DCMAKE_C_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
-            -DCMAKE_CXX_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" \
             -DBUILD_SHARED_LIBS=OFF   \
         -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=OFF \
         -DCMAKE_SKIP_RPATH=ON  \
-        -DANDROID=OFF \
+        -DANDROID=OFF   -DOPENTHREADS_ATOMIC_USE_MUTEX=ON  \
         -DDYNAMIC_OPENTHREADS=OFF     -DDYNAMIC_OPENSCENEGRAPH=OFF \
         -DOSGEARTH_ENABLE_FASTDXT=OFF \
         -DOSGEARTH_BUILD_TOOLS=ON    -DOSGEARTH_BUILD_EXAMPLES=ON   \
@@ -1727,7 +1755,7 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
         -Dutf8_range_DIR="${INSTALL_PREFIX_protobuf}/lib/cmake/utf8_range" \
         -Dprotobuf_DIR="${INSTALL_PREFIX_protobuf}/lib/cmake/protobuf/"     \
         -DLIB_EAY_RELEASE=""  \
-        -DCMAKE_EXE_LINKER_FLAGS=" \
+        -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS} \
           -Wl,--whole-archive  -fvisibility=hidden   -Wl,--no-whole-archive   \
           -Wl,-Bdynamic -lstdc++  -lGL -lGLU -ldl -lm -lc -lpthread -lrt     \
           -Wl,--no-as-needed -lX11 -lXext "  
@@ -1832,12 +1860,12 @@ if [ "${isFinished_build_oearthdll}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_oearthdll}  \
-            -DCMAKE_C_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
-            -DCMAKE_CXX_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" \
             -DBUILD_SHARED_LIBS=ON   \
         -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=ON \
         -DCMAKE_SKIP_RPATH=ON  \
-        -DANDROID=OFF \
+        -DANDROID=OFF   -DOPENTHREADS_ATOMIC_USE_MUTEX=ON  \
         -DDYNAMIC_OPENTHREADS=ON     -DDYNAMIC_OPENSCENEGRAPH=ON \
         -DOSGEARTH_ENABLE_FASTDXT=OFF \
         -DOSGEARTH_BUILD_TOOLS=ON    -DOSGEARTH_BUILD_EXAMPLES=ON   \
@@ -1902,12 +1930,14 @@ if [ "${isFinished_build_oearthdll}" != "true" ] ; then
         -Dutf8_range_DIR="${INSTALL_PREFIX_protobuf}/lib/cmake/utf8_range" \
         -Dprotobuf_DIR="${INSTALL_PREFIX_protobuf}/lib/cmake/protobuf/"     \
         -DLIB_EAY_RELEASE=""  \
-        -DCMAKE_EXE_LINKER_FLAGS=" \
+        -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS} \
           -Wl,--whole-archive  -fvisibility=hidden   -Wl,--no-whole-archive   \
           -Wl,-Bdynamic -lstdc++  -lGL -lGLU -ldl -lm -lc -lpthread -lrt     \
           -Wl,--no-as-needed -lX11 -lXext "  
-  
+    # cmake --build ~/abner2/zdev/nv/osgearth0x/build_by_sh/build/ubuntu/3rd/osgearth --config Debug  -j20 --target osgearth_skyview   
+    # cmake --build  ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j20 --target osgearth_skyview
     echo "ee====cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v" 
+    
     cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
     
     echo "cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}" 

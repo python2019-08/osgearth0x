@@ -23,18 +23,21 @@ android {
                 arguments += listOf(
                     "-DInstallRoot_3rd=$libPath",      // 动态传递路径
                     "-DANDROID_STL=c++_shared", // 其他CMake参数
+                    "-DANDROID_ARM_MODE=arm",
+                    "-DENABLE_123ASAN=1",
                     "-DANDROID_PAGE_SIZE_ALIGNMENT=16384",
                     "-DCMAKE_BUILD_TYPE=Debug",
-                    "-DANDROID=1"
+                    "-DANDROID=1"                    
                 )
             }
         }
 
         ndk {
-            // 指定要构建的 ABI（默认情况下，Gradle 会构建所有支持的 ABI）"armeabi-v7a", "x86", 
-            // abiFilters += listOf("arm64-v8a", "x86_64")
-            abiFilters += listOf("arm64-v8a" ,"x86_64")
+            // 指定要构建的 ABI（默认情况下，Gradle 会构建所有支持的 ABI）
+            // abiFilters += listOf("armeabi-v7a", "x86",  "arm64-v8a", "x86_64")
+            abiFilters += listOf( "arm64-v8a" )
         }        
+
     }
 
     buildTypes {
@@ -45,16 +48,25 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
         debug {
+            isDefault = true // 启用 ASan
+
             isMinifyEnabled = false  // 关闭混淆
-            isDebuggable= true
-            isJniDebuggable=true    // 启用 NDK 调试
-            
+            isDebuggable = true
+            isJniDebuggable = true    // 启用 NDK 调试
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            packagingOptions {
+                jniLibs {
+                    useLegacyPackaging = true
+                }
+            }
+
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

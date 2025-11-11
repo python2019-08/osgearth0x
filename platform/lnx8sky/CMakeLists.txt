@@ -31,6 +31,29 @@ else()
     "${CMAKE_SYSTEM_NAME}/${CMAKE_SYSTEM_PROCESSOR}")    
 endif()
 
+
+# ----启用 AddressSanitizer： 仅对 Debug 配置生效  
+OPTION(ENABLE_123HWASAN   "Enable hwaddress-sanitize support" OFF)
+OPTION(ENABLE_123ASAN     "Enable address-sanitize   support" OFF)
+OPTION(ENABLE_123LEAKSAN  "Enable leak-sanitize      support" OFF)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if( ENABLE_123HWASAN ) 
+        # MAINLY for android ndk        
+        add_compile_options(-fsanitize=hwaddress -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=hwaddress)
+    elseif(ENABLE_123ASAN)
+        add_compile_options( -fsanitize=address -fno-omit-frame-pointer)
+        add_link_options( -fsanitize=address)        
+    elseif(ENABLE_123LEAKSAN)      
+        # 只检测内存泄漏，不检测越界访问
+        add_compile_options(-fsanitize=leak -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=leak)    
+    else()
+        add_compile_options(-g -O0 -DDEBUG)    
+    endif()
+endif()
+
+
 # message(FATAL_ERROR "----------only for debug-------------- !")
 # return() ##only for debug-
 
@@ -43,10 +66,12 @@ if( (NOT DEFINED OPENGL_FOUND) OR (NOT OPENGL_FOUND)  )
 endif()
 
 
+find_package(X11 REQUIRED)
+
 
 # ------Libs3rd 
-set(InstallRoot_3rd "" CACHE PATH "Location of 3rd libraries folder")
-mark_as_advanced(InstallRoot_3rd)
+set(InstallRoot_3rd "~/osgearth0x/build_by_sh/install/ubuntu/3rd" CACHE PATH "Location of 3rd libraries folder")
+# mark_as_advanced(InstallRoot_3rd)
 if( (NOT InstallRoot_3rd) OR (NOT EXISTS "${InstallRoot_3rd}")  )
     message(FATAL_ERROR "InstallRoot_3rd=${InstallRoot_3rd} NOT EXISTS !")
 else ()
@@ -427,5 +452,6 @@ target_include_directories(${CMAKE_PROJECT_NAME}
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
         ${Libs3rd_LIBS}
-        ${OPENGL_LIBRARIES}  
+        ${OPENGL_LIBRARIES}
+        ${X11_LIBRARIES}
         )

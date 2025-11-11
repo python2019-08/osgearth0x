@@ -36,8 +36,8 @@
             "type": "shell",
             // ---- ​使用 --target只编译当前调试的目标（如 osgearth_map)
             // "command": "cd ${workspaceFolder}/build_by_sh/ubuntu/3rd/osg && cmake --build . --config debug --target application_present3D -j10",  //osg
-            "command": "cd ${workspaceFolder}/build_by_sh/build/ubuntu/platform/lnx8sky && cmake --build . --config debug --target Lnx8SkyDemo -j10",   //oearth
-
+            // "command": "cmake --build ${workspaceFolder}/build_by_sh/build/ubuntu/platform/lnx8sky --config debug --target Lnx8SkyDemo -j10",   //oearth
+            "command": "cmake --build ${workspaceFolder}/build_by_sh/build/ubuntu/platform/lnx8sky --config debug --target Lnx8SkyDemo -j10",      
             "problemMatcher": ["$gcc"],
             "group": {
                 "kind": "build",

@@ -1,4 +1,3 @@
-//
 #include "osgPlugins.h"
 
 #include <osgViewer/Viewer>

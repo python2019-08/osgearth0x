@@ -949,7 +949,19 @@
         "splatshaders": "cpp",
         "surface": "cpp",
         "kmlreader": "cpp",
-        "slideeventhandler": "cpp"
+        "slideeventhandler": "cpp",
+        "skymanipulator": "cpp",
+        "renderstage": "cpp",
+        "block": "cpp",
+        "intersectionvisitor": "cpp",
+        "linesegmentintersector": "cpp",
+        "kml_geometry": "cpp",
+        "globjectsvisitor": "cpp",
+        "geographiclocation": "cpp",
+        "affinity": "cpp",
+        "barrier": "cpp",
+        "condition": "cpp",
+        "readwritemutex": "cpp"
     }
 }
 

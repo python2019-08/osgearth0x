@@ -1,5 +1,7 @@
+*.user
+*.user.*
+CMakeLists.txt.user
 build*/ 
+
 tmp*
 b*.txt
-data/
-docs/

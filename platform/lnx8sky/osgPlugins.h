@@ -4,9 +4,9 @@
 //as we our doing a static build we can't depend on the loading of the
 //dynamic libs to add the plugins to the registries
 
-#include <osgViewer/GraphicsWindow>
-#include <osgDB/Registry>
-#include <osgEarth/Layer>
+#include <osgViewer/GraphicsWindow> // USE_GRAPHICSWINDOW & USE_GRAPICSWINDOW_IMPLEMENTATION
+#include <osgDB/Registry>  //USE_OSGPLUGIN
+#include <osgEarth/Layer>  //USE_OSGEARTH_LAYER
 
 //windowing system
 #ifndef ANDROID

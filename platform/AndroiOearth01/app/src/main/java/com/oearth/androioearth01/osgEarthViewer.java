@@ -11,9 +11,27 @@ import android.util.Log;
 public class osgEarthViewer extends Activity 
 {
     // Used to load the 'androioearth01' library on application startup.
-//    static {
-//        System.loadLibrary("androioearth01");
-//    }
+    
+    static {
+        //System.loadLibrary("c++_shared");  // 先加载依赖库
+        //System.loadLibrary("androioearth01");  // 再加载主库
+          try {
+              // 先尝试加载 ASan 库
+              System.loadLibrary("clang_rt.asan-arm-android");
+          } catch (UnsatisfiedLinkError e) {
+              Log.w("ASAN", "ASan library load warning: " + e.getMessage());
+              // 继续执行，让 wrap.sh 处理
+          }
+
+
+         try {
+             // 然后加载主库
+             System.loadLibrary("androioearth01");
+         } catch (UnsatisfiedLinkError e) {
+             Log.e("Native", "Failed to load native library: " + e.getMessage());
+             throw e;
+         }
+    }
 	
 	private static final String TAG = "OSG Activity";
     EGLview mView;
@@ -23,7 +41,7 @@ public class osgEarthViewer extends Activity
     {
         Log.d(TAG, "^-^::::::osgEarthViewer::onCreate(Bundle icicle)..........");
     	//load our native lib
-        System.loadLibrary("androioearth01");
+//        System.loadLibrary("androioearth01");
 
         super.onCreate(icicle);
         

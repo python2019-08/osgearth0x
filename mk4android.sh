@@ -5,20 +5,17 @@ startTm=$(date +%Y/%m/%d--%H:%M:%S)
 
 # 输出脚本名称
 echo "mk4ubuntu.sh: param 0=$0"
-
 # 获取脚本的物理绝对路径（解析软链接）
 SCRIPT_PHYSICAL_PATH=$(readlink -f "$0")
 echo "Physical path: $SCRIPT_PHYSICAL_PATH"
-
 #--额外：获取脚本所在目录的绝对路径
 # Repo_ROOT=$(dirname "$SCRIPT_PHYSICAL_PATH") 
-
 #--当/home/abner/abner2 是 实际路径/mnt/disk2/abner/ 的软链接时，Repo_ROOT应该是 软链接目录下的路径，
 #--否则，cmake 在使用CMAKE_PREFIX_PATH查找 xxxConfig.cmake 时有歧义、混淆，从而编译失败。
 #--所以这里强制指定为：
+# changable(1)
 Repo_ROOT=/home/abner/abner2/zdev/nv/osgearth0x
 echo "Repo_ROOT=${Repo_ROOT}"
-
 # 验证路径是否存在
 if [ ! -d "$Repo_ROOT" ]; then
     echo "Error: Repo_ROOT does not exist: $Repo_ROOT"
@@ -26,7 +23,10 @@ if [ ! -d "$Repo_ROOT" ]; then
 fi
  
 echo "============================================================="
-isRebuild=false
+# changable(2)
+is_enable_ASAN=true    # false
+isRebuild=true
+
 # ------------
 isFinished_build_zlib=true  
 # isFinished_build_zstd=true
@@ -79,6 +79,30 @@ export AS=${TOOLCHAIN}/bin/llvm-as
 export LD=${TOOLCHAIN}/bin/ld.lld
 export RANLIB=${TOOLCHAIN}/bin/llvm-ranlib
 export STRIP=${TOOLCHAIN}/bin/llvm-strip
+
+#------为“./configure --prefix=/path/to/install...”启用ASan 而设置环境变量
+# 因为openssl等第三方库不支持HWASan，所以只能使用ASAN
+# 参考 https://developer.android.com/ndk/guides/asan#cmake
+ENABLE_123ASAN_VAL="OFF"
+ASAN_C_FLAGS="" 
+ASAN_CXX_FLAGS=""  
+ASAN_EXE_LINKER_FLAGS="" 
+ASAN_SHARED_LINKER_FLAGS="" 
+if [ "${is_enable_ASAN}" = "true" ]; then 
+    export CC="clang -fsanitize=address -fno-omit-frame-pointer"
+    export CXX="clang++ -fsanitize=address -fno-omit-frame-pointer"
+    export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+    export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+    export LDFLAGS="-fsanitize=address"
+
+    ENABLE_123ASAN_VAL="ON"
+    ASAN_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer" 
+    ASAN_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"  
+    ASAN_EXE_LINKER_FLAGS="-fsanitize=address" 
+    ASAN_SHARED_LINKER_FLAGS="-fsanitize=address"  
+    # ANDROID_ARM_MODE=arm 
+    # ANDROID_STL=c++_shared        
+fi
 # 
 ANDRO_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake
 if [ ! -f "${ANDRO_TOOLCHAIN_FILE}"  ]; then
@@ -119,7 +143,7 @@ cmakeCommonParams=(
     "-DCMAKE_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE} "
     "-DANDROID_PLATFORM=android-${ABI_LEVEL}"  
     "-DANDROID_NATIVE_API_LEVEL=${ABI_LEVEL}  "
-    "-DANDROID_STL=c++_static"  
+    "-DANDROID_STL=c++_shared"  
   "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
   "-DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config"
@@ -135,10 +159,21 @@ cmakeCommonParams=(
   "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF" 
   "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a"
   "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" 
-  "-DBUILD_SHARED_LIBS=OFF"   
+  "-DBUILD_SHARED_LIBS=OFF"    
 )
+
+if [ "${is_enable_ASAN}" = "true" ]; then 
+    cmakeCommonParams+=(
+      "-DENABLE_123ASAN=${ENABLE_123ASAN_VAL}" 
+      "-DANDROID_ARM_MODE=arm" 
+      "-DCMAKE_C_FLAGS=${ASAN_C_FLAGS}"
+      "-DCMAKE_CXX_FLAGS=${ASAN_CXX_FLAGS}"  
+    )
+fi
+
  
 echo "cmakeCommonParams=${cmakeCommonParams[@]}"
+
 # **************************************************************************
 # functions
 prepareBuilding()
@@ -301,11 +336,17 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
             -DCMAKE_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE} \
             -DANDROID_ABI="${ABI}" \
             -DANDROID_NATIVE_API_LEVEL=${ABI_LEVEL} \
+            -DENABLE_123ASAN=${ENABLE_123ASAN_VAL}   \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -DZLIB_DEBUG=1" \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -DZLIB_DEBUG=1" \
+            -DCMAKE_SHARED_LINKER_FLAGS="${ASAN_SHARED_LINKER_FLAGS}" \
+            -DANDROID_ARM_MODE=arm \
+            -DANDROID_STL=c++_shared \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_zlib}  \
-            -DCMAKE_C_FLAGS="-DZLIB_DEBUG=1"  \
             -DCMAKE_EXPORT_PACKAGE_REGISTRY=ON \
             -DZLIB_BUILD_SHARED=OFF \
-            -DZLIB_BUILD_STATIC=ON 
+            -DZLIB_BUILD_STATIC=ON  
+            
   
                 
         cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v 
@@ -367,7 +408,7 @@ if [ "${isFinished_build_openssl}" != "true" ]; then
         echo "ssl....target_ARCH=${target_ARCH}"
 
         # 在编译时标记符号为 "hidden"（仅限动态链接）
-        CFLAGS="-fPIC -fvisibility=hidden" \
+        CFLAGS="-fPIC -fvisibility=hidden ${ASAN_C_FLAGS}" \
         ${SrcDIR_lib}/Configure ${target_ARCH} -d \
                     -D__ANDROID_API__=${ABI_LEVEL} \
                     --prefix=${INSTALL_PREFIX_openssl} \
@@ -627,13 +668,13 @@ if [ "${isFinished_build_libtiff}" != "true" ] ; then
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTb}/lib/libjpeg.a \
             -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTb}/include \
-            -DCMAKE_EXE_LINKER_FLAGS="-static" \
             -Djbig=OFF \
             -Dlzma=OFF \
             -Dwebp=OFF \
             -Dzstd=OFF \
             -Dtiff-tools=OFF   
- 
+
+            # -DCMAKE_EXE_LINKER_FLAGS="-static" \
            
         cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
 
@@ -702,7 +743,8 @@ if [ "${isFinished_build_freetype}" != "true" ] ; then
                 -DPNG_LIBRARIES="${INSTALL_PREFIX_png}/lib/libpng.a"    \
                 -DFT_REQUIRE_ZLIB=ON \
                 -DFT_REQUIRE_PNG=ON  \
-                -DCMAKE_EXE_LINKER_FLAGS="-static"  
+                
+                # -DCMAKE_EXE_LINKER_FLAGS="-static"  
                 # CC=${CC}  CXX=${CXX} 
 
         # cmake --build ${BuildDIR_lib} -j$(nproc)  -v  
@@ -746,9 +788,9 @@ if [ "${isFinished_build_geos}" != "true" ] ; then
         cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find   \
                 "${cmakeCommonParams[@]}"   -DANDROID_ABI=${ABI}  \
                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_geos}  \
-                -DCMAKE_EXE_LINKER_FLAGS="-static" 
+                
  
-
+                # -DCMAKE_EXE_LINKER_FLAGS="-static" 
                 # -DCMAKE_C_COMPILER="${NdkCC}" \
                 # -DCMAKE_CXX_COMPILER="${NdkCXX}" \
                 # -DCMAKE_C_FLAGS="-fPIC" \
@@ -799,14 +841,17 @@ if [ "${isFinished_build_sqlite}" != "true" ] ; then
             -DZLIB_ROOT=${INSTALL_PREFIX_zlib}  \
             -DZLIB_INCLUDE_DIR=${INSTALL_PREFIX_zlib}/include \
             -DZLIB_LIBRARY=${INSTALL_PREFIX_zlib}/lib/libz.a   \
-            -DCMAKE_EXE_LINKER_FLAGS="-static  -fuse-ld=lld" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-static  -fuse-ld=lld" \
-            -DCMAKE_MODULE_LINKER_FLAGS="-static  -fuse-ld=lld" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld" \
+            -DCMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld" \
             -DSQLITE_ENABLE_COLUMN_METADATA=ON \
             -DSQLITE_OMIT_DEPRECATED=ON \
             -DSQLITE_SECURE_DELETE=ON       
 
-            # -DCMAKE_ANDROID_ARCH_ABI=${ABI}     
+            # -DCMAKE_ANDROID_ARCH_ABI=${ABI}   
+            # -DCMAKE_EXE_LINKER_FLAGS="-static  -fuse-ld=lld" \
+            # -DCMAKE_SHARED_LINKER_FLAGS="-static  -fuse-ld=lld" \
+            # -DCMAKE_MODULE_LINKER_FLAGS="-static  -fuse-ld=lld" \              
         cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v
 
         cmake --install ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -v
@@ -853,7 +898,9 @@ if [ "${isFinished_build_proj}" != "true" ] ; then
         # 在 proj/data/generate_proj_db.cmake中, 有execute_process(COMMAND "${EXE_SQLITE3}" "${PROJ_DB}"...)
         # 用 sqlite3 的二进制程序来生成 proj.db。 但是在x86_64的ubuntu系统里， arm64-v8a/bin/sqlite3 和
         #  armeabi-v7a/bin/sqlite3 都无法运行，所以这里特地指定 EXE_SQLITE3 为 x86_64/bin/sqlite3
-        EXE_SQLITE3=${INSTALL_PREFIX_3rd}/sqlite/x86_64/bin/sqlite3
+        # EXE_SQLITE3=${INSTALL_PREFIX_3rd}/sqlite/x86_64/bin/sqlite3
+        EXE_SQLITE3=$(which sqlite3)
+        echo "For building proj: EXE_SQLITE3=${EXE_SQLITE3}" 
 
         #  CC=musl-gcc cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}     
         cmake -S ${SrcDIR_lib}  -B ${BuildDIR_lib} --debug-find \
@@ -1017,7 +1064,7 @@ if [ "${isFinished_build_boost}" != "true" ] ; then
 
     # 循环编译每个架构
     for ABI in "${ABIS[@]}"; do
-        echo "++++++++++++ Building protobuf for ${ABI} ++++++++++++"
+        echo "++++++++++++ Building boost for ${ABI} ++++++++++++"
         
         BuildDIR_lib=${BuildDir_3rd}/boost/$ABI
         INSTALL_PREFIX_boost=${INSTALL_PREFIX_3rd}/boost/$ABI
@@ -1037,10 +1084,10 @@ if [ "${isFinished_build_boost}" != "true" ] ; then
 
         ./b2 install  --prefix="${INSTALL_PREFIX_boost}" \
             toolset=clang    target-os=android   \
-            cxxflags="--target=${TARGET_HOST}${API_LEVEL} \
+            cxxflags="${ASAN_CXX_FLAGS} --target=${TARGET_HOST}${API_LEVEL} \
                     --sysroot=${TOOLCHAIN}/sysroot \
                     -I${TOOLCHAIN}/include/c++/v1" \
-            linkflags="--target=${TARGET_HOST}${API_LEVEL} \
+            linkflags="${ASAN_SHARED_LINKER_FLAGS} --target=${TARGET_HOST}${API_LEVEL} \
                     --sysroot=${TOOLCHAIN}/sysroot" \
             link=static        \
             runtime-link=static \
@@ -1056,7 +1103,7 @@ if [ "${isFinished_build_boost}" != "true" ] ; then
         # ​​(2) 仅生成静态库​​:    ./b2 link=static
         # ​​(3) 仅生成动态库​​:    ./b2 link=shared
         # ​​(4) 指定 C++ 标准​​:  ./b2 cxxflags="-std=c++17" 
-        echo "++++++++++++Finished building protobuf for ${ABI} ++++++++++++"
+        echo "++++++++++++Finished building boost for ${ABI} ++++++++++++"
     done            
     echo "========== Finished Building boost 4 Android========="  # && set +x
 fi
@@ -1118,8 +1165,8 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 -DCMAKE_PREFIX_PATH=${cmkPrefixPath} \
                 -DCMAKE_MODULE_PATH="${gdal_MODULE_PATH}" \
                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_gdal}  \
-                -DCMAKE_C_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0"   \
-                -DCMAKE_CXX_FLAGS="-fPIC  -DJPEG12_SUPPORTED=0" \
+                -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fPIC  -DJPEG12_SUPPORTED=0"   \
+                -DCMAKE_CXX_FLAGS="${CMAKE_C_FLAGS} -fPIC  -DJPEG12_SUPPORTED=0" \
                 -DBUILD_SHARED_LIBS=OFF   \
                 -DBUILD_APPS=OFF \
                 -DBUILD_TESTING=OFF \
@@ -1262,13 +1309,13 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmkPrefixPath}"      \
             -DCMAKE_MODULE_PATH="${osg_MODULE_PATH}"     \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osg}  \
-            -DCMAKE_C_FLAGS="-fPIC"             \
-            -DCMAKE_CXX_FLAGS="-fPIC -std=c++14" \
+            -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS}  -fPIC"             \
+            -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -fPIC -std=c++14" \
             -DBUILD_SHARED_LIBS=OFF  \
         -DCMAKE_DEBUG_POSTFIX=""   \
         -DDYNAMIC_OPENTHREADS=OFF   \
         -DDYNAMIC_OPENSCENEGRAPH=OFF \
-        -DANDROID=ON                \
+        -DANDROID=ON    -DOPENTHREADS_ATOMIC_USE_MUTEX=ON  \
         -DOSG_GL1_AVAILABLE=OFF \
         -DOSG_GL2_AVAILABLE=OFF \
         -DOSG_GL3_AVAILABLE=OFF \
@@ -1504,7 +1551,7 @@ if [ "${isFinished_build_oearth}" != "true" ] ; then
         OPENGL_EGL_LIBRARY=${CMAKE_SYSROOT}/usr/lib/${TARGET_HOST}/${ABI_LEVEL}/libEGL.so
         OPENGL_GLES3_INCLUDE_DIR=${CMAKE_SYSROOT}/usr/include/GLES3
 
-
+        OEARTH_C_CXX_FLAGS="-fPIC -DGLES32=1 -DANDROID=1 -DGL_GLEXT_PROTOTYPES=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"
         # --debug-find    --debug-output 
         cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find  \
                 "${cmakeCommonParams[@]}" -DANDROID_ABI=${ABI}  \
@@ -1512,12 +1559,12 @@ if [ "${isFinished_build_oearth}" != "true" ] ; then
                 -DCMAKE_PREFIX_PATH="${cmkPrefixPath}"           \
                 -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH}       \
                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osgearth}  \
-                -DCMAKE_C_FLAGS="-fPIC -DGLES32=1 -DANDROID=1 -DGL_GLEXT_PROTOTYPES=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
-                -DCMAKE_CXX_FLAGS="-fPIC -DGLES32=1 -DANDROID=1 -DGL_GLEXT_PROTOTYPES=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"  \
+                -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} ${OEARTH_C_CXX_FLAGS}"   \
+                -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} ${OEARTH_C_CXX_FLAGS}"  \
                 -DBUILD_SHARED_LIBS=OFF   \
             -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=OFF \
             -DCMAKE_SKIP_RPATH=ON  \
-            -DANDROID=ON            \
+            -DANDROID=ON   -DOPENTHREADS_ATOMIC_USE_MUTEX=ON    \
             -DDYNAMIC_OPENTHREADS=OFF  -DDYNAMIC_OPENSCENEGRAPH=OFF \
             -DOSGEARTH_ENABLE_FASTDXT=OFF \
             -DOSGEARTH_BUILD_TOOLS=OFF       \

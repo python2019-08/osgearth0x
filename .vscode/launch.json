@@ -8,11 +8,15 @@
             // -----------${program} args...start
             // "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osg/bin/present3D",//osg
             // "args": ["${workspaceFolder}/data/osgdata340/cow_fixed.osg"],//osg            
-            // --
+            // ----
             // "program": "${workspaceFolder}/build_by_sh/ubuntu/3rd/osgearth/src/applications/osgearth_viewer/osgearth_viewer", //oearth
             // "args": ["/home/abner/abner2/zdev/nv/osgearth0x/3rd/osgearth/tests/boston.earth"],//oearth
-            
-            "program": "${workspaceFolder}/build_by_sh/build/ubuntu/platform/lnx8sky/Lnx8SkyDemo",             
+            // ----
+            "program": "${workspaceFolder}/build_by_sh/build/ubuntu/3rd/osgearth/src/applications/osgearth_skyview/osgearth_skyview",   
+            "args": ["/home/abner/abner2/zdev/nv/osgearth0x/3rd/osgearth/tests/skyview1.earth"],
+            // ----
+            // "program": "${workspaceFolder}/build_by_sh/build/ubuntu/platform/lnx8sky/Lnx8SkyDemo",      
+                   
             // -----------${program} args...end
             
             "stopAtEntry": false,
@@ -28,7 +32,7 @@
                 // },
                 // { //---- for osgEarthDll    
                 //     "name": "LD_LIBRARY_PATH", 
-                //     "value": "/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgdll/lib/:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgdll/lib/osgPlugins-3.7.0:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgearthdll/lib/osgPlugins-3.7.0:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/ubuntu/install/osgearthdll/lib/" 
+                //     "value": "/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/install/ubuntu//3rd/osgearthdll/lib/osgPlugins-3.7.0:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/install/ubuntu//3rd/osgearthdll/lib:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/install/ubuntu//3rd/osgdll/lib/osgPlugins-3.7.0:/home/abner/abner2/zdev/nv/osgearth0x/build_by_sh/install/ubuntu//3rd/osgdll/lib:/usr/local/cuda/lib64:/usr/local/cuda/targets/x86_64-linux/lib/stubs:/usr/local/cuda-12.8/lib64:/home/abner/programs/blender-4.4.1-linux-x64/lib" 
                 // },
             ],
             "externalConsole": false,

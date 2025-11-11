@@ -410,17 +410,31 @@ if(ANDROID)
     target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
         $<$<CONFIG:Debug>:
             -g
-            -ggdb
+            -ggdb            
+            -fno-optimize-sibling-calls             
             -fno-omit-frame-pointer
-            -fno-optimize-sibling-calls
-        >
+            > 
     )
     
     # 防止 strip
     set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
         ANDROID_ARM_NEON TRUE
         NO_SYSTEM_FROM_IMPORTED TRUE
-    )
+    ) 
+
+    if(ENABLE_123HWASAN)
+        target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:-fsanitize=hwaddress  -fno-omit-frame-pointer>   )    
+        target_link_options(${CMAKE_PROJECT_NAME} PRIVATE 
+                $<$<CONFIG:Debug>:-fsanitize=hwaddress>  
+                ) 
+    elseif(ENABLE_123ASAN) 
+        target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Debug>:-fsanitize=address  -fno-omit-frame-pointer>   )    
+        target_link_options(${CMAKE_PROJECT_NAME} PRIVATE 
+                $<$<CONFIG:Debug>:-fsanitize=address>  
+                )                                   
+    endif()  
 endif()
 
 target_compile_definitions(${CMAKE_PROJECT_NAME}

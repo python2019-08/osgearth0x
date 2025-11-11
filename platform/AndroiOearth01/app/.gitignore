@@ -1,1 +1,6 @@
 /build
+
+src/main/jniLibs/arm64-v8a/libclang_rt.asan-aarch64-android.so
+src/main/jniLibs/armeabi-v7a/libclang_rt.asan-arm-android.so
+src/main/jniLibs/x86/libclang_rt.asan-i686-android.so
+src/main/jniLibs/x86_64/libclang_rt.asan-x86_64-android.so

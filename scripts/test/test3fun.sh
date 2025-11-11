@@ -1,5 +1,5 @@
 # --------------------------------------
-prepareBuilding()
+function prepareBuilding()
 {
   echo "========prepareBuilding....start========="
 
@@ -13,6 +13,7 @@ prepareBuilding()
 SrcDir_root=/opt
  
 prepareBuilding "${SrcDir_root}/ss" ${SrcDir_root}/bb
+ 
 # ---------------------------------------
 sum_all() {
     # 使用 $((...)) 进行算术运算，正确赋值

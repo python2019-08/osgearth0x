@@ -22,6 +22,7 @@ if [ ! -d "$Repo_ROOT" ]; then
 fi
  
 # echo "============================================================="
+is_enable_ASAN=true    # false
 isRebuild=true
 # ------ 
 isFinished_build_lnx8sky=false  # false
@@ -30,6 +31,15 @@ CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
 CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
 CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
+
+# ===================================================================
+#------为“./configure --prefix=/path/to/install...”启用HWASan 而设置环境变量
+ENABLE_123ASAN_VAL="OFF" 
+EXE_LINKER_FLAGS="-static"
+if [ "${is_enable_ASAN}" = "true" ]; then  
+    ENABLE_123ASAN_VAL="ON" 
+    EXE_LINKER_FLAGS="-fsanitize=address"        
+fi
 
 # echo "============================================================="
 # rm -fr ./build_by_sh   
@@ -184,6 +194,7 @@ if [ "${isFinished_build_lnx8sky}" != "true" ] ; then
     #   GLEW_ROOT=/path/to/GLEW cmake ...  ，无需提前 export。 
 
                 # "${cmakeCommonParams[@]}"  
+    C_CXX_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"                
 
     # --debug-find    --debug-output 
     GLEW_ROOT="/usr/lib/x86_64-linux-gnu/" \
@@ -192,12 +203,12 @@ if [ "${isFinished_build_lnx8sky}" != "true" ] ; then
             -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_lnx8sky}  \
-            -DCMAKE_C_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
-            -DCMAKE_CXX_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" \
+            -DCMAKE_C_FLAGS="${C_CXX_FLAGS}"   \
+            -DCMAKE_CXX_FLAGS="${C_CXX_FLAGS}" \
             -DBUILD_SHARED_LIBS=OFF   \
         -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=OFF \
         -DCMAKE_SKIP_RPATH=ON  \
-        -DANDROID=OFF \
+        -DANDROID=OFF -DENABLE_123ASAN=${ENABLE_123ASAN_VAL} \
         -DDYNAMIC_OPENTHREADS=OFF     -DDYNAMIC_OPENSCENEGRAPH=OFF \
         -DOSGEARTH_ENABLE_FASTDXT=OFF \
         -DOSGEARTH_BUILD_TOOLS=ON    -DOSGEARTH_BUILD_EXAMPLES=ON   \
@@ -227,7 +238,7 @@ if [ "${isFinished_build_lnx8sky}" != "true" ] ; then
         -DOpenSceneGraph_FIND_QUIETLY=OFF  \
         -DLIB_EAY_RELEASE=""  \
         -DInstallRoot_3rd="${InstallDIR_3rd}"  \
-        -DCMAKE_EXE_LINKER_FLAGS=" \
+        -DCMAKE_EXE_LINKER_FLAGS="  \
           -Wl,--whole-archive  -fvisibility=hidden   -Wl,--no-whole-archive   \
           -Wl,-Bdynamic -lstdc++  -lGL -lGLU -ldl -lm -lc -lpthread -lrt     \
           -Wl,--no-as-needed -lX11 -lXext "  
