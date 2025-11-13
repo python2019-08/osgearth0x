@@ -20,11 +20,10 @@ echo "Repo_ROOT=${Repo_ROOT}"
 if [ ! -d "$Repo_ROOT" ]; then
     echo "Error: Repo_ROOT does not exist: $Repo_ROOT"
     exit 1
-fi
- 
+fi 
 echo "============================================================="
 # changable(2)
-is_enable_ASAN=true    # false
+is_enable_ASAN=false    # false
 isRebuild=true
 
 # ------------
@@ -40,10 +39,10 @@ isFinished_build_libjpegTurbo=true
 isFinished_build_libpng=true    
 # isFinished_build_xz=true  
 isFinished_build_libtiff=true  
-isFinished_build_freetype=true
-isFinished_build_geos=true     # false
-isFinished_build_sqlite=true
-isFinished_build_proj=true   
+isFinished_build_freetype=false
+isFinished_build_geos=false     # false
+isFinished_build_sqlite=false
+isFinished_build_proj=false   
 # isFinished_build_libexpat=true  
 isFinished_build_absl=true
 isFinished_build_protobuf=true
@@ -51,8 +50,8 @@ isFinished_build_boost=true
 isFinished_build_gdal=true # v
 isFinished_build_osg=true
 isFinished_build_zip=true
-isFinished_build_oearth=false
-echo "============================================================="
+isFinished_build_oearth=true
+# echo "============================================================="
 # ------------    
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
 # export ANDROID_NDK_ROOT=/home/abel/programs/android-ndk-r27d    
@@ -89,17 +88,19 @@ ASAN_CXX_FLAGS=""
 ASAN_EXE_LINKER_FLAGS="" 
 ASAN_SHARED_LINKER_FLAGS="" 
 if [ "${is_enable_ASAN}" = "true" ]; then 
-    export CC="clang -fsanitize=address -fno-omit-frame-pointer"
-    export CXX="clang++ -fsanitize=address -fno-omit-frame-pointer"
-    export CFLAGS="-fsanitize=address -fno-omit-frame-pointer"
-    export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+    export CC="clang -fsanitize=address -fno-omit-frame-pointer -g -O0 "
+    export CXX="clang++ -fsanitize=address -fno-omit-frame-pointer -g -O0 "
+    export CFLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O0 "
+    export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O0 "
     export LDFLAGS="-fsanitize=address"
 
+
     ENABLE_123ASAN_VAL="ON"
-    ASAN_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer" 
-    ASAN_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"  
-    ASAN_EXE_LINKER_FLAGS="-fsanitize=address" 
-    ASAN_SHARED_LINKER_FLAGS="-fsanitize=address"  
+    # -g -O0" # 调试信息 + 无优化 -fno-optimize-sibling-calls
+    ASAN_C_FLAGS="-fsanitize=address   -g -O0 -fno-omit-frame-pointer" 
+    ASAN_CXX_FLAGS="-fsanitize=address  -g -O0 -fno-omit-frame-pointer"   
+    ASAN_EXE_LINKER_FLAGS="-fsanitize=address"     
+    ASAN_SHARED_LINKER_FLAGS="-fsanitize=address -Wl,--export-dynamic -Wl,-z,defs"  
     # ANDROID_ARM_MODE=arm 
     # ANDROID_STL=c++_shared        
 fi
@@ -129,6 +130,9 @@ BuildROOT=${Repo_ROOT}/build_by_sh
 
 BuildROOT_andro=${BuildROOT}/build/android
 InstallROOT_andro=${BuildROOT}/install/android
+if [ "${is_enable_ASAN}" = "true" ]; then 
+    InstallROOT_andro=${BuildROOT}/install/android-asan
+fi
 mkdir -p ${BuildROOT_andro} 
 mkdir -p ${InstallROOT_andro} 
 

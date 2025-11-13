@@ -39,6 +39,7 @@ isFinished_build_libpng=true
 isFinished_build_xz=true  
 isFinished_build_libtiff=true 
 isFinished_build_freetype=true  
+
 isFinished_build_geos=true     
 isFinished_build_sqlite=true  
 isFinished_build_proj=true     #-- false #big code
@@ -47,11 +48,11 @@ isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true
 isFinished_build_gdal=true   #-- false #big code
-isFinished_build_osg=true    # osg-a ..false  
+isFinished_build_osg=false    # osg-a ..false  
 isFinished_build_osgdll=true # osg-dll..false
 isFinished_build_zip=true
 isFinished_build_osgearth=false  # osgearth-a
-isFinished_build_oearthdll=false  # osgearth-dll
+isFinished_build_oearthdll=true  # osgearth-dll
 # ------
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
@@ -72,11 +73,14 @@ if [ "${is_enable_ASAN}" = "true" ]; then
     export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer"
     export LDFLAGS="-fsanitize=address"
 
+
     ENABLE_123ASAN_VAL="ON"
-    ASAN_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer" 
-    ASAN_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"  
-    ASAN_EXE_LINKER_FLAGS="-fsanitize=address" 
-    ASAN_SHARED_LINKER_FLAGS="-fsanitize=address" 
+    # -g -O0" # 调试信息 + 无优化
+    ASAN_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O0" 
+    ASAN_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O0"  
+    # -rdynamic导出符号，确保栈回溯能识别函数名
+    ASAN_EXE_LINKER_FLAGS="-fsanitize=address  -rdynamic" 
+    ASAN_SHARED_LINKER_FLAGS="-fsanitize=address  -rdynamic" 
     EXE_LINKER_FLAGS="-fsanitize=address"        
 fi
 
@@ -85,6 +89,9 @@ BuildROOT=${Repo_ROOT}/build_by_sh
 # rm -fr ./build_by_sh 
 BuildROOT_ubuntu=${BuildROOT}/build/ubuntu
 InstallROOT_ubuntu=${BuildROOT}/install/ubuntu
+if [ "${is_enable_ASAN}" = "true" ]; then 
+    InstallROOT_ubuntu=${BuildROOT}/install/ubuntu-asan
+fi
 mkdir -p ${BuildROOT_ubuntu} 
 mkdir -p ${InstallROOT_ubuntu} 
 
