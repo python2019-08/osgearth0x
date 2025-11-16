@@ -27,7 +27,7 @@ is_enable_ASAN=false    # false
 isRebuild=true
 
 # ------------
-isFinished_build_zlib=true  
+isFinished_build_zlib=false  
 # isFinished_build_zstd=true
 isFinished_build_openssl=true  
 # isFinished_build_icu=true  
@@ -39,10 +39,10 @@ isFinished_build_libjpegTurbo=true
 isFinished_build_libpng=true    
 # isFinished_build_xz=true  
 isFinished_build_libtiff=true  
-isFinished_build_freetype=false
-isFinished_build_geos=false     # false
-isFinished_build_sqlite=false
-isFinished_build_proj=false   
+isFinished_build_freetype=true
+isFinished_build_geos=true     # false
+isFinished_build_sqlite=true
+isFinished_build_proj=true   
 # isFinished_build_libexpat=true  
 isFinished_build_absl=true
 isFinished_build_protobuf=true
@@ -54,9 +54,8 @@ isFinished_build_oearth=true
 # echo "============================================================="
 # ------------    
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
-# export ANDROID_NDK_ROOT=/home/abel/programs/android-ndk-r27d    
-export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006   
-
+# ANDROID_NDK=/home/abner/Android/Sdk/ndk/android-ndk-r27d
+export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006     
 # ANDROID_NDK_HOME​ ​:后来 Android Studio 和 Gradle 更倾向于使用此变量。    
 export ANDROID_NDK_HOME="${ANDROID_NDK_ROOT}"
 # 确保 NDK 路径已设置（需要根据实际环境修改或通过环境变量传入）
@@ -64,6 +63,7 @@ if [ -z "${ANDROID_NDK_HOME}" -o ! -d "${ANDROID_NDK_HOME}"  ]; then
     echo "ERROR: ANDROID_NDK_HOME=${ANDROID_NDK_HOME} not exist!"
     exit 1001
 fi
+export ANDROID_NDK="${ANDROID_NDK_ROOT}"
 # CMAKE_SYSROOT=${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot
 # 
 # 设置 NDK 工具链路径（使用 LLVM 工具）
@@ -79,6 +79,26 @@ export LD=${TOOLCHAIN}/bin/ld.lld
 export RANLIB=${TOOLCHAIN}/bin/llvm-ranlib
 export STRIP=${TOOLCHAIN}/bin/llvm-strip
 
+# 
+ANDRO_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake
+if [ ! -f "${ANDRO_TOOLCHAIN_FILE}"  ]; then
+    echo "ERROR: ANDRO_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE} not exist!"
+    exit 1001
+fi
+
+export PATH=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+export PATH=$PATH:$ANDROID_NDK_HOME
+# echo "=============================================================" 
+# CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
+# CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
+CMAKE_MAKE_PROGRAM=${ANDROID_NDK_HOME}/prebuilt/linux-x86_64/bin/make
+if [ ! -f "${CMAKE_MAKE_PROGRAM}"  ]; then
+    echo "ERROR: CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM} not exist!"
+    exit 1001
+fi
+CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
+
+# echo "============================================================="
 #------为“./configure --prefix=/path/to/install...”启用ASan 而设置环境变量
 # 因为openssl等第三方库不支持HWASan，所以只能使用ASAN
 # 参考 https://developer.android.com/ndk/guides/asan#cmake
@@ -104,25 +124,6 @@ if [ "${is_enable_ASAN}" = "true" ]; then
     # ANDROID_ARM_MODE=arm 
     # ANDROID_STL=c++_shared        
 fi
-# 
-ANDRO_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake
-if [ ! -f "${ANDRO_TOOLCHAIN_FILE}"  ]; then
-    echo "ERROR: ANDRO_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE} not exist!"
-    exit 1001
-fi
-
-export PATH=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
-export PATH=$PATH:$ANDROID_NDK_HOME
-
-CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
-CMAKE_MAKE_PROGRAM=${ANDROID_NDK_HOME}/prebuilt/linux-x86_64/bin/make
-if [ ! -f "${CMAKE_MAKE_PROGRAM}"  ]; then
-    echo "ERROR: CMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM} not exist!"
-    exit 1001
-fi
-
-# CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
-# CMAKE_CXX_COMPILER=/usr/bin/g++ # /usr/bin/musl-gcc # /usr/bin/clang++  #   
 
 echo "=============================================================" 
 BuildROOT=${Repo_ROOT}/build_by_sh
@@ -144,10 +145,10 @@ ABIS=("arm64-v8a"  "x86_64")
 ABI_LEVEL=24
  
 cmakeCommonParams=(
-    "-DCMAKE_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE} "
+    "-DCMAKE_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE}" 
+    "-DANDROID_STL=c++_shared" 
     "-DANDROID_PLATFORM=android-${ABI_LEVEL}"  
-    "-DANDROID_NATIVE_API_LEVEL=${ABI_LEVEL}  "
-    "-DANDROID_STL=c++_shared"  
+    "-DANDROID_NATIVE_API_LEVEL=${ABI_LEVEL}"    
   "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
   "-DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config"
@@ -177,6 +178,7 @@ fi
 
  
 echo "cmakeCommonParams=${cmakeCommonParams[@]}"
+echo "ANDROID_TOOLCHAIN_ROOT=${ANDROID_TOOLCHAIN_ROOT}"
 
 # **************************************************************************
 # functions
@@ -336,21 +338,17 @@ if [ "${isFinished_build_zlib}" != "true" ]; then
         # make -C ${BuildDIR_lib} VERBOSE=1 
         # 若输出的编译命令中包含 -DZLIB_DEBUG=1，则说明宏已成功定义。
         #----------------------------------------------------  
+        set -x
         cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib} --debug-find  \
-            -DCMAKE_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE} \
-            -DANDROID_ABI="${ABI}" \
-            -DANDROID_NATIVE_API_LEVEL=${ABI_LEVEL} \
-            -DENABLE_123ASAN=${ENABLE_123ASAN_VAL}   \
+            "${cmakeCommonParams[@]}"  -DANDROID_ABI="${ABI}"   \
             -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -DZLIB_DEBUG=1" \
             -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -DZLIB_DEBUG=1" \
             -DCMAKE_SHARED_LINKER_FLAGS="${ASAN_SHARED_LINKER_FLAGS}" \
-            -DANDROID_ARM_MODE=arm \
-            -DANDROID_STL=c++_shared \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_zlib}  \
             -DCMAKE_EXPORT_PACKAGE_REGISTRY=ON \
             -DZLIB_BUILD_SHARED=OFF \
             -DZLIB_BUILD_STATIC=ON  
-            
+        set +x
   
                 
         cmake --build ${BuildDIR_lib} --config ${CMAKE_BUILD_TYPE}  -j$(nproc) -v 

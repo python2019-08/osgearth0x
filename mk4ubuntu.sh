@@ -53,7 +53,7 @@ isFinished_build_osgdll=true # osg-dll..false
 isFinished_build_zip=true
 isFinished_build_osgearth=false  # osgearth-a
 isFinished_build_oearthdll=true  # osgearth-dll
-# ------
+# ===================================================================
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
 CMAKE_C_COMPILER=/usr/bin/gcc   # /usr/bin/musl-gcc   # /usr/bin/clang  # 
