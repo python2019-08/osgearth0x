@@ -1,0 +1,336 @@
+
+2025-11-12 18:04:26.020 12978-13012 chatty                  com.oearth.androioearth01            I  uid=10440(com.oearth.androioearth01) GLThread 17 identical 13 lines
+2025-11-12 18:04:26.020 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=1
+2025-11-12 18:04:26.020 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=6
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=6
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=4
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=3
+===============================================
+2025-11-12 18:04:26.021 12977-12977 wrap.sh                 logwrapper                           I      #0 0x71f1719d5c  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/lib/arm64/libclang_rt.asan-aarch64-android.so+0xd1d5c) (BuildId: d2089f24857cf6bfee934a5c1e8395bab0e414b6)
+"0x47f9c70"
+"0x47f4de8"
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=1
+"0x47e2f90"
+"0x47d53c0"
+"0x5af71c0"
+"0x5af6424"
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=2
+"0x5af8be8"
+"0x419c088"
+"0x5a648b0"
+"0x5f1ec84"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x5a648b0"
+"0x5f1ec84"
+"0x421cb24"
+"0x598b228"
+"0x59905f4"
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=1
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=3
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=41
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=2
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=1
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=4
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=1
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=3
+"0x419c088"
+2025-11-12 18:04:26.021 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=1
+2025-11-12 18:04:26.022 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=3
+2025-11-12 18:04:26.022 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=1
+2025-11-12 18:04:26.022 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=4
+2025-11-12 18:04:26.022 12978-13012 AndroiOearth01          com.oearth.androioearth01            W  og...include/osg/Referenced(02): _refCount=1
+2025-11-12 18:04:26.023 12978-12978 libc                    com.oearth.androioearth01            A  Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 12978 (.androioearth01), pid 12978 (.androioearth01)
+"0x65276fc"
+"0x6529c00"
+"0x5f1ee40"
+"0x5995aa8"
+"0x5e61ad8"
+"0x4e892c4"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x421cb24"
+"0x4ce79bc"
+"0x419c088"
+"0x5ce8668"
+"0x4d844c0"
+"0x5ce9324"
+"0x5ce8514"
+"0x421a264"
+"0x5ce9324"
+"0x65276ec"
+"0x6529c00"
+"0x421cb24"
+"0x5e61ad8"
+"0x5ba4f88"
+"0x5bd6e38"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x6a2f9a8"
+"0x6a2dd50"
+"0x6a18f24"
+"0x6a19fcc"
+"0x5e2f178"
+"0x6b1a524"
+"0x6b176cc"
+"0x4152780"
+"0x41762f4"
+"0x417b944"
+2025-11-12 18:04:26.025 12977-12977 wrap.sh                 logwrapper                           I      #70 0x70fea27710  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/oat/arm64/base.odex+0x20710)
+2025-11-12 18:04:26.025 12977-12977 wrap.sh                 logwrapper                           I      #71 0x70ff3382fb  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/oat/arm64/base.odex+0x9312fb)
+"0x65b4460"
+2025-11-12 18:04:26.054 12977-12977 chatty                  logwrapper                           I  uid=10440(com.oearth.androioearth01) /system/bin/logwrapper identical 15 lines
+2025-11-12 18:04:26.128 12977-12977 chatty                  logwrapper                           I  uid=10440(com.oearth.androioearth01) /system/bin/logwrapper identical 14 lines
+2025-11-12 18:04:26.136 13284-13284 DEBUG                   pid-13284                            A  pid: 12978, tid: 12978, name: .androioearth01  >>> com.oearth.androioearth01 <<<
+2025-11-12 18:04:26.137 13284-13284 DEBUG                   pid-13284                            A  Abort message: '=================================================================
+      ==12978==ERROR: AddressSanitizer: heap-use-after-free on address 0x0055c8c4a218 at pc 0x0070f5047464 bp 0x007fc4a8f330 sp 0x007fc4a8f328
+      READ of size 4 at 0x0055c8c4a218 thread T0 (.androioearth01)
+===============================================
+"0x65b4460"
+"0x65b31fc"
+"0x65ae218"
+"0x657b134"
+"0x657b08c"
+"0x54f3620"
+"0x5e61ad8"
+"0x419c088"
+"0x657b054"
+"0x421cb24"
+"0x5af8e0c"
+"0x419c088"
+"0x657b054"
+"0x421cb24"
+"0x5af8d50"
+"0x419c088"
+"0x657b054"
+"0x421cb24"
+"0x5af8d50"
+"0x419c088"
+"0x657b054"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x657b054"
+"0x421cb24"
+"0x5e61ad8"
+"0x54249c8"
+"0x5990604"
+"0x419c088"
+"0x657b054"
+"0x5f1ee40"
+"0x5995aa8"
+"0x4308ee0"
+"0x42f7d88"
+"0x43224bc"
+"0x4176b78"
+"0x417ba00"
+                                                                                                    
+0x0055c8c4a218 is located 24 bytes inside of 23040-byte region [0x0055c8c4a200,0x0055c8c4fc00)
+  freed by thread T21 (GLThread 17) here:
+===============================================
+#0 0x71f173aba4  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/lib/arm64/libclang_rt.asan-aarch64-android.so+0xf2ba4) (BuildId: d2089f24857cf6bfee934a5c1e8395bab0e414b6)
+"0x4134b88"
+"0x4134b38"
+"0x4134adc"
+"0x5eb1f08"
+"0x5eb1988"
+"0x5eb24b8"
+"0x5eb221c"
+"0x5eac148"
+"0x5eac19c"
+"0x5fb0550"
+"0x5fb0970"
+"0x5d912f0"
+"0x5d91edc"
+"0x5ae1a2c"
+"0x5ae1a54"
+"0x5fb0550"
+"0x5fb0970"
+"0x4295a2c"
+"0x467417c"
+"0x4674140"
+"0x46740c0"
+"0x4673e6c"
+"0x4673d18"
+"0x4660138"
+"0x5e6178c"
+"0x61476c8"
+"0x5f0b114"
+"0x5a83748"
+"0x5a83770"
+                                                                                                    
+previously allocated by thread T36 here:
+===============================================
+#0 0x71f173a2fc  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/lib/arm64/libclang_rt.asan-aarch64-android.so+0xf22fc) (BuildId: d2089f24857cf6bfee934a5c1e8395bab0e414b6)
+"0x413252c"
+"0x41324b4"
+"0x5eae8e0"
+"0x5eae658"
+"0x5ead958"
+"0x5ea6ca4"
+"0x5ea633c"
+"0x5eaa52c"
+"0x5eab664"
+"0x5dc1cb0"
+"0x5ae16bc"
+"0x5a7e278"
+"0x5a7d9f0"
+"0x5af0bf4"
+"0x5aef930"
+"0x5afa72c"
+"0x5b239a0"
+"0x5b23410"
+"0x5b2322c"
+"0x5b231e0"
+"0x5b231b8"
+"0x5b1e150"
+"0x48018d8"
+"0x47fd330"
+"0x47fbd74"
+"0x47fb434"
+"0x47fb378"
+"0x47fb2a4"
+"0x47f9e28"
+                                                                                                    
+Thread T21 (GLThread 17) created by T0 (.androioearth01) here:
+===============================================
+    #0 0x71f1719d5c  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/lib/arm64/libclang_rt.asan-aarch64-android.so+0xd1d5c) (BuildId: d2089f24857cf6bfee934a5c1e8395bab0e414b6)
+    #1 0x716d4eb0ac  (/apex/com.android.art/lib64/libart.so+0x5a70ac) (BuildId: ba974b198c8d2ea23d09a0519a0d3fc3)
+    #2 0x716d409f98  (/apex/com.android.art/lib64/libart.so+0x4c5f98) (BuildId: ba974b198c8d2ea23d09a0519a0d3fc3)
+    #3 0x70212cfc  (/apex/com.android.art/javalib/arm64/boot.oat+0x87cfc) (BuildId: b77de09b67db1d38581389c0b201cddde04733b2)
+    #4 0x716b8c376c  (/system/framework/framework.jar+0x106e76c)
+    #5 0xbc8e4607cf3bc598  (<unknown module>)
+                                                                                                    
+ Thread T36 created by T21 (GLThread 17) here:
+===============================================
+#0 0x71f1719d5c  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/lib/arm64/libclang_rt.asan-aarch64-android.so+0xd1d5c) (BuildId: d2089f24857cf6bfee934a5c1e8395bab0e414b6)
+"0x47f9c70"
+"0x47f4de8"
+"0x47e2f90"
+"0x47d53c0"
+"0x5af71c0"
+"0x5af6424"
+"0x5af8be8"
+"0x419c088"
+"0x5a648b0"
+"0x5f1ec84"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x5a648b0"
+"0x5f1ec84"
+"0x421cb24"
+"0x598b228"
+"0x59905f4"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x5f1ee40"
+"0x5995aa8"
+"0x5e61ad8"
+"0x4e892c4"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x421cb24"
+"0x4ce79bc"
+"0x419c088"
+"0x5ce8668"
+"0x4d844c0"
+"0x5ce9324"
+"0x5ce8514"
+"0x421a264"
+"0x5ce9324"
+"0x65276ec"
+"0x6529c00"
+"0x421cb24"
+"0x5e61ad8"
+"0x5ba4f88"
+"0x5bd6e38"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x65276fc"
+"0x6529c00"
+"0x421cb24"
+"0x5e61ad8"
+"0x419c088"
+"0x6a2f9a8"
+"0x6a2dd50"
+"0x6a18f24"
+"0x6a19fcc"
+"0x5e2f178"
+"0x6b1a524"
+"0x6b176cc"
+"0x4152780"
+"0x41762f4"
+"0x417b944"
+                                                                                                        #70 0x70fea27710  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/oat/arm64/base.odex+0x20710)
+                                                                                                        #71 0x70ff3382fb  (/data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/oat/arm64/base.odex+0x9312fb)
+                                                                                                        #72 0xbc8e4607cf3bc598  (<unknown module>)
+                                                                                                    
+"0x65b4460"
+                                                                                                    Shadow bytes around the buggy address:
+                                                                                                      0x0055c8c49f80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+                                                                                                      0x0055c8c4a000: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+                                                                                                      0x0055c8c4a080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+                                                                                                      0x0055c8c4a100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+                                                                                                      0x0055c8c4a180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+                                                                                                    =>0x0055c8c4a200: fd fd fd[fd]fd fd fd fd fd fd fd fd fd fd fd fd
+                                                                                                      0x0055c8c4a280: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+                                                                                                      0x0055c8c4a300: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+                                                                                                      0x0055c8c4a380: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+                                                                                                      0x0055c8c4a400: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+                                                                                                      0x0055c8c4a480: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+                                                                                                    Shadow byte legend (one shadow byte represents 8 application bytes):
+                                                                                                      Addressable:           00
+                                                                                                      Partially addressable: 01 02 03 04 05 06 07 
+                                                                                                      Heap left redzone:       fa
+                                                                                                      Freed heap region:       fd
+                                                                                                      Stack left redzone:      f1
+                                                                                                      Stack mid redzone:       f2
+                                                                                                      Stack right redzone:     f3
+                                                                                                      Stack after return:      f5
+                                                                                                      Stack use after scope:   f8
+                                                                                                      Global redzone:          f9
+                                                                                                      Global init order:       f6
+                                                                                                      Poisoned by user:        f7
+                                                                                                      Container overflow:      fc
+                                                                                                      Array cookie:            ac
+                                                                                                      Intra object redzone:    bb
+                                                                                                      ASan internal:           fe
+                                                                                                      Left alloca redzone:     ca
+                                                                                                      Right alloca redzone:    cb
+                                                                                                    '
+2025-11-12 18:04:26.138 13284-13284 DEBUG                   pid-13284                            A        #01 pc 000000000006c5b4  /data/app/~~3QrtIKoPDF4GtUx1XCV7iQ==/com.oearth.androioearth01-ImkxW78cPciuloBTzZVbQw==/lib/arm64/libclang_rt.asan-aarch64-android.so (BuildId: d2089f24857cf6bfee934a5c1e8395bab0e414b6)
+2025-11-12 18:04:26.180 12977-12977 chatty                  logwrapper                           I  uid=10440(com.oearth.androioearth01) /system/bin/logwrapper identical 8 lines
+2025-11-12 18:04:26.279 12977-12977 chatty                  logwrapper                           I  uid=10440(com.oearth.androioearth01) /system/bin/logwrapper identical 38 lines
+2025-11-12 18:04:26.317 12977-12977 chatty                  logwrapper                           I  uid=10440(com.oearth.androioearth01) /system/bin/logwrapper identical 15 lines
+2025-11-12 18:04:26.359 12977-12977 chatty                  logwrapper                           I  uid=10440(com.oearth.androioearth01) /system/bin/logwrapper identical 15 lines
+2025-11-12 18:04:26.399 12977-12977 chatty                  logwrapper                           I  uid=10440(com.oearth.androioearth01) /system/bin/logwrapper identical 15 lines
+2025-11-12 18:04:26.422 12977-12977 chatty                  logwrapper                           I  uid=10440(com.oearth.androioearth01) /system/bin/logwrapper identical 5 lines
+---------------------------- PROCESS ENDED (12978) for package com.oearth.androioearth01 ----------------------------
