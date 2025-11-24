@@ -82,3 +82,23 @@ buildingsLayer->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribut
 elevationLayer->setVerticalDatum("egm96");  // 使用EGM96大地水准面
 ```
 通过以上方法的综合应用，可以有效解决osgEarth中3D建筑模型与高程数据叠加时的深度缓冲问题，获得稳定、高质量的3D可视化效果。
+
+==============================================
+# 2.osg学习（七）Z-Fighting冲突的解决方法-分层渲染
+原创 于 2019-08-04 08:44:17 发布 
+原文链接：https://blog.csdn.net/hankern/article/details/98438701
+
+当相机远近裁剪面比例过大时，由于Depth Buffer精度限制，会出现Z-Fighting问题，导致物体表面闪烁。本文探讨了两种解决方法：Logarithmic Depth Buffer（不具通用性）和分层渲染。重点介绍了分层渲染的实现，通过调整远近裁剪面距离，先渲染远处物体，清除Depth Buffer但保留Color Buffer，再渲染近处物体。并提到了Ogre3D中分层渲染的应用及相关教程链接。
+
+在超大的场景中，如果既想看到近处的物体，又想看到很远的物体，则必须把相机的远近裁剪面距离设得很大。远近裁剪面距离比例太大了，由于Depth Buffer的精度有限，这样就会导致Z-Fighting，挨在一起的物体表面会发生闪烁。
+
+解决这个问题有两种方法，一是用Logarithmic Depth Buffer，但是由于此方法需要对每个物体在shader中计算其对数深度，所以不太具有通用性，故没有深入研究。感兴趣的可以自己试试。
+相关参考资料：
+http://www.gamasutra.com/blogs/BranoKemen/20090812/2725/Logarithmic_Depth_Buffer.php
+http://www.gamedev.net/blog/73/entry-2006307-tip-of-the-day-logarithmic-zbuffer-artifacts-fix/
+
+ 
+
+第二种方法是使用分层渲染。首先设置一个比例合适的远近裁剪面距离，渲染很远处的物体，然后清除Depth Buffer，但是保留Color Buffer。然后再设置一个比例合适的远近裁剪面距离，渲染近处的物体。Madmarx写的一系列Ogre教程so3dtools中，其中A_1_FrustumSlicing例子很好的演示了怎么在Ogre中使用分层渲染。
+
+http://sourceforge.net/projects/so3dtools/ 

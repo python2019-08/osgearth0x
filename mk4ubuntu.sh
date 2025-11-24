@@ -48,11 +48,11 @@ isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true
 isFinished_build_gdal=true   #-- false #big code
-isFinished_build_osg=false    # osg-a ..false  
+isFinished_build_osg=true    # osg-a ..false  
 isFinished_build_osgdll=true # osg-dll..false
 isFinished_build_zip=true
-isFinished_build_osgearth=false  # osgearth-a
-isFinished_build_oearthdll=true  # osgearth-dll
+isFinished_build_osgearth=true  # osgearth-a
+isFinished_build_oearthdll=false  # osgearth-dll
 # ===================================================================
 CMAKE_BUILD_TYPE=Debug #RelWithDebInfo
 CMAKE_MAKE_PROGRAM=/usr/bin/make
@@ -1268,7 +1268,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
             "${INSTALL_PREFIX_geos}"  "${INSTALL_PREFIX_psl}"\
             "${INSTALL_PREFIX_proj}"  "${INSTALL_PREFIX_expat}"  \
             "${INSTALL_PREFIX_curl}" "${INSTALL_PREFIX_sqlite}"  \
-            "${INSTALL_PREFIX_boost}" ) 
+            "${INSTALL_PREFIX_boost}" "${INSTALL_PREFIX_gdal}"  ) 
     echo "==========cmk_prefixPath=${cmk_prefixPath}"   
     # <<osg的间接依赖库>>
     # 依赖关系：osg -->gdal-->curl-->libpsl， 所以OSG 的 CMake 配置需要确保在
@@ -1276,13 +1276,18 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     # 这通常在 CMakeLists.txt中通过 find_package(CURL)返回的导入型目标CURL::libCurl获得或直接在
     # CMake -S -B命令中加 -DCMAKE_EXE_LINKER_FLAGS或CMAKE_SHARED_LINKER_FLAGS来添加缺失的库。​ 
     # 
-    _curlLibs="${INSTALL_PREFIX_curl}/lib/libcurl-d.a;"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib64/libssl.a;"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a;"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_psl}/lib/libpsl.a;"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zstd}/lib/libzstd.a"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zlib}/lib/libz.a"
-    echo "gg==========_curlLibs=${_curlLibs}" 
+    # 安全的字符串拼接方法（不会额外插入空格）
+    _curlLibs_array=()
+    _curlLibs_array+=("${INSTALL_PREFIX_curl}/lib/libcurl-d.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_openssl}/lib64/libssl.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_openssl}/lib64/libcrypto.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_psl}/lib/libpsl.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_zstd}/lib/libzstd.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_zlib}/lib/libz.a")
+    # 转换为分号分隔的字符串
+    printf -v _curlLibs "%s;" "${_curlLibs_array[@]}"
+    _curlLibs="${_curlLibs%;}"  # 移除最后一个分号 
+    echo "osg==========_curlLibs=${_curlLibs}" 
  
     #  zlib // freetype // gdal 的搜索优先使用 3rd/osg/CMakeLists.txt里的 CMAKE_MODULE_PATH
     osg_MODULE_PATH=""
@@ -1297,6 +1302,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
     "-DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=ON"
     # 是否访问PATH\LD_LIBRARY_PATH等环境变量
     "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=ON" 
+    "-DCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH=ON"
     )
 
     # ------
@@ -1315,8 +1321,8 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
             -DCMAKE_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/" \
             -DCMAKE_INCLUDE_PATH="/usr/include/"                   \
             -DCMAKE_DEBUG_POSTFIX=""   \
-        -DDYNAMIC_OPENTHREADS=OFF   \
-        -DDYNAMIC_OPENSCENEGRAPH=OFF \
+        -DDYNAMIC_OPENTHREADS=OFF  -DDYNAMIC_OPENSCENEGRAPH=OFF \
+        -DBUILD_OSG_APPLICATIONS=ON \
         -DANDROID=OFF   -DOPENTHREADS_ATOMIC_USE_MUTEX=ON    \
         -DOSG_GL1_AVAILABLE=OFF   \
         -DOSG_GL2_AVAILABLE=OFF   \
@@ -1349,6 +1355,7 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
         -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a         \
         -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a        \
         -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
+        -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include"     \
         -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a          \
         -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a         \
         -DOPENSSL_ROOT_DIR="${INSTALL_PREFIX_openssl}"                 \
@@ -1447,24 +1454,32 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
     BuildDIR_lib=${BuildDIR_3rd}/osgdll
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_osgdll} ${isRebuild}  
 
-    #################################################################### 
-    cmk_prefixPath=$(check_concat_paths_1  "${INSTALL_PREFIX_xz}" \
-            "${INSTALL_PREFIX_absl}" "${INSTALL_PREFIX_zstd}"\
-            "${INSTALL_PREFIX_png}"  "${INSTALL_PREFIX_jpegTurbo}"  \
-            "${INSTALL_PREFIX_openssl}" "${INSTALL_PREFIX_tiff}" \
-            "${INSTALL_PREFIX_geos}"  "${INSTALL_PREFIX_psl}"\
-            "${INSTALL_PREFIX_proj}"  "${INSTALL_PREFIX_expat}"  \
-            "${INSTALL_PREFIX_curl}" "${INSTALL_PREFIX_sqlite}"  \
-            "${INSTALL_PREFIX_boost}" ) 
+    ####################################################################          
+    cmk_prefixPath=$(check_concat_paths_1  ${INSTALL_PREFIX_zlib} \
+            "${INSTALL_PREFIX_xz}/lib/cmake/liblzma/"   \
+            "${INSTALL_PREFIX_absl}/lib/cmake/absl/"   "${INSTALL_PREFIX_zstd}/lib/cmake/zstd" \
+            "${INSTALL_PREFIX_png}/lib/cmake/PNG"      "${INSTALL_PREFIX_jpegTurbo}/lib/cmake/libjpeg-turbo"   \
+            "${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL" "${INSTALL_PREFIX_tiff}"   \
+            "${INSTALL_PREFIX_geos}/lib/cmake/GEOS"          "${INSTALL_PREFIX_psl}"       \
+            "${INSTALL_PREFIX_freetype}/lib/cmake/freetype"   \
+            "${INSTALL_PREFIX_proj}/lib/cmake/proj"        "${INSTALL_PREFIX_proj}/lib/cmake/proj4"  \
+            "${INSTALL_PREFIX_sqlite}/lib/cmake/sqlite3"   "${INSTALL_PREFIX_expat}/lib/cmake/expat-2.7.0"    \
+            "${INSTALL_PREFIX_curl}/lib/cmake/CURL"     "${INSTALL_PREFIX_gdal}/lib/cmake/gdal" \
+            "${INSTALL_PREFIX_boost}" )   
     echo "==========cmk_prefixPath=${cmk_prefixPath}"   
     # <<osg的间接依赖库>> osg -->gdal-->curl-->libpsl 
-    _curlLibs="${INSTALL_PREFIX_curl}/lib/libcurl-d.a;"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib64/libssl.a;"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_openssl}/lib64/libcrypto.a;"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_psl}/lib/libpsl.a;"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zstd}/lib/libzstd.a"
-    _curlLibs="${_curlLibs} ${INSTALL_PREFIX_zlib}/lib/libz.a"
-    echo "gg==========_curlLibs=${_curlLibs}" 
+    _curlLibs_array=()
+    _curlLibs_array+=("${INSTALL_PREFIX_curl}/lib/libcurl-d.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_openssl}/lib64/libssl.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_openssl}/lib64/libcrypto.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_psl}/lib/libpsl.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_zstd}/lib/libzstd.a")
+    _curlLibs_array+=("${INSTALL_PREFIX_zlib}/lib/libz.a")
+    # 转换为分号分隔的字符串
+    printf -v _curlLibs "%s;" "${_curlLibs_array[@]}"
+    _curlLibs="${_curlLibs%;}"  # 移除最后一个分号 
+    echo "osg==========_curlLibs=${_curlLibs}" 
+ 
  
     #  zlib // freetype // gdal 的搜索优先使用 3rd/osg/CMakeLists.txt里的 CMAKE_MODULE_PATH
     osg_MODULE_PATH=""
@@ -1479,7 +1494,11 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
     "-DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=ON"
     # 是否访问PATH\LD_LIBRARY_PATH等环境变量
     "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=ON" 
+    "-DCMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH=ON"
+ 
     )
+
+    EXE_LINKER_FLAGS=""
 
     # ------
     echo "=== cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find ......"
@@ -1494,11 +1513,13 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osgdll}    \
             -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC  -DOSG_GL3_AVAILABLE=1"   \
             -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC -std=c++14  -DOSG_GL3_AVAILABLE=1" \
+            -DCMAKE_SHARED_LINKER_FLAGS="${ASAN_SHARED_LINKER_FLAGS}"  \
             -DCMAKE_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/" \
             -DCMAKE_INCLUDE_PATH="/usr/include/"                   \
             -DCMAKE_DEBUG_POSTFIX=""   \
         -DBUILD_SHARED_LIBS=ON  \
         -DDYNAMIC_OPENTHREADS=ON    -DDYNAMIC_OPENSCENEGRAPH=ON \
+        -DBUILD_OSG_APPLICATIONS=ON \
         -DANDROID=OFF  -DOPENTHREADS_ATOMIC_USE_MUTEX=ON  \
         -DOSG_GL1_AVAILABLE=OFF   \
         -DOSG_GL2_AVAILABLE=OFF   \
@@ -1520,6 +1541,8 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
         -DOPENGL_gl_LIBRARY=/usr/lib/x86_64-linux-gnu/libGL.so    \
         -DOPENGL_glu_LIBRARY="/usr/lib/x86_64-linux-gnu/libGLU.so" \
         -DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config   \
+        -DX11_X11_LIB="/usr/lib/x86_64-linux-gnu/libX11.so" \
+        -DX11_Xinerama_LIB="/usr/lib/x86_64-linux-gnu/libXinerama.so" \
         -DOSG_FIND_3RD_PARTY_DEPS=ON  \
         -DZLIB_USE_STATIC_LIBS=ON \
         -DZLIB_DIR=${SrcDIR_lib}/CMakeModules             \
@@ -1530,11 +1553,14 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
         -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include  \
         -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a         \
         -DJPEG_LIBRARIES=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a        \
+        -DPNG_ROOT=${INSTALL_PREFIX_png}    \
+        -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include"   \
         -DPNG_INCLUDE_DIR=${INSTALL_PREFIX_png}/include/libpng16 \
         -DPNG_LIBRARY=${INSTALL_PREFIX_png}/lib/libpng.a          \
         -DPNG_LIBRARIES=${INSTALL_PREFIX_png}/lib/libpng.a         \
         -DOpenSSL_DIR="${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL"  \
         -DOpenSSL_ROOT="${INSTALL_PREFIX_openssl}"                      \
+        -DOpenSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include          \
         -DOpenSSL_USE_STATIC_LIBS=ON                                     \
         -DOPENSSL_INCLUDE_DIR=${INSTALL_PREFIX_openssl}/include            \
         -DOPENSSL_SSL_LIBRARY=${INSTALL_PREFIX_openssl}/lib64/libssl.a      \
@@ -1558,12 +1584,15 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
         -DGEOS_LIBRARY="${INSTALL_PREFIX_geos}/lib/libgeos_c.a;${INSTALL_PREFIX_geos}/lib/libgeos.a" \
         -DGEOS_CXX_LIBRARY="${INSTALL_PREFIX_geos}/lib/libgeos.a" \
         -DCURL_DIR="${INSTALL_PREFIX_curl}/lib/cmake/CURL" \
+        -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include    \
         -DCURL_LIBRARY=CURL::libcurl   \
         -DCURL_LIBRARIES="${_curlLibs}" \
         -DGDAL_DIR=${SrcDIR_lib}/CMakeModules               \
         -DGDAL_INCLUDE_DIR=${INSTALL_PREFIX_gdal}/include    \
         -DGDAL_LIBRARY=${INSTALL_PREFIX_gdal}/lib/libgdal.a   \
         -DGDAL_LIBRARIES=${INSTALL_PREFIX_gdal}/lib/libgdal.a  \
+        -DLIBLZMA_LIBRARY=${INSTALL_PREFIX_xz}/lib/liblzma.a \
+        -DLIBLZMA_INCLUDE_DIR=${INSTALL_PREFIX_xz}/include \
         -DNO_DEFAULT_PATH=ON \
         -DCMAKE_EXE_LINKER_FLAGS="${EXE_LINKER_FLAGS} \
             -Wl,-Bdynamic -lm -lc -lGL -lGLU -ldl \
@@ -1579,8 +1608,8 @@ if [ "${isFinished_build_osgdll}" != "true" ] ; then
     echo "========== finished building osgdll 4 ubuntu ========== " &&  sleep 1 
 
 fi    
-
  
+
 # -------------------------------------------------
 # libzip 
 # ------------------------------------------------- 
@@ -1683,7 +1712,7 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
     #   GLEW_ROOT=/path/to/GLEW cmake ...  ，无需提前 export。 
 
                 # "${cmakeCommonParams[@]}"  
-
+    OEARTH_C_CXX_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"
     # --debug-find    --debug-output 
     GLEW_ROOT="/usr/lib/x86_64-linux-gnu/" \
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find   \
@@ -1692,8 +1721,9 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osgearth}  \
-            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
-            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} ${OEARTH_C_CXX_FLAGS}"   \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} ${OEARTH_C_CXX_FLAGS}" \
+            -DCMAKE_SHARED_LINKER_FLAGS="${ASAN_SHARED_LINKER_FLAGS}"  \
             -DBUILD_SHARED_LIBS=OFF   \
         -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=OFF \
         -DCMAKE_SKIP_RPATH=ON  \
@@ -1731,6 +1761,7 @@ if [ "${isFinished_build_osgearth}" != "true" ] ; then
         -DZSTD_LIBRARY="${INSTALL_PREFIX_zstd}/lib/libzstd.a"  \
         -DZLIB_INCLUDE_DIR="${INSTALL_PREFIX_zlib}/include" \
         -DZLIB_LIBRARY="${INSTALL_PREFIX_zlib}/lib/libz.a"   \
+        -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
         -DPNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include/"   \
         -DPNG_LIBRARY="${INSTALL_PREFIX_png}/lib/libpng.a"   \
         -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include  \
@@ -1822,7 +1853,7 @@ if [ "${isFinished_build_oearthdll}" != "true" ] ; then
     echo "========== building oearthdll 4 ubuntu========== " &&  sleep 1  && set -x
 
     SrcDIR_lib=${SrcDIR_3rd}/osgearth
-    BuildDIR_lib=${BuildDIR_3rd}/osgearthdll 
+    BuildDIR_lib=${BuildDIR_3rd}/osgearthdll
     prepareBuilding  ${SrcDIR_lib} ${BuildDIR_lib} ${INSTALL_PREFIX_oearthdll} ${isRebuild}  
 
     #################################################################### 
@@ -1831,15 +1862,17 @@ if [ "${isFinished_build_oearthdll}" != "true" ] ; then
     #---- osgEarth -> Protobuf -> (absl + utf8_range)
     #  
     cmk_prefixPath=$(check_concat_paths_1  ${INSTALL_PREFIX_zlib} \
-            "${INSTALL_PREFIX_zip}"      "${INSTALL_PREFIX_xz}"   \
-            "${INSTALL_PREFIX_absl}"     "${INSTALL_PREFIX_zstd}" \
-            "${INSTALL_PREFIX_png}"      "${INSTALL_PREFIX_jpegTurbo}"   \
-            "${INSTALL_PREFIX_protobuf}" "${INSTALL_PREFIX_openssl}"     \
-            "${INSTALL_PREFIX_tiff}"     "${INSTALL_PREFIX_geos}"      \
-            "${INSTALL_PREFIX_psl}"      "${INSTALL_PREFIX_proj}"        \
-            "${INSTALL_PREFIX_expat}"    "${INSTALL_PREFIX_freetype}"    \
-            "${INSTALL_PREFIX_curl}"     "${INSTALL_PREFIX_sqlite}"      \
-            "${INSTALL_PREFIX_gdal}"     "${INSTALL_PREFIX_osgdll}" )
+            "${INSTALL_PREFIX_zip}/lib/cmake/libzip"   "${INSTALL_PREFIX_xz}/lib/cmake/liblzma/"   \
+            "${INSTALL_PREFIX_absl}/lib/cmake/absl/"   "${INSTALL_PREFIX_zstd}/lib/cmake/zstd" \
+            "${INSTALL_PREFIX_png}/lib/cmake/PNG"      "${INSTALL_PREFIX_jpegTurbo}/lib/cmake/libjpeg-turbo"   \
+            "${INSTALL_PREFIX_protobuf}/lib/cmake/protobuf"  "${INSTALL_PREFIX_protobuf}/lib/cmake/utf8_range"  \
+            "${INSTALL_PREFIX_openssl}/lib64/cmake/OpenSSL" "${INSTALL_PREFIX_tiff}"   \
+            "${INSTALL_PREFIX_geos}/lib/cmake/GEOS"          "${INSTALL_PREFIX_psl}"       \
+            "${INSTALL_PREFIX_freetype}/lib/cmake/freetype"   \
+            "${INSTALL_PREFIX_proj}/lib/cmake/proj"        "${INSTALL_PREFIX_proj}/lib/cmake/proj4"  \
+            "${INSTALL_PREFIX_sqlite}/lib/cmake/sqlite3"   "${INSTALL_PREFIX_expat}/lib/cmake/expat-2.7.0"    \
+            "${INSTALL_PREFIX_curl}/lib/cmake/CURL"     "${INSTALL_PREFIX_gdal}/lib/cmake/gdal"      \
+            "${INSTALL_PREFIX_osgdll}/lib/cmake/OpenSceneGraph" )
     echo "oearth...cmk_prefixPath=${cmk_prefixPath}"   
     
     # ----
@@ -1857,8 +1890,8 @@ if [ "${isFinished_build_oearthdll}" != "true" ] ; then
     # 2. 清理环境
     unset LD_LIBRARY_PATH
     unset LIBRARY_PATH 
- 
-
+    EXE_LINKER_FLAGS="" # clear its value
+    OEARTH_C_CXX_FLAGS="-fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" 
     # --debug-find    --debug-output 
     GLEW_ROOT="/usr/lib/x86_64-linux-gnu/" \
     cmake -S ${SrcDIR_lib} -B ${BuildDIR_lib}  --debug-find   \
@@ -1867,8 +1900,8 @@ if [ "${isFinished_build_oearthdll}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmk_prefixPath}" \
             -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH} \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_oearthdll}  \
-            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} -fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1"   \
-            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC -fdiagnostics-show-option -DOSG_GL3_AVAILABLE=1 -U GDAL_DEBUG -DOSGEARTH_LIBRARY=1" \
+            -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} ${OEARTH_C_CXX_FLAGS}"   \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} ${OEARTH_C_CXX_FLAGS}" \
             -DBUILD_SHARED_LIBS=ON   \
         -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=ON \
         -DCMAKE_SKIP_RPATH=ON  \
@@ -1907,6 +1940,7 @@ if [ "${isFinished_build_oearthdll}" != "true" ] ; then
         -DZLIB_INCLUDE_DIR="${INSTALL_PREFIX_zlib}/include" \
         -DZLIB_LIBRARY="${INSTALL_PREFIX_zlib}/lib/libz.a"   \
         -DPNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include/"   \
+        -DPNG_PNG_INCLUDE_DIR="${INSTALL_PREFIX_png}/include" \
         -DPNG_LIBRARY="${INSTALL_PREFIX_png}/lib/libpng.a"   \
         -DJPEG_INCLUDE_DIR=${INSTALL_PREFIX_jpegTurbo}/include  \
         -DJPEG_LIBRARY=${INSTALL_PREFIX_jpegTurbo}/lib/libjpeg.a \

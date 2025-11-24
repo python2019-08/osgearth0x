@@ -23,11 +23,11 @@ if [ ! -d "$Repo_ROOT" ]; then
 fi 
 echo "============================================================="
 # changable(2)
-is_enable_ASAN=false    # false
+is_enable_ASAN=true    # false
 isRebuild=true
 
 # ------------
-isFinished_build_zlib=false  
+isFinished_build_zlib=true  
 # isFinished_build_zstd=true
 isFinished_build_openssl=true  
 # isFinished_build_icu=true  
@@ -47,12 +47,18 @@ isFinished_build_proj=true
 isFinished_build_absl=true
 isFinished_build_protobuf=true
 isFinished_build_boost=true  
-isFinished_build_gdal=true # v
-isFinished_build_osg=true
+isFinished_build_gdal=false # v
+isFinished_build_osg=false
 isFinished_build_zip=true
-isFinished_build_oearth=true
+isFinished_build_oearth=false
 # echo "============================================================="
-# ------------    
+# ###定义要编译的 Android ABI 列表::vcpkg默认只支持"arm64-v8a"和"x86_64"。
+# ABIS=("arm64-v8a"  "x86_64"   "armeabi-v7a"  "x86" )
+# CMAKE_ANDROID_ARCH_ABI="x86_64" 
+ABIS=("arm64-v8a")  
+# gdal 需要的posix_spawn在24 API中不支持，在较新的 Android API 中支持
+ABI_LEVEL=24
+# ---------------
 # ANDROID_NDK_ROOT ​​:早期 Android 工具链（如 ndk-build）和部分开源项目（如 OpenSSL）习惯使用此变量。
 # ANDROID_NDK=/home/abner/Android/Sdk/ndk/android-ndk-r27d
 export ANDROID_NDK_ROOT=/home/abner/Android/Sdk/ndk/27.1.12297006     
@@ -108,17 +114,17 @@ ASAN_CXX_FLAGS=""
 ASAN_EXE_LINKER_FLAGS="" 
 ASAN_SHARED_LINKER_FLAGS="" 
 if [ "${is_enable_ASAN}" = "true" ]; then 
-    export CC="clang -fsanitize=address -fno-omit-frame-pointer -g -O0 "
-    export CXX="clang++ -fsanitize=address -fno-omit-frame-pointer -g -O0 "
-    export CFLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O0 "
-    export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O0 "
+    export CC="clang -fsanitize=address -fno-omit-frame-pointer -g -O1 "
+    export CXX="clang++ -fsanitize=address -fno-omit-frame-pointer -g -O1 "
+    export CFLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O1 "
+    export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer -g -O1 "
     export LDFLAGS="-fsanitize=address"
 
 
     ENABLE_123ASAN_VAL="ON"
     # -g -O0" # 调试信息 + 无优化 -fno-optimize-sibling-calls
-    ASAN_C_FLAGS="-fsanitize=address   -g -O0 -fno-omit-frame-pointer" 
-    ASAN_CXX_FLAGS="-fsanitize=address  -g -O0 -fno-omit-frame-pointer"   
+    ASAN_C_FLAGS="-fsanitize=address   -g -O1 -fno-omit-frame-pointer" 
+    ASAN_CXX_FLAGS="-fsanitize=address  -g -O1 -fno-omit-frame-pointer"   
     ASAN_EXE_LINKER_FLAGS="-fsanitize=address"     
     ASAN_SHARED_LINKER_FLAGS="-fsanitize=address -Wl,--export-dynamic -Wl,-z,defs"  
     # ANDROID_ARM_MODE=arm 
@@ -138,33 +144,33 @@ mkdir -p ${BuildROOT_andro}
 mkdir -p ${InstallROOT_andro} 
 
 echo "============================================================="
-# 定义需要编译的 Android ABI 列表
-# ABIS=("arm64-v8a"  "x86_64"   "armeabi-v7a"  "x86" )
-# CMAKE_ANDROID_ARCH_ABI="x86_64" 
-ABIS=("arm64-v8a"  "x86_64")  
-ABI_LEVEL=24
- 
 cmakeCommonParams=(
     "-DCMAKE_TOOLCHAIN_FILE=${ANDRO_TOOLCHAIN_FILE}" 
     "-DANDROID_STL=c++_shared" 
     "-DANDROID_PLATFORM=android-${ABI_LEVEL}"  
     "-DANDROID_NATIVE_API_LEVEL=${ABI_LEVEL}"    
-  "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
-  "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
-  "-DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config"
-  "-DCMAKE_FIND_ROOT_PATH=${InstallROOT_andro}"
-  "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
-  "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
-  "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY" # BOTH：先查根路径，再查系统路径    
-  "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY" # 头文件仍只查根路径 
-  "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
-  # 是否访问 /usr/include/、/usr/lib/ 等 系统路径   
-  "-DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=OFF"
-  # 是否访问PATH\LD_LIBRARY_PATH等环境变量
-  "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF" 
-  "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a"
-  "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" 
-  "-DBUILD_SHARED_LIBS=OFF"    
+    "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+    "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+    "-DPKG_CONFIG_EXECUTABLE=/usr/bin/pkg-config"
+    "-DCMAKE_FIND_ROOT_PATH=${InstallROOT_andro}"
+    "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
+    "-DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON"
+    "-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY" # BOTH：先查根路径，再查系统路径    
+    "-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY" # 头文件仍只查根路径 
+    "-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
+    # 是否访问 /usr/include/、/usr/lib/ 等 系统路径   
+    "-DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=OFF"
+    # 是否访问PATH\LD_LIBRARY_PATH等环境变量
+    "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF" 
+    "-DCMAKE_FIND_LIBRARY_SUFFIXES=.a"
+    # -fPIC 
+    "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" 
+    "-DBUILD_SHARED_LIBS=OFF"   
+    # CMAKE_CXX_FLAGS_XXX
+    "-DCMAKE_CXX_FLAGS_DEBUG=-g -O1 -DDEBUG" 
+    "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG" 
+    "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=-O2 -g -DNDEBUG"
+    "-DCMAKE_CXX_FLAGS_MINSIZEREL=-Os -DNDEBUG"   
 )
 
 if [ "${is_enable_ASAN}" = "true" ]; then 
@@ -1167,8 +1173,8 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 -DCMAKE_PREFIX_PATH=${cmkPrefixPath} \
                 -DCMAKE_MODULE_PATH="${gdal_MODULE_PATH}" \
                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_gdal}  \
-                -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fPIC  -DJPEG12_SUPPORTED=0"   \
-                -DCMAKE_CXX_FLAGS="${CMAKE_C_FLAGS} -fPIC  -DJPEG12_SUPPORTED=0" \
+                -DCMAKE_C_FLAGS="${ASAN_C_FLAGS}  -fPIC   -DJPEG12_SUPPORTED=0"   \
+                -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -fPIC   -DJPEG12_SUPPORTED=0" \
                 -DBUILD_SHARED_LIBS=OFF   \
                 -DBUILD_APPS=OFF \
                 -DBUILD_TESTING=OFF \
@@ -1187,7 +1193,7 @@ if [ "${isFinished_build_gdal}" != "true" ] ; then
                 -DGDAL_USE_PROTOBUF=ON \
                 -DGDAL_USE_JPEG_INTERNAL=OFF \
                 -DHAVE_JPEGTURBO_DUAL_MODE_8_12=OFF \
-                -DHAVE_KEA=OFF \
+                -DHAVE_KEA=OFF  -DHAVE_POSIX_SPAWNP=OFF \
                 -DCURL_LIBRARY=${INSTALL_PREFIX_curl}/lib/libcurl-d.a \
                 -DCURL_INCLUDE_DIR=${INSTALL_PREFIX_curl}/include \
                 -DGEOS_INCLUDE_DIR=${INSTALL_PREFIX_geos}/include \
@@ -1311,13 +1317,13 @@ if [ "${isFinished_build_osg}" != "true" ] ; then
             -DCMAKE_PREFIX_PATH="${cmkPrefixPath}"      \
             -DCMAKE_MODULE_PATH="${osg_MODULE_PATH}"     \
             -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osg}  \
-            -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS}  -fPIC"             \
-            -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -fPIC -std=c++14" \
+            -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} -std=c++14" \
             -DBUILD_SHARED_LIBS=OFF  \
         -DCMAKE_DEBUG_POSTFIX=""   \
         -DDYNAMIC_OPENTHREADS=OFF   \
         -DDYNAMIC_OPENSCENEGRAPH=OFF \
         -DANDROID=ON    -DOPENTHREADS_ATOMIC_USE_MUTEX=ON  \
+        -DBUILD_OSG_APPLICATIONS=OFF \
         -DOSG_GL1_AVAILABLE=OFF \
         -DOSG_GL2_AVAILABLE=OFF \
         -DOSG_GL3_AVAILABLE=OFF \
@@ -1561,8 +1567,8 @@ if [ "${isFinished_build_oearth}" != "true" ] ; then
                 -DCMAKE_PREFIX_PATH="${cmkPrefixPath}"           \
                 -DCMAKE_MODULE_PATH=${osgearth_MODULE_PATH}       \
                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX_osgearth}  \
-                -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} ${OEARTH_C_CXX_FLAGS}"   \
-                -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} ${OEARTH_C_CXX_FLAGS}"  \
+                -DCMAKE_C_FLAGS="${ASAN_C_FLAGS} ${OEARTH_C_CXX_FLAGS}"   \
+                -DCMAKE_CXX_FLAGS="${ASAN_CXX_FLAGS} ${OEARTH_C_CXX_FLAGS}"  \
                 -DBUILD_SHARED_LIBS=OFF   \
             -DNRL_STATIC_LIBRARIES=ON  -DOSGEARTH_BUILD_SHARED_LIBS=OFF \
             -DCMAKE_SKIP_RPATH=ON  \
